@@ -1,0 +1,46 @@
+feature: 2026-05-26--trading-reconcile
+title: 504 对账契约收口
+phase: done
+owner: product-agent
+next: null
+artifacts:
+  brief: brief.md
+  api: api.openapi.yaml
+  test_coverage: test/coverage.md
+  backend_notes: backend/notes.md
+  test_report: test/report.md
+blockers: []
+history:
+  - at: "2026-05-26T16:42:30+0800"
+    phase: planned
+    by: product-agent
+    note: 从模板创建功能包
+  - at: "2026-05-26T17:00:00+0800"
+    phase: contract_ready
+    by: product-agent
+    note: 定稿 brief/OpenAPI/测试追溯（§6 存量实现契约收口）；check-test-coverage.sh 通过；含页面否
+  - at: "2026-05-26T17:30:00+0800"
+    phase: backend_done
+    by: backend-agent
+    note: 核对存量路由与 OpenAPI；reconcilePath 对齐；扩写 test_trading_reconcile P0（403/404/422/时间线）+ amend reconcileSuggested；pytest 9 passed
+  - at: "2026-05-26T18:00:00+0800"
+    phase: tested
+    by: test-agent
+    note: P0 TC-01～08 + P1 TC-09 全通过；test/report.md；pytest 9 passed；无页面 → next frontend 空跑
+  - at: "2026-05-26T19:00:00+0800"
+    phase: frontend_done
+    by: frontend-agent
+    note: 含页面否；frontend.integrate 空跑；integration.md 联调结论与接口映射已填；admin/deeplink 无变更
+  - at: "2026-05-26T20:00:00+0800"
+    phase: e2e_verified
+    by: test-agent
+    note: test.e2e N/A；e2e-report.md；pytest 9 passed 回归；无页面
+  - at: "2026-05-26T20:30:00+0800"
+    phase: ui_reviewed
+    by: designer-agent
+    note: designer.review 通过（无 UI N/A）；design/ui-review.md；无 P0
+  - at: "2026-05-26T21:00:00+0800"
+    phase: done
+    by: product-agent
+    note: product.accept — AC-1～8 对照 test/report TC-01～08、design/ui-review；brief 勾选；TG 一键对账留 P1；Phase-2 首包收口
+updated_at: "2026-05-26T21:00:00+0800"

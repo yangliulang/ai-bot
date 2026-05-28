@@ -1,0 +1,308 @@
+openapi: 3.0.3
+info:
+  title: "ChainUp AI Agent — 运营侧 Agent Management (admin/agents)"
+  version: "2026-05-09"
+  description: |
+    PATH 与 design/api.md「运营侧 Agent Management API」专节一致。
+    **I02** 失败体 **`code`** 与 [`agent-management/functions.md`](../../requirements/domains/admin/agent-management/functions.md) **§7.1** **同窗**（`../components/agent-management-schemas.yaml`）。
+  contact:
+    name: "Jesson"
+    email: Jesson@chainup.com
+servers:
+  - url: https://api.example.invalid
+    description: 所内替换
+tags:
+  - name: templates
+  - name: instances
+  - name: runtime
+paths:
+  "/api/v1/admin/agents/templates":
+    get:
+      tags: [templates]
+      summary: "模板列表 FR-AM-T01"
+      operationId: listAgentTemplates
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+    post:
+      tags: [templates]
+      summary: "创建模板 T02"
+      operationId: createAgentTemplate
+      responses:
+        "201":
+          description: 草稿态 templateId
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+  "/api/v1/admin/agents/templates/{templateId}":
+    parameters:
+      - $ref: "#/components/parameters/TemplateId"
+    get:
+      tags: [templates]
+      summary: "模板详情 T03"
+      operationId: getAgentTemplate
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+    patch:
+      tags: [templates]
+      summary: "更新草稿 T03 · If-Match"
+      operationId: patchAgentTemplate
+      responses:
+        "200":
+          description: OK
+        "409":
+          description: 乐观锁冲突
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/agent-management-schemas.yaml#/components/schemas/AgentManagementErrorBody"
+    delete:
+      tags: [templates]
+      summary: "草稿删除 T10"
+      operationId: deleteAgentTemplateDraft
+      responses:
+        "204":
+          description: 已删除
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/agent-management-schemas.yaml#/components/schemas/AgentManagementErrorBody"
+  "/api/v1/admin/agents/templates/{templateId}/clone":
+    post:
+      tags: [templates]
+      summary: "模板克隆 T09"
+      operationId: cloneAgentTemplate
+      parameters:
+        - $ref: "#/components/parameters/TemplateId"
+      responses:
+        "201":
+          description: OK
+  "/api/v1/admin/agents/templates/{templateId}/publish":
+    post:
+      tags: [templates]
+      summary: "发布 T04～T07"
+      operationId: publishAgentTemplate
+      parameters:
+        - $ref: "#/components/parameters/TemplateId"
+      responses:
+        "200":
+          description: OK
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/agent-management-schemas.yaml#/components/schemas/AgentManagementErrorBody"
+  "/api/v1/admin/agents/templates/{templateId}/versions":
+    get:
+      tags: [templates]
+      summary: "版本履历"
+      operationId: listAgentTemplateVersions
+      parameters:
+        - $ref: "#/components/parameters/TemplateId"
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+  "/api/v1/admin/agents/instances":
+    get:
+      tags: [instances]
+      summary: "实例列表 I01"
+      operationId: listAgentInstances
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+    post:
+      tags: [instances]
+      summary: "创建实例 I02 · 门禁失败码 §7.1"
+      operationId: createAgentInstance
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        "201":
+          description: 创建成功
+          content:
+            application/json:
+              schema:
+                $ref: "../components/agent-management-schemas.yaml#/components/schemas/AgentInstanceCreated"
+        "422":
+          description: 准入/计费/模板/配额等拒绝（**`code` 取自 §7.1 enum**）
+          content:
+            application/json:
+              schema:
+                $ref: "../components/agent-management-schemas.yaml#/components/schemas/AgentManagementErrorBody"
+  "/api/v1/admin/agents/instances/{instanceId}":
+    parameters:
+      - $ref: "#/components/parameters/InstanceId"
+    get:
+      tags: [instances]
+      summary: "实例详情 I03"
+      operationId: getAgentInstance
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+    patch:
+      tags: [instances]
+      summary: "实例更新 I05"
+      operationId: patchAgentInstance
+      responses:
+        "200":
+          description: OK
+        "409":
+          description: 并发冲突
+    delete:
+      tags: [instances]
+      summary: "删除实例 I06"
+      operationId: deleteAgentInstance
+      responses:
+        "204":
+          description: OK
+        "422":
+          description: 在途校验失败
+          content:
+            application/json:
+              schema:
+                $ref: "../components/agent-management-schemas.yaml#/components/schemas/AgentManagementErrorBody"
+  "/api/v1/admin/agents/instances/{instanceId}/binding":
+    parameters:
+      - $ref: "#/components/parameters/InstanceId"
+    post:
+      tags: [instances]
+      summary: "子账户绑定 I04"
+      operationId: bindAgentInstanceSubaccount
+      responses:
+        "200":
+          description: OK
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/agent-management-schemas.yaml#/components/schemas/AgentManagementErrorBody"
+    delete:
+      tags: [instances]
+      summary: "解绑 I04"
+      operationId: unbindAgentInstanceSubaccount
+      responses:
+        "204":
+          description: OK
+  "/api/v1/admin/agents/instances/{instanceId}/runtime/{action}":
+    post:
+      tags: [runtime]
+      summary: "Runtime 单实例 R01～R05"
+      operationId: postAgentInstanceRuntimeAction
+      parameters:
+        - $ref: "#/components/parameters/InstanceId"
+        - name: action
+          in: path
+          required: true
+          schema:
+            type: string
+            enum: [pause, resume, stop, start]
+      responses:
+        "200":
+          description: OK
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/agent-management-schemas.yaml#/components/schemas/AgentManagementErrorBody"
+  "/api/v1/admin/agents/instances/runtime/batch":
+    post:
+      tags: [runtime]
+      summary: "Runtime 批量 R06 · 可 `AGENT_BATCH_PARTIAL`"
+      operationId: postAgentInstancesRuntimeBatch
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [instanceIds, action]
+              properties:
+                instanceIds:
+                  type: array
+                  items:
+                    type: string
+                action:
+                  type: string
+                  enum: [pause, resume, stop, start]
+              additionalProperties: false
+      responses:
+        "200":
+          description: 全成功或 **部分失败**（`AGENT_BATCH_PARTIAL`）
+          content:
+            application/json:
+              schema:
+                $ref: "../components/agent-management-schemas.yaml#/components/schemas/AgentBatchRuntimeResult"
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/agent-management-schemas.yaml#/components/schemas/AgentManagementErrorBody"
+  "/api/v1/admin/agents/instances/exports":
+    post:
+      tags: [instances]
+      summary: "实例列表导出 I08"
+      operationId: createAgentInstancesExport
+      responses:
+        "202":
+          description: 异步任务 D-18
+          content:
+            application/json:
+              schema:
+                $ref: "../components/billing-schemas.yaml#/components/schemas/AsyncTaskAccepted"
+  "/api/v1/admin/agents/instances/exports/{taskId}":
+    get:
+      tags: [instances]
+      summary: "导出任务 I08"
+      operationId: getAgentInstancesExportTask
+      parameters:
+        - name: taskId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+components:
+  parameters:
+    TemplateId:
+      name: templateId
+      in: path
+      required: true
+      schema:
+        $ref: "../components/agent-management-schemas.yaml#/components/schemas/AgentTemplateId"
+    InstanceId:
+      name: instanceId
+      in: path
+      required: true
+      schema:
+        $ref: "../components/agent-management-schemas.yaml#/components/schemas/AgentInstanceId"

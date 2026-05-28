@@ -1,0 +1,310 @@
+openapi: 3.0.3
+info:
+  title: "ChainUp AI Agent — Orchestration / Resolver 同窗 Schemas（fragment）"
+  version: "2026-05-26"
+  description: |
+    **BFF·编排** Resolver 结构化输出与服务内约定字段；**非** Telegram 正文。
+    TS 参考实现：`src/admin/src/productionRuntime/tradeResolverTypes.ts` · `tradeWriteResolverGate.ts`。
+    **Law**：[`runtime-invariants` INV-008～010](../../requirements/Runtime/runtime-invariants.md)；
+    **Gateway**：[`MR-B-BFF-IMPLEMENTATION` §9](../../requirements/skill-specs/MR-B-BFF-IMPLEMENTATION.md)。
+paths: {}
+components:
+  schemas:
+    ResolverMissingSlotKey:
+      type: string
+      description: |
+        仍缺槽位标识（L0）；例 `symbol`、`price`、`quantity_or_quoteQty`、`type_must_be_LIMIT`、`timeInForce`。
+      example: quantity_or_quoteQty
+    AgentTradeResolverOutput:
+      type: object
+      additionalProperties: false
+      description: |
+        Parser/编排 **一步** JSON 出站推荐形；**`missing` 非空**时 **禁止**载货类型 A · **同窗** INV-008。
+      required:
+        - intent
+        - resolved
+        - missing
+      properties:
+        intent:
+          type: string
+          description: 粗粒度阶段（例 `trade`、`read_only`、`clarify`）。
+          example: trade
+        semanticIntent:
+          type: string
+          nullable: true
+          description: 语义挂件（满仓/清仓/ALL_IN 等），供 INV-010 门使用。
+          example: ALL_IN
+        skillId:
+          description: 已路由 L0 skill；未定或仍缺参可为 null。
+          nullable: true
+          allOf:
+            - $ref: "./skill-operation-spec-schemas.yaml#/components/schemas/SkillId"
+        resolved:
+          type: object
+          description: 已 **显式** 收敛的槽位；**禁止**静默默认经济数量。
+          additionalProperties: true
+          example:
+            symbol: BTCUSDT
+            side: BUY
+        missing:
+          type: array
+          items:
+            $ref: "#/components/schemas/ResolverMissingSlotKey"
+    InternalTradeResolverMode:
+      type: string
+      description: |
+        所内 BFF 路由模式 — 与 L0 `skill.spot.flash_convert` / `skill.spot.limit_order` 对齐。
+      enum:
+        - flash_convert
+        - limit_order
+    TradeResolverSlotBag:
+      type: object
+      description: |
+        已解析槽位（**字符串**）；未提供之键 **不得** 以默认经济数量「补全」。
+        键名同窗 `tradeWriteResolverGate`：`symbol`、`side`、`type`、`price`、`quantity`、`quoteQty`、`timeInForce`。
+      additionalProperties: true
+      properties:
+        symbol:
+          type: string
+          nullable: true
+        side:
+          type: string
+          nullable: true
+        type:
+          type: string
+          nullable: true
+        price:
+          type: string
+          nullable: true
+        quantity:
+          type: string
+          nullable: true
+        quoteQty:
+          type: string
+          nullable: true
+        timeInForce:
+          type: string
+          nullable: true
+    InternalTradeResolverOptions:
+      type: object
+      additionalProperties: false
+      description: 限价单专用 · `requireTimeInForce` 见 `skill.spot.limit_order` L0。
+      properties:
+        requireTimeInForce:
+          type: boolean
+          default: false
+    InternalTradeResolverRequest:
+      type: object
+      additionalProperties: false
+      required:
+        - mode
+        - slots
+      description: |
+        **内部**编排一步：由 Parser/槽位提取 **填充** `slots`，**再** 计算 `missing`（INV-008）。
+      properties:
+        mode:
+          $ref: "#/components/schemas/InternalTradeResolverMode"
+        slots:
+          $ref: "#/components/schemas/TradeResolverSlotBag"
+        options:
+          $ref: "#/components/schemas/InternalTradeResolverOptions"
+        intent:
+          type: string
+          description: 覆盖默认 `trade`（可选）。
+        semanticIntent:
+          type: string
+          nullable: true
+          description: 满仓/清仓等 — 供 Gateway INV-010。
+        routedSkillId:
+          nullable: true
+          allOf:
+            - $ref: "./skill-operation-spec-schemas.yaml#/components/schemas/SkillId"
+          description: 显式覆盖 `skillId`（高级；默认可由实现按槽齐填入）。
+        executionId:
+          description: 可选观测锚 — **不参与** L0 缺参计算。
+          nullable: true
+          allOf:
+            - $ref: "./identity-schemas.yaml#/components/schemas/ExecutionId"
+        userUtterance:
+          type: string
+          nullable: true
+          description: 可选原文日志 — **不参与** 缺参计算；ALL_IN 启发式见 BFF `allInOrchestration`。
+    OrchestrationNextStepKind:
+      type: string
+      enum:
+        - slot_fill_read_balance
+        - slot_fill_read_position
+    OrchestrationNextStep:
+      type: object
+      additionalProperties: false
+      required:
+        - stepKind
+        - reason
+        - targetSlot
+      properties:
+        stepKind:
+          $ref: "#/components/schemas/OrchestrationNextStepKind"
+        reason:
+          type: string
+          enum:
+            - INV-010_ALL_IN
+        targetSlot:
+          type: string
+          enum:
+            - quoteQty
+            - quantity
+        readAssetHint:
+          type: string
+          nullable: true
+    ClarifyKeyboardKind:
+      type: string
+      enum:
+        - spot_trade_mode
+        - spot_side
+        - confirm_symbol_default
+        - spot_qty_mode
+        - idle_resume_or_new
+    ClarifyCallbackData:
+      type: string
+      description: |
+        澄清 `callback_data` 短键注册表 — SSOT [`clarify-session.md` §4](../../requirements/domains/agent/agent-orchestration/clarify-session.md)。
+        UTF-8 ≤64B · **禁止** 与类型 A `cf:*` 混语义。
+      enum:
+        - cl:fc
+        - cl:lo
+        - cl:buy
+        - cl:sell
+        - cl:sym:ok
+        - cl:sym:no
+        - cl:qty:base
+        - cl:qty:quote
+        - cl:resume
+        - cl:new
+    ClarifyInlineKeyboardButton:
+      type: object
+      additionalProperties: false
+      required:
+        - text
+        - callback_data
+      properties:
+        text:
+          type: string
+        callback_data:
+          $ref: "#/components/schemas/ClarifyCallbackData"
+          description: UTF-8 ≤64B · 短键 · 明细服务端 session 解析（§2.3.2）。
+    ClarifyInlineKeyboard:
+      type: object
+      additionalProperties: false
+      required:
+        - kind
+        - effectiveLocale
+        - rows
+      properties:
+        kind:
+          $ref: "#/components/schemas/ClarifyKeyboardKind"
+        effectiveLocale:
+          type: string
+          enum:
+            - zh-Hans
+            - zh-Hant
+            - en
+        rows:
+          type: array
+          items:
+            type: array
+            items:
+              $ref: "#/components/schemas/ClarifyInlineKeyboardButton"
+    TelegramClarifyOutboundHints:
+      type: object
+      additionalProperties: false
+      properties:
+        expectsTypingUntilReply:
+          type: boolean
+        clarifyInlineKeyboard:
+          $ref: "#/components/schemas/ClarifyInlineKeyboard"
+        userVisibleHint:
+          type: string
+          nullable: true
+        progressHint:
+          type: string
+          nullable: true
+    ClarifySessionSnapshot:
+      type: object
+      additionalProperties: false
+      description: |
+        写路径澄清会话快照 — SSOT [`clarify-session.md`](../../requirements/domains/agent/agent-orchestration/clarify-session.md) §3。
+      required:
+        - sessionId
+        - executionId
+        - clarifyTurn
+        - resolvedSlotsSoFar
+      properties:
+        sessionId:
+          type: string
+        executionId:
+          $ref: "./identity-schemas.yaml#/components/schemas/ExecutionId"
+        clarifyTurn:
+          type: integer
+          minimum: 1
+        resolvedSlotsSoFar:
+          type: object
+          additionalProperties: true
+          description: 已确认槽位（如 symbol、side、tradeMode、semanticIntent）。
+        pendingClarifyKind:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/ClarifyKeyboardKind"
+        effectiveLocale:
+          type: string
+          enum:
+            - zh-Hans
+            - zh-Hant
+            - en
+        lastClarifyMessageId:
+          type: integer
+          nullable: true
+        expiresAt:
+          type: string
+          format: date-time
+          nullable: true
+        abandoned:
+          type: boolean
+          default: false
+        lifecycleState:
+          type: string
+          enum:
+            - active
+            - stale
+            - abandoned
+          description: "stale = 空闲默认策略 · 退出活跃 L1（memory-runtime §14.6 · clarify-session §2.4）。"
+        staleAt:
+          type: string
+          format: date-time
+          nullable: true
+    InternalTradeResolverResponse:
+      type: object
+      additionalProperties: false
+      required:
+        - output
+      properties:
+        output:
+          $ref: "#/components/schemas/AgentTradeResolverOutput"
+        routingHints:
+          type: array
+          description: |
+            可读提示 — 例 **`missing` 含 `type_must_be_LIMIT`** 时建议改路由市价/闪兑。**禁止** 直出 Telegram。
+          items:
+            type: string
+        orchestrationNextSteps:
+          type: array
+          description: |
+            INV-010 · 编排须插入的只读补槽步（**非** 用户可见正文）。
+          items:
+            $ref: "#/components/schemas/OrchestrationNextStep"
+        telegramOutbound:
+          $ref: "#/components/schemas/TelegramClarifyOutboundHints"
+          description: |
+            BFF 出站：typing 期望、澄清 inline_keyboard、进度/润色锚点 — **非** LLM JSON 直出 Telegram。
+        clarifySession:
+          $ref: "#/components/schemas/ClarifySessionSnapshot"
+          description: 可选 — 跨轮澄清快照（同窗 BFF 持久化）。

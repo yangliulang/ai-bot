@@ -1,0 +1,331 @@
+openapi: 3.0.3
+info:
+  title: "2026-05-26--trading-reconcile — Agent trading reconcile (§6)"
+  description: |
+    ChainUp **504 / UNKNOWN 写路径对账** HTTP 契约（路线图 §6.2 · closure P‑03）。
+    - **200** 响应为 FastAPI **`response_model` 直出**（camelCase 字段），**非** `{ code: 0, data }` 信封。
+    - **4xx/5xx** 业务错误为 **`AppError`** JSON：`code` + `message` + 可选 `details`。
+    - 实现 SSOT：`server/docs/BACKEND_SPEC.md` §6、`server/tests/test_trading_reconcile.py`。
+  version: "0.1.0"
+
+servers:
+  - url: http://127.0.0.1:8080
+    description: 本地 Agent API
+
+paths:
+  /api/v1/agent/trading/reconcile:
+    post:
+      summary: 发起写路径对账（504/UNKNOWN · 查单闭合终态）
+      operationId: tradingReconcile
+      tags: [Agent — Trading reconcile]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TradingReconcileRequest"
+            example:
+              userId: "93"
+              executionId: "exec-abc123"
+      responses:
+        "200":
+          description: 对账完成（可能仍 partially unknown）
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TradingReconcileResponse"
+              example:
+                reconcileId: exec-abc123
+                executionId: exec-abc123
+                scenarioId: trade.spot.amend_limit_order
+                caseKind: CANCEL_SUCCEEDED_REPLACE_FAILED
+                resolutionStatus: PARTIAL_FAILURE
+                stillUnknown: true
+                neutralHint: 改单过程中撤单已成功，新单状态仍在确认，请稍后重试或联系支持。
+                userMessage: 原单已撤销，新单是否成交仍在确认中。
+                orderLookups:
+                  - role: prior_cancelled
+                    venue: spot
+                    orderId: "111"
+                    canonicalStatus: CANCELLED
+                partialFailureCode: AGENT_SPOT_AMEND_CANCEL_SUCCEEDED_REPLACE_FAILED
+        "403":
+          description: 未绑定托管 API
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AppError"
+              example:
+                code: AGENT_SUBACCOUNT_REQUIRED
+                message: 未发现该 Telegram 用户的托管 API 绑定，请先完成 Deeplink 校验与绑定。
+        "404":
+          description: execution 不存在或用户不匹配
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AppError"
+              example:
+                code: AGENT_RECONCILE_EXECUTION_NOT_FOUND
+                message: 未找到该 executionId 或用户不匹配
+        "422":
+          description: 校验失败或无法构造查单目标
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AppError"
+              examples:
+                noTargets:
+                  value:
+                    code: AGENT_RECONCILE_NO_QUERY_TARGETS
+                    message: 缺少对账查单参数：请提供 executionId，或 symbol 与 orderId/clientOrderId
+                invalidCaseKind:
+                  value:
+                    code: VALIDATION_ERROR
+                    message: caseKind 不在允许枚举内
+                    details:
+                      field: caseKind
+
+  /api/v1/agent/trading/reconcile/status:
+    get:
+      summary: 查询 execution 对账状态（最近一次 reconcile 或待对账 UNKNOWN）
+      operationId: tradingReconcileStatus
+      tags: [Agent — Trading reconcile]
+      parameters:
+        - name: userId
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Telegram tg_id 十进制字符串
+        - name: executionId
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: 状态（含 pending UNKNOWN）
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TradingReconcileStatusResponse"
+              examples:
+                afterReconcile:
+                  value:
+                    executionId: exec-abc123
+                    scenarioId: trade.spot.amend_limit_order
+                    caseKind: CANCEL_SUCCEEDED_REPLACE_FAILED
+                    resolutionStatus: PARTIAL_FAILURE
+                    stillUnknown: true
+                    lastReconcileAtSeq: 12
+                    reconcileId: exec-abc123
+                    userMessage: 原单已撤销，新单是否成交仍在确认中。
+                    hints: {}
+                pendingUnknown:
+                  value:
+                    executionId: exec-xyz
+                    scenarioId: trade.spot.limit_order
+                    caseKind: SUBMIT_UNKNOWN
+                    resolutionStatus: UNKNOWN
+                    stillUnknown: true
+                    lastReconcileAtSeq: null
+                    reconcileId: ""
+                    userMessage: null
+                    hints:
+                      methodPathSummary: POST /sapi/v2/order
+        "404":
+          description: execution 不存在或用户不匹配
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AppError"
+
+  /api/v1/agent/trade/spot/amend-limit-order:
+    post:
+      summary: 现货改单半失败时返回 reconcileSuggested（AC-8 · 关联路径）
+      operationId: spotAmendLimitOrderReconcileHint
+      tags: [Agent — Trade spot (reconcile hint)]
+      description: |
+        本功能包仅追溯 **502** 体中的对账引导字段；完整改单契约见交易域 OpenAPI。
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [userId, symbol, orderId]
+              properties:
+                userId:
+                  type: string
+                symbol:
+                  type: string
+                orderId:
+                  type: string
+                price:
+                  type: string
+      responses:
+        "502":
+          description: 撤单成功、补单失败 — 建议对账
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AppErrorAmendReconcileSuggested"
+              example:
+                code: AGENT_SPOT_AMEND_CANCEL_SUCCEEDED_REPLACE_FAILED
+                message: 限价改单：撤单已成功，新单提交失败，请发起对账确认终态。
+                details:
+                  reconcileSuggested: true
+                  reconcileCaseKind: CANCEL_SUCCEEDED_REPLACE_FAILED
+                  reconcilePath: /api/v1/agent/trading/reconcile
+
+components:
+  schemas:
+    TradingReconcileRequest:
+      type: object
+      required: [userId]
+      properties:
+        userId:
+          type: string
+          description: Telegram tg_id
+        executionId:
+          type: string
+          description: 推荐 — 从时间线推断 caseKind 与查单目标
+        venue:
+          type: string
+          enum: [spot, futures]
+          description: 无 executionId 时显式指定市场
+        symbol:
+          type: string
+        orderId:
+          type: string
+        clientOrderId:
+          type: string
+        caseKind:
+          type: string
+          description: |
+            可选覆盖：EXCHANGE_WRITE_UNKNOWN、CANCEL_SUCCEEDED_REPLACE_FAILED、
+            SUBMIT_UNKNOWN、CANCEL_UNKNOWN、UNSPECIFIED
+
+    TradingReconcileResponse:
+      type: object
+      required:
+        - reconcileId
+        - caseKind
+        - resolutionStatus
+        - stillUnknown
+        - neutralHint
+        - userMessage
+        - orderLookups
+      properties:
+        reconcileId:
+          type: string
+        executionId:
+          type: string
+          nullable: true
+        scenarioId:
+          type: string
+          nullable: true
+        caseKind:
+          type: string
+        resolutionStatus:
+          type: string
+          description: OPEN | FILLED | CANCELLED | PARTIAL_FAILURE | INCONCLUSIVE | UNKNOWN
+        stillUnknown:
+          type: boolean
+        neutralHint:
+          type: string
+        userMessage:
+          type: string
+        orderLookups:
+          type: array
+          items:
+            $ref: "#/components/schemas/OrderLookupItem"
+        partialFailureCode:
+          type: string
+          nullable: true
+
+    OrderLookupItem:
+      type: object
+      properties:
+        role:
+          type: string
+          description: prior_cancelled | replacement | primary 等
+        venue:
+          type: string
+          enum: [spot, futures]
+        orderId:
+          type: string
+        clientOrderId:
+          type: string
+        canonicalStatus:
+          type: string
+        exchangeStatus:
+          type: string
+          nullable: true
+        notFound:
+          type: boolean
+
+    TradingReconcileStatusResponse:
+      type: object
+      required:
+        - executionId
+        - caseKind
+        - resolutionStatus
+        - stillUnknown
+        - reconcileId
+      properties:
+        executionId:
+          type: string
+        scenarioId:
+          type: string
+          nullable: true
+        state:
+          type: string
+          nullable: true
+        caseKind:
+          type: string
+        resolutionStatus:
+          type: string
+        stillUnknown:
+          type: boolean
+        lastReconcileAtSeq:
+          type: integer
+          nullable: true
+        reconcileId:
+          type: string
+        userMessage:
+          type: string
+          nullable: true
+        hints:
+          type: object
+          additionalProperties: true
+
+    AppError:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        details:
+          type: object
+          additionalProperties: true
+
+    AppErrorAmendReconcileSuggested:
+      allOf:
+        - $ref: "#/components/schemas/AppError"
+        - type: object
+          properties:
+            details:
+              type: object
+              required: [reconcileSuggested, reconcileCaseKind, reconcilePath]
+              properties:
+                reconcileSuggested:
+                  type: boolean
+                  enum: [true]
+                reconcileCaseKind:
+                  type: string
+                reconcilePath:
+                  type: string
+                  example: /api/v1/agent/trading/reconcile

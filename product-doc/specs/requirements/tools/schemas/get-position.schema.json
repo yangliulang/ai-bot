@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$comment": "示意：B 类只读 · 仓位/合约持仓。PATH 以 design/api 为准。",
+  "title": "GetPositionInput",
+  "description": "只读持仓/保证金上下文查询入参示例。",
+  "type": "object",
+  "properties": {
+    "symbol": {
+      "type": "string",
+      "description": "交易对；所内格式以矩阵为准。"
+    },
+    "marginMode": {
+      "type": "string",
+      "enum": ["cross", "isolated"],
+      "description": "可选；与全仓专节对签。"
+    }
+  },
+  "additionalProperties": false
+}

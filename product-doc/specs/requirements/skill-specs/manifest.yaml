@@ -1,0 +1,53 @@
+# Skill Specs · Publish 清单（Git SSOT → prompt-management 镜像）
+# 校验：specs/requirements/skill-specs/scripts/check_skill_contract_complete.py
+# 说明：specs/requirements/skill-specs/PUBLISH.md
+
+version: "1.0.0"
+gitRoot: specs/requirements/skill-specs
+
+skills:
+  - skillId: skill.spot.flash_convert
+    path: spot/skill.spot.flash_convert.md
+    publishRequired: true
+  - skillId: skill.spot.limit_order
+    path: spot/skill.spot.limit_order.md
+    publishRequired: true
+  - skillId: skill.spot.amend_limit_order
+    path: spot/skill.spot.amend_limit_order.md
+    publishRequired: true
+  - skillId: skill.spot.oco
+    path: null
+    publishRequired: false
+    note: product non-goal · FR-T05 only
+  - skillId: skill.spot.bracket
+    path: null
+    publishRequired: false
+    note: product non-goal · FR-T05 only
+  - skillId: skill.futures.market_order
+    path: futures/skill.futures.market_order.md
+    publishRequired: true
+  - skillId: skill.futures.limit_order
+    path: futures/skill.futures.limit_order.md
+    publishRequired: true
+  - skillId: skill.futures.amend_limit_order
+    path: futures/skill.futures.amend_limit_order.md
+    publishRequired: true
+  - skillId: skill.futures.take_profit_stop
+    path: futures/skill.futures.take_profit_stop.md
+    publishRequired: true
+  - skillId: skill.margin.cross_market_order
+    path: margin/skill.margin.cross_market_order.md
+    publishRequired: true
+  - skillId: skill.margin.cross_limit_order
+    path: margin/skill.margin.cross_limit_order.md
+    publishRequired: true
+  - skillId: skill.margin.transfer_spot_to_cross
+    path: null
+    publishRequired: false
+    note: TRANSFER_REQUIRES_WEB · main site
+  - skillId: skill.wealth.subscribe
+    path: wealth/skill.wealth.subscribe.md
+    publishRequired: true
+  - skillId: skill.wealth.redeem
+    path: wealth/skill.wealth.redeem.md
+    publishRequired: true

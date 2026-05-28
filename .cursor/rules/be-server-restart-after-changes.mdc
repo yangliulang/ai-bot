@@ -1,0 +1,16 @@
+---
+description: After server/runtime code changes, restart chainup-agent-api and verify health
+alwaysApply: true
+---
+
+# 后端改动后重启本地 API
+
+当本会话内 **修改了 `server/` 下会影响运行时的内容**（路由、应用逻辑、配置读取、迁移以外的 Python 实现等）且变更**需要新进程加载**（Python 无业务代码热重载）时，在交付前 **自动重启本机 Agent API**（若用户环境由你代为执行 shell）：
+
+1. **查找并结束** 监听 **`127.0.0.1:8080`** 的现有 `chainup-agent-api` / `uvicorn` 进程（优先结束父进程 `uv run chainup-agent-api` 对应的 PID）。
+2. **后台启动**：`cd server && uv run chainup-agent-api`。
+3. **验证**：`curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:8080/health` 期望 **200**。
+
+**不在此条强制范围**：仅改 `server/tests/`、纯文档、或与运行中进程无关的重构；**数据库**用 `alembic upgrade head`，一般不重启 DB 进程。**Admin / Vite** 默认 HMR，通常不必重启；若用户显式跑在固定端口且需全量重启，按其指示执行。
+
+**生产/远程**：无法代操时，在回复中写明须 **重新部署或重启对应服务**，勿假定已重启本机进程。

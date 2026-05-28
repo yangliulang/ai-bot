@@ -1,0 +1,14 @@
+@import 'tailwindcss';
+
+/*
+ * Deeplink：与 product-doc/Web Coolbit 原型一致优先使用系统字体栈（见 ConfigProvider theme）
+ */
+@theme {
+  --font-sans: system-ui, -apple-system, 'PingFang SC', 'Helvetica Neue', 'Microsoft YaHei',
+    sans-serif;
+  --font-mono: ui-monospace, 'SF Mono', Menlo, monospace;
+
+  --radius-ui: 0.5rem;
+  --ease-ui: cubic-bezier(0.16, 1, 0.3, 1);
+  --duration-ui: 200ms;
+}

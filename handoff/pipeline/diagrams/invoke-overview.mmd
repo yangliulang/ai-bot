@@ -1,0 +1,52 @@
+%% 唤起 Agent 总览 — 源文件
+%% 预览：在支持 Mermaid 的编辑器中打开，或见 handoff/pipeline/overview-diagram.md
+
+flowchart TB
+  subgraph YOU["👤 指挥官"]
+    A["新开 Chat\n/pipeline-* 2026-05-25--xxx\n或 @*-agent.mdc 2026-05-25--xxx"]
+  end
+
+  subgraph CURSOR["Cursor 加载层（自动叠加）"]
+    P["project.mdc  alwaysApply\n全项目约定 + 简写协议"]
+    SK["Skill  可选\n→ 指定 tasks.yaml 任务键"]
+    AG["*-agent.mdc\nphase/next 门禁"]
+    DEV["api-dev / web-dev / test-dev\n改代码时 globs 附加"]
+  end
+
+  subgraph DOCS["handoff 分工"]
+    R["roles.md  岗位与擅长区"]
+    T["tasks.yaml  本步怎么做"]
+    W["WORKFLOW.md  状态机说明"]
+    C["conventions  代码/测试规范"]
+  end
+
+  subgraph FeaturePkg["功能包 handoff/features/2026-05-25--xxx/"]
+    ST["status.yaml  门禁开关"]
+    BR["brief + api.openapi.yaml"]
+    OUT["各角色交接产出"]
+  end
+
+  subgraph CODE["apps/"]
+    API["apps/api/"]
+    WEB["apps/web/"]
+  end
+
+  A --> SK
+  A --> AG
+  SK --> T
+  AG --> T
+  AG --> R
+  AG --> W
+  P --> T
+  P --> ST
+
+  T --> ST
+  T --> BR
+  T --> OUT
+  T --> C
+  C --> DEV
+  DEV --> API
+  DEV --> WEB
+
+  ST -->|"phase/next 不符"| STOP["❌ 停止\n说明该找谁"]
+  ST -->|"符合"| OK["✅ 写产出\n更新 status.yaml"]

@@ -1,0 +1,32 @@
+---
+description: 测试用例与脚本规范
+globs: handoff/features/**/test/**/*,apps/api/tests/**/*
+alwaysApply: false
+---
+
+# 测试规范
+
+完整说明见 `handoff/conventions/testing.md`。
+
+## 用例
+
+- 追溯：`test/coverage.md`（定稿必填；`check-test-coverage.sh` 校验）
+- API：`test/cases.md`（`backend_done` 后执行 P0）
+- E2E：`test/e2e-cases.md`（`frontend_done` 后执行 P0）
+- 每条关联 AC，写清步骤与预期
+
+## 报告
+
+- `test/report.md` → 通过才可 `tested`
+- `test/e2e-report.md` → 通过才可 `e2e_verified`
+- 须有结论表与失败明细
+
+## 门禁
+
+- P0 未全通过不得推进 phase
+- 失败写 `blockers` 并设正确 `next`
+- 不改 `brief.md` 与业务实现代码
+
+## 流转
+
+见 `test-agent.mdc`。

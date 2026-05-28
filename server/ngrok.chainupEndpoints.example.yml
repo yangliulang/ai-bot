@@ -1,0 +1,27 @@
+# 【推荐本地联调】只把公网 HTTPS 落到 Deeplink Dev Server（5174）。
+#
+# ../deeplink/vite.config.ts 已将以下路径反向代理到本机 ChainUp Agent（8080）：
+#   /webhook  /api  /health  /docs  /openapi.json  /redoc
+# 因而 Telegram ``setWebhook`` 与 Bot 回填的 BIND 落地页可共用 **同一 https 起始**，
+# `CHAINUP_AGENT_PUBLIC_BASE_URL` 与 `CHAINUP_AGENT_TELEGRAM_BIND_PAGE_URL`（通常加尾 `/`）一致即可。
+#
+# 切勿同时再起一条「直连 8080」的 tunnel 而让 ngrok **池化在同一个 public_url**，否则浏览器点开链接
+# 常被路由到 FastAPI（根路径通常是 OpenAPI/HTML），看起来像「根本不是 5174 项目」。
+#
+# ngrok Agent v3 — 与含 authtoken 的系统配置合并；同一时间只起一个 ngrok 进程。
+# macOS 默认：`$HOME/Library/Application Support/ngrok/ngrok.yml`（`ngrok config check`）
+#
+# 在仓库根目录：
+# ngrok start chainup-through-vite-5174 \
+#   --config "$HOME/Library/Application Support/ngrok/ngrok.yml" \
+#   --config ./server/ngrok.chainupEndpoints.example.yml
+#
+# 在 server/：
+# cd server && ngrok start chainup-through-vite-5174 ...
+#
+version: "3"
+
+endpoints:
+  - name: chainup-through-vite-5174
+    upstream:
+      url: http://127.0.0.1:5174

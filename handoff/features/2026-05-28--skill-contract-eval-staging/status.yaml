@@ -1,0 +1,40 @@
+feature: 2026-05-28--skill-contract-eval-staging
+title: Skill 契约 Eval staging
+phase: done
+owner: product-agent
+next: null
+artifacts:
+  brief: brief.md
+  api: api.openapi.yaml
+  test_coverage: test/coverage.md
+blockers: []
+skips:
+  - frontend.integrate
+  - test.e2e
+  - designer.review
+history:
+  - at: "2026-05-28T12:00:00+08:00"
+    phase: planned
+    by: product-agent
+    note: 从模板创建功能包
+  - at: "2026-05-28T14:30:00+08:00"
+    phase: contract_ready
+    by: product-agent
+    note: OP-SKILL B · eval.skill.* P0 定稿 · skips API-only
+  - at: "2026-05-28T16:00:00+08:00"
+    phase: backend_done
+    by: backend-agent
+    note: eval_skill_contract + skill_contract_gates · pytest 14 passed
+  - at: "2026-05-28T17:00:00+08:00"
+    phase: tested
+    by: test-agent
+    note: TC-01～TC-09 P0 全绿 · test/report.md
+  - at: "2026-05-27T11:32:45+08:00"
+    phase: ui_reviewed
+    by: commander
+    note: "pipeline-skip: 跳过 frontend.integrate（skips: frontend.integrate, test.e2e, designer.review）"
+  - at: "2026-05-28T18:00:00+08:00"
+    phase: done
+    by: product-agent
+    note: product.accept · AC-1～9 · OP-SKILL B / SK-B03 收口
+updated_at: "2026-05-28T18:00:00+08:00"

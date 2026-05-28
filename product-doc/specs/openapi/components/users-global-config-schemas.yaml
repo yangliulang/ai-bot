@@ -1,0 +1,102 @@
+openapi: 3.0.3
+info:
+  title: "ChainUp AI Agent — 用户协查摘要 + 全局 bundle 同窗 Schemas（fragment）"
+  version: "2026-05-09"
+  description: |
+    供 `admin/users-global-config.yaml` 以 `$ref` 引用。
+    协查字段下限同窗 [`management-console-v1-prd.md`](../../requirements/domains/admin/management-console-v1-prd.md) **附录 A · §8.2、§9**；
+    bundle 写同窗 [`trading-agent-config/flow.md`](../../requirements/domains/admin/trading-agent-config/flow.md)（**`If-Match` / `configVersion`**、**409** `ADMIN_OPS_CONCURRENT`）。
+paths: {}
+components:
+  schemas:
+    AgentState:
+      type: string
+      description: PRD 附录 A §9 枚举下限。
+      enum:
+        - NORMAL
+        - GLOBAL_OFF
+        - OPS_SUSPENDED
+        - MEMBERSHIP_BLOCKED
+        - AGENT_SUBACCOUNT_BLOCKED
+        - BILLING_BLOCKED
+    RecentChargeSummary:
+      type: object
+      description: recentCharges 单项（≤5）；与 billing 摘要同窗、无 Secret。
+      properties:
+        billingTraceId:
+          type: string
+          format: uuid
+        amountUsdt:
+          type: string
+        chargedAt:
+          type: string
+          format: date-time
+        status:
+          type: string
+      additionalProperties: true
+    AdminAgentUserSummary:
+      type: object
+      description: GET `.../users/{userId}/agent-summary` · FR-M07 / §8.2 下限。
+      required:
+        - userId
+        - agentState
+      properties:
+        userId:
+          type: string
+        displayName:
+          type: string
+          description: 脱敏展示。
+        vipTier:
+          type: string
+        agentMinVipTier:
+          type: string
+        agentSubAccountId:
+          type: string
+        agentSubAccountStatus:
+          type: string
+        agentTradingApiBindingStatus:
+          type: string
+        agentTradingApiKeyId:
+          type: string
+        agentState:
+          $ref: "#/components/schemas/AgentState"
+        lastProductBlockReason:
+          type: string
+        recentCharges:
+          type: array
+          maxItems: 5
+          items:
+            $ref: "#/components/schemas/RecentChargeSummary"
+        capabilities:
+          type: object
+          description: 可选；同窗 `eligibility-runtime` §10。
+          additionalProperties: true
+      additionalProperties: true
+    GlobalConfigBundlePatchRequest:
+      type: object
+      description: |
+        全局配置原子 PATCH；键真源 `trading-agent-config/keys.md`。
+        **STM/Resume 键**（**§2.1**）**生效快照形状** → [`memory-runtime-schemas.yaml`](memory-runtime-schemas.yaml) **`MemoryRuntimeConfigSnapshot`**（**Runtime 步 2 对账**；**PATCH values 仍可为 superset**）。
+      properties:
+        values:
+          type: object
+          additionalProperties: true
+          description: |
+            键名 SSOT keys.md。**STM 子集示意**（非穷举校验）：
+            STM_L0_MAX_TURNS、STM_IDLE_RESUME_PROMPT_SEC、STM_IDLE_DEFAULT_POLICY、
+            STM_CLARIFY_SESSION_TTL_SEC、RESUME_CLASSIFIER_MODE、RESUME_CLASSIFIER_MIN_CONFIDENCE、
+            WARM_EXECUTION_INDEX_TTL_SEC、STM_SESSION_CLEAR_MODE、STM_HOT_RECYCLE_*。
+        expectedConfigVersion:
+          type: integer
+          description: 可与 `If-Match` 二选其一；冲突 → 409。
+      additionalProperties: false
+    GlobalConfigBundlePatchResponse:
+      type: object
+      properties:
+        configVersion:
+          type: integer
+        appliedKeys:
+          type: array
+          items:
+            type: string
+      additionalProperties: true

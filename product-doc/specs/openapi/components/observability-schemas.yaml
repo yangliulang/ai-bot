@@ -1,0 +1,256 @@
+openapi: 3.0.3
+info:
+  title: "ChainUp AI Agent — Observability / 模块八同窗 Schemas（fragment）"
+  version: "2026-05-14"
+  description: |
+    供 `admin/observability.yaml` 以 `$ref` 引用。
+    **`ExecutionId` / `ScenarioId` / `SessionId`** **同窗** [`identity-schemas.yaml`](./identity-schemas.yaml)。
+    事件名与列集下限见 [`observability/overview.md`](../../requirements/observability/overview.md) **§2**、**§2.1～2.4**；
+    **`invocationState`** 与 [`tool-management/runtime-contract.md`](../../requirements/domains/admin/tool-management/runtime-contract.md) **§1** 同窗。
+    **`agent.prompt.binding_resolved`** **冻结契约** → **`AgentPromptBindingResolvedEvent`**（**逻辑核** **`$ref`** [`prompt-management-schemas.yaml`](./prompt-management-schemas.yaml) **`ResolvedPromptBinding`**，**观测侧** **不与** Prompt 管理 paths 混文件）。
+    **`ObservabilityTimelineEvent.transitionTrigger`** **同窗** [`observability/overview.md`](../../requirements/observability/overview.md) **§2.4**（**与** [`execution-transition-matrix.md`](../../requirements/Runtime/execution-transition-matrix.md) **§2.2** **对签**）。
+paths: {}
+components:
+  schemas:
+    AgentPromptBindingResolvedEvent:
+      type: object
+      description: |
+        结构化事件 **`agent.prompt.binding_resolved`**（[`observability/overview.md`](../../requirements/observability/overview.md) **§2.3**）。
+        **须在首次模型调用前或与会话首条 user 同序落一条**；**禁止**默认承载 Prompt / `messages` 全文。
+        **绑定快找** 以 **`resolvedPromptBinding`** **`$ref`** **唯一**，避免各服务自定义 body 键名。
+      required:
+        - eventName
+        - ts
+        - executionId
+        - userId
+        - resolvedPromptBinding
+      properties:
+        eventName:
+          type: string
+          description: 固定为 `agent.prompt.binding_resolved`（overview §2.3）。
+          enum:
+            - agent.prompt.binding_resolved
+        ts:
+          type: string
+          format: date-time
+        executionId:
+          allOf:
+            - $ref: "./identity-schemas.yaml#/components/schemas/ExecutionId"
+        userId:
+          type: string
+          minLength: 1
+          description: 所内用户锚；脱敏出口见 overview §2 末段 / 企业规范。
+        sessionId:
+          nullable: true
+          description: 与 `executionId` 不同之时携带（overview §2.3）；可与 `resolvedPromptBinding.sessionId` 同窗冗余 — **join 以本外层字段优先**（由实现冻结）。
+          allOf:
+            - $ref: "./identity-schemas.yaml#/components/schemas/SessionId"
+        resolvedPromptBinding:
+          $ref: "./prompt-management-schemas.yaml#/components/schemas/ResolvedPromptBinding"
+      additionalProperties: false
+    InvocationState:
+      type: string
+      description: >-
+        `agent.tool.call` · SC-OBS05；与 runtime-contract §1 冻结一致。
+      enum:
+        - VALIDATING
+        - EXECUTING
+        - RETRYING
+        - SUCCESS
+        - FAILED
+    ObservabilityTimelineEvent:
+      type: object
+      description: |
+        **FR-MC801** 时间线行；**`eventName`** 与 **overview §2** 表（如 **`billing.entitlement_debit_*`（主链）**、`billing.charge_*`（对读）、`agent.tool.call`、`trading.exchange_private`）同窗。
+        **主态迁移审计**：**可选** **`transitionTrigger`** **须与** **overview §2.4** **及** **`execution-transition-matrix` §2.2** **对签**（**不得**弱于矩阵 Guard）。
+      required: [ts, eventName]
+      properties:
+        ts:
+          type: string
+          format: date-time
+        eventName:
+          type: string
+          example: agent.tool.call
+        transitionTrigger:
+          type: string
+          nullable: true
+          description: |
+            **可选**。**主态边** **归并点** **推荐** **携带**：**字面** **须** **与**
+            [`execution-transition-matrix.md`](../../requirements/Runtime/execution-transition-matrix.md) **§2.2.1「Trigger / Event」** **列** **一致**
+            **或为** **所内登记别名**（**alias MR** **须** **链** **overview §2.4**）。
+        executionId:
+          nullable: true
+          allOf:
+            - $ref: "./identity-schemas.yaml#/components/schemas/ExecutionId"
+        userId:
+          type: string
+          nullable: true
+        toolId:
+          type: string
+          nullable: true
+        toolCallSeq:
+          type: integer
+          nullable: true
+        billingTraceId:
+          nullable: true
+          allOf:
+            - $ref: "../components/billing-schemas.yaml#/components/schemas/BillingTraceId"
+        capabilitySkuId:
+          type: string
+          nullable: true
+          description: "轨 B 核销归因；执行详情/协查下限 — commerce-model §5.3。"
+        scenarioId:
+          nullable: true
+          allOf:
+            - $ref: "./identity-schemas.yaml#/components/schemas/ScenarioId"
+        summary:
+          type: object
+          description: 类型相关摘要键；**禁止**默认嵌套 Prompt/Secret 全文。
+          additionalProperties: true
+      additionalProperties: true
+    ObservabilityTimelineResponse:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          description: 按 ts 升序（产品约定；终裁见实现）。
+          items:
+            $ref: "#/components/schemas/ObservabilityTimelineEvent"
+      additionalProperties: true
+    ToolCallDetail:
+      type: object
+      description: "FR-MC803"
+      properties:
+        toolId:
+          type: string
+        toolCallSeq:
+          type: integer
+        invocationState:
+          $ref: "#/components/schemas/InvocationState"
+        phase:
+          type: string
+          description: 遗留 start|success|fail；与 **overview §2.1** 兼容说明同窗。
+        durationMs:
+          type: integer
+          nullable: true
+        agentSubAccountId:
+          type: string
+          nullable: true
+      additionalProperties: true
+    ToolCallsPage:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/ToolCallDetail"
+      additionalProperties: true
+    LlmUsageSummary:
+      type: object
+      description: |
+        **FR-MC804** 计量摘要；**禁止**默认返回 **messages 全文**（**SC-PM-09 / overview 脱敏** 同窗）。
+      properties:
+        modelId:
+          type: string
+        inputTokens:
+          type: integer
+          nullable: true
+        outputTokens:
+          type: integer
+          nullable: true
+        totalTokens:
+          type: integer
+          nullable: true
+      additionalProperties: true
+    SearchHit:
+      type: object
+      description: >-
+        FR-MC802 单列命中；具体形状所内终裁，须能 join overview §2 列集。
+      additionalProperties: true
+    SearchPage:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/SearchHit"
+        nextCursor:
+          type: string
+          nullable: true
+      additionalProperties: true
+    ObservabilityExecutionSummary:
+      type: object
+      description: |
+        **运行运营 · 执行记录** 列表行（控制台 `runtime.executions`）；**不**承载完整 **`FR-MC801`** 时间线 — **见** **`GET .../executions/{executionId}/timeline`**。
+        **字段下限** **与** [`admin-console/page-specs.md`](../../requirements/admin-console/page-specs.md) **执行列表** **同窗**（intent、运行态、阶段、重试、时间等）。
+      required:
+        - executionId
+        - createdAt
+      properties:
+        executionId:
+          allOf:
+            - $ref: "./identity-schemas.yaml#/components/schemas/ExecutionId"
+        sessionId:
+          nullable: true
+          allOf:
+            - $ref: "./identity-schemas.yaml#/components/schemas/SessionId"
+        userIdMasked:
+          nullable: true
+          allOf:
+            - $ref: "./identity-schemas.yaml#/components/schemas/UserIdMasked"
+        scenarioId:
+          nullable: true
+          allOf:
+            - $ref: "./identity-schemas.yaml#/components/schemas/ScenarioId"
+        orchestrationVersion:
+          type: string
+          nullable: true
+          description: 与 `agent-orchestration` 寄存器 / 控制台 **运行场景** 对签之版本快照（可空）。
+        intent:
+          type: string
+          nullable: true
+          description: 用户或业务意图摘要（运营可读）。
+        status:
+          type: string
+          nullable: true
+          description: 运行态（展示枚举由实现冻结；示例 `CREATED`、`RUNNING`、`COMPLETED`、`FAILED`、`BLOCKED`、`UNKNOWN`）。
+        currentStage:
+          type: string
+          nullable: true
+          description: 编排当前阶段（机读或展示）。
+        retries:
+          type: integer
+          minimum: 0
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        startedAt:
+          type: string
+          format: date-time
+          nullable: true
+        durationMs:
+          type: integer
+          nullable: true
+        outcome:
+          type: string
+          nullable: true
+          description: 业务终态 / 契约 outcome（如 `PER_EXECUTION_FINAL`、`BILLING_BLOCKED`、`UNKNOWN`、`RUNNING`）。
+      additionalProperties: true
+    ObservabilityExecutionsPage:
+      type: object
+      required: [items]
+      description: |
+        **`listObservabilityExecutions`** 分页响应；**`nextCursor`** **opaque** — **与** **`searchObservabilityEvents`** **分页语义** **同窗**（**`pageSize` 上界** **见** path）。
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/ObservabilityExecutionSummary"
+        nextCursor:
+          type: string
+          nullable: true
+      additionalProperties: true

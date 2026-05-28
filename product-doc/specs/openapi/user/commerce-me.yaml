@@ -1,0 +1,57 @@
+openapi: 3.0.3
+info:
+  title: "用户侧 — me/commerce（订阅摘要 · FR-B17）"
+  version: "2026-05-26"
+  description: |
+    **Phase 2** **对客** **权益摘要**；与 **`design/api`** **「用户侧 `me/commerce/*`」** **同窗**。买包 PSP 链路 **仅** **`design`/实现 MR**，**此处**不做支付表单。
+    Schemas：**`../components/billing-schemas.yaml`**（`MeCommerceEntitlementsSummary`）。
+  contact:
+    name: "Jesson"
+    email: Jesson@chainup.com
+servers:
+  - url: https://api.example.invalid
+    description: 所内替换
+tags:
+  - name: commerce_phase2
+    description: FR-B17；与 onboarding BFF 划分见 design/api
+paths:
+  "/api/v1/me/commerce/entitlements/summary":
+    get:
+      tags: [commerce_phase2]
+      summary: "当前用户 Capability 桶剩余与展示（FR-B17）"
+      operationId: getMyCommerceEntitlementsSummary
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/billing-schemas.yaml#/components/schemas/MeCommerceEntitlementsSummary"
+  "/api/v1/me/commerce/consumptions":
+    get:
+      tags: [commerce_phase2]
+      summary: "Capability 核销流水分页（FR-WEB08～09 · implementation MR）"
+      operationId: listMyCommerceConsumptions
+      parameters:
+        - name: cursor
+          in: query
+          schema: { type: string }
+        - name: pageSize
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 100, default: 50 }
+      responses:
+        "200":
+          description: "items + nextCursor；行字段同窗 commerce-model §5.3"
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items:
+                    type: array
+                    items:
+                      type: object
+                      additionalProperties: true
+                  nextCursor:
+                    type: string
+                    nullable: true

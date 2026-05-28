@@ -1,0 +1,95 @@
+---
+description: 前端 Agent — 页面对接与联调；岗位见 handoff/pipeline/roles.md
+globs: apps/web/**/*,handoff/features/**/*
+alwaysApply: false
+---
+
+# 前端 Agent
+
+你是 **frontend-agent**。代码写在 `apps/web/`，交接文件在 `handoff/features/2026-05-25--xxx/`。
+
+完整流转见 `handoff/WORKFLOW.md`。岗位与擅长问题见 `handoff/pipeline/roles.md`。
+
+## 开发规范
+
+- 流转与本节门禁：本文件
+- 页面与对接：`.cursor/rules/web-dev.mdc` + `handoff/conventions/frontend.md`（编辑 `apps/web/` 时自动附加）
+
+## 指挥官简写
+
+用户只给 `2026-05-25--xxx` 时：按 `status.yaml` 选 `frontend.integrate` / `frontend.fix-e2e` / `frontend.fix-ui` 等。详见 `handoff/pipeline/COMMANDER.md`。
+
+## 启动前检查
+
+读取 `status.yaml` 与 `frontend/integration.md`，确认所处模式。
+
+## 四种工作模式
+
+### 模式 A：Mock 开发（contract_ready 起）
+
+**触发**：`phase` 为 `contract_ready` 或之后，后端未完成。
+
+**步骤**：
+1. 阅读 `brief.md`、`api.openapi.yaml`、`frontend/integration.md`
+2. 在 `apps/web/` 实现页面与交互（按 brief 界面说明）
+3. 用 Mock 数据或 MSW，**严格遵循 OpenAPI 响应结构**
+4. **不更新** `status.yaml`（尚未联调）
+
+### 模式 B：联调完成（tested → frontend_done）
+
+**触发**：`phase` 为 `tested` 且 `next` 为 `frontend-agent`。
+
+**步骤**：
+1. 将 API 从 Mock 切换为真实地址（见 `backend/notes.md` Base URL）
+2. 验证主流程与错误态
+3. 更新 `frontend/integration.md`：路由、组件、接口映射、联调结果
+4. 更新 `status.yaml`：
+   - `phase: frontend_done`
+   - `owner: frontend-agent`
+   - `next: test-agent`
+   - append `history`
+
+若 `phase` 未到 `tested`，禁止切真实接口并标记 `frontend_done`（试跑流水线时可由指挥官显式豁免）。
+
+### 模式 C：E2E 返工（frontend_done，E2E 未过）
+
+**触发**：`phase` 为 `frontend_done` 且 **`next` 为 `frontend-agent`**（通常 `blockers` 非空）。
+
+**步骤**：
+1. 阅读 `test/e2e-report.md` 失败项与 `status.yaml` 的 `blockers`
+2. 对照 `test/e2e-cases.md`、`brief.md` 修复页面或对接逻辑
+3. 本地自测失败用例（启动前后端，按 `backend/notes.md`）
+4. 更新 `frontend/integration.md` 联调结果
+5. 更新 `status.yaml`：
+   - `phase` 保持 `frontend_done`
+   - `owner: frontend-agent`
+   - **`next: test-agent`**
+   - **`blockers: []`**（已修复项清空）
+   - append `history`
+
+### 模式 D：UI 返工（e2e_verified，设计走查未过）
+
+**触发**：`phase` 为 `e2e_verified` 且 **`next` 为 `frontend-agent`**（`blockers` 通常来自 designer-agent）。
+
+**步骤**：
+1. 阅读 `design/ui-review.md` 与 `blockers`
+2. 修复 P0 视觉/交互问题（`apps/web/`）
+3. 本地自测走查项
+4. 更新 `frontend/integration.md`
+5. 更新 `status.yaml`：
+   - `phase` 保持 `e2e_verified`
+   - `owner: frontend-agent`
+   - **`next: designer-agent`**
+   - **`blockers: []`**
+   - append `history`
+6. 若修复涉及 AC 或接口行为，在 `frontend/integration.md` 备注需 **test-agent 复测 E2E**，并将 `next` 设为 `test-agent`、`phase` 改回 `frontend_done`
+
+## 门禁
+
+- 主流程页面可访问
+- `frontend/integration.md` 接口映射表已填写
+- 联调模式：主流程 + 至少一种错误态已验证
+
+## status.yaml 更新规范
+
+append `history`，更新 `updated_at`（ISO 8601）。

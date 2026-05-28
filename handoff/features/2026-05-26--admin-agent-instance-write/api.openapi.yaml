@@ -1,0 +1,218 @@
+openapi: 3.0.3
+info:
+  title: "2026-05-26--admin-agent-instance-write — Admin Agent instance I02/I04/I05"
+  description: |
+    增量契约：Admin **实例写路径**（对齐 `product-doc/specs/openapi/admin/agent-management.yaml`）。
+    鉴权：Bearer（Admin 控制台 JWT）。响应错误体为 FastAPI **`{ code, message, details? }`**（非 `{ code: 0 }` 信封）。
+    读路径 I01/I03、Runtime、I06 见存量 OpenAPI / `BACKEND_SPEC.md`。
+  version: "0.1.0"
+
+servers:
+  - url: http://127.0.0.1:8080
+    description: 本地 Agent API
+
+paths:
+  /api/v1/admin/agents/instances:
+    post:
+      summary: 创建实例 I02（AC-1、AC-2、AC-6）
+      operationId: adminCreateAgentInstance
+      tags: [admin-agent-instances]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminCreateAgentInstanceRequest"
+            example:
+              telegramUserId: "88001001"
+              templateId: tmpl_test
+              exchangeSubAccountUserId: sub_88001001
+      responses:
+        "201":
+          description: 创建成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminAgentInstanceCreatedResponse"
+        "422":
+          description: 门禁/配额/校验失败（如 AGENT_QUOTA_EXCEEDED、AGENT_GLOBAL_OFF）
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AgentAdminError"
+
+  /api/v1/admin/agents/instances/{instanceId}:
+    parameters:
+      - $ref: "#/components/parameters/InstanceId"
+    patch:
+      summary: 更新实例 I05 — instanceOverrides 白名单（AC-3）
+      operationId: adminPatchAgentInstance
+      tags: [admin-agent-instances]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminPatchAgentInstanceRequest"
+            examples:
+              preferredLanguage:
+                value:
+                  instanceOverrides:
+                    preferredLanguage: zh-Hans
+              invalidKey:
+                value:
+                  instanceOverrides:
+                    secretApiKey: x
+      responses:
+        "200":
+          description: 更新后的实例详情（AdminAgentInstanceItem 形状）
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminAgentInstanceItemRef"
+        "404":
+          description: AGENT_ADMIN_INSTANCE_NOT_FOUND
+        "422":
+          description: unknownKeys / runtimeState 无效等
+
+  /api/v1/admin/agents/instances/{instanceId}/binding:
+    parameters:
+      - $ref: "#/components/parameters/InstanceId"
+    post:
+      summary: 子账户登记 I04（AC-4）
+      operationId: adminBindAgentInstanceSubaccount
+      tags: [admin-agent-instances]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminBindInstanceSubaccountRequest"
+            example:
+              exchangeSubAccountUserId: sub_rebound_01
+      responses:
+        "200":
+          description: 绑定登记后的实例详情
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminAgentInstanceItemRef"
+        "404":
+          description: 实例不存在
+        "422":
+          description: 空 subAccountId 等
+    delete:
+      summary: 解绑 API 托管行 I04（AC-4、AC-5）
+      operationId: adminUnbindAgentInstanceSubaccount
+      tags: [admin-agent-instances]
+      responses:
+        "204":
+          description: 已删除 telegram_agent_trading_binding；保留 agent_instance
+        "404":
+          description: 实例不存在
+
+components:
+  parameters:
+    InstanceId:
+      name: instanceId
+      in: path
+      required: true
+      schema:
+        type: string
+        example: inst_abc123
+
+  schemas:
+    AdminCreateAgentInstanceRequest:
+      type: object
+      required: [telegramUserId]
+      properties:
+        telegramUserId:
+          type: string
+          description: Telegram 用户 id（数值串）
+        templateId:
+          type: string
+        templateVersion:
+          type: string
+        exchangeSubAccountUserId:
+          type: string
+          description: 子账户标识；密钥仍走 Deeplink
+
+    AdminAgentInstanceCreatedResponse:
+      type: object
+      properties:
+        instanceId:
+          type: string
+        userId:
+          type: string
+        templateId:
+          type: string
+        runtimeInstanceState:
+          type: string
+          enum: [RUNNING, PAUSED, STOPPED, ERROR]
+        agentSubAccountId:
+          type: string
+          nullable: true
+
+    InstanceOverrides:
+      type: object
+      description: 白名单键；未知键 PATCH 拒绝
+      properties:
+        preferredLanguage:
+          type: string
+          example: zh-Hans
+        cooldownPreferenceSec:
+          type: integer
+          minimum: 0
+          maximum: 86400
+        symbolPreference:
+          type: string
+        voiceOutputEnabled:
+          type: boolean
+      additionalProperties: false
+
+    AdminPatchAgentInstanceRequest:
+      type: object
+      properties:
+        instanceOverrides:
+          $ref: "#/components/schemas/InstanceOverrides"
+        runtimeState:
+          type: string
+          enum: [RUNNING, PAUSED, STOPPED, ERROR]
+          description: 可选；与 Runtime API 同窗，本包以 overrides 为主
+
+    AdminBindInstanceSubaccountRequest:
+      type: object
+      properties:
+        exchangeSubAccountUserId:
+          type: string
+        subAccountId:
+          type: string
+          description: 与 exchangeSubAccountUserId 二选一
+
+    AdminAgentInstanceItemRef:
+      type: object
+      description: 与 GET 详情一致；见 server AdminAgentInstanceItem
+      additionalProperties: true
+      properties:
+        instanceId:
+          type: string
+        userId:
+          type: string
+        exchangeSubAccountUserId:
+          type: string
+        tradingApiBindingStatus:
+          type: string
+          enum: [NONE, BOUND, UNKNOWN]
+        instanceOverrides:
+          $ref: "#/components/schemas/InstanceOverrides"
+
+    AgentAdminError:
+      type: object
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        details:
+          type: object
+          additionalProperties: true

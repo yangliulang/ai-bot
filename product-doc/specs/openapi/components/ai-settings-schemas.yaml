@@ -1,0 +1,140 @@
+openapi: 3.0.3
+info:
+  title: "ChainUp AI Agent — AI Settings 同窗 Schemas（fragment）"
+  version: "2026-05-09"
+  description: |
+    供 `admin/ai-settings.yaml` 以 `$ref` 引用。
+    能力面同窗 [`ai-settings/functions.md`](../../requirements/domains/admin/ai-settings/functions.md) **FR-MC401～408**、`rules.md`；
+    **`providerId` / `modelId`** 与 [`observability/overview.md`](../../requirements/observability/overview.md) **§2**、**FR-MC804** 字段名同窗。
+    响应中不得含 LLM Provider 完整 API Key（仅 `secretRef` 或已配置语义）。
+paths: {}
+components:
+  schemas:
+    ProviderId:
+      type: string
+      description: 与 observability §2 / FR-MC804 同窗。
+    ModelId:
+      type: string
+      description: 与 observability §2 / FR-MC804 同窗。
+    LlmProviderSummary:
+      type: object
+      required: [providerId]
+      properties:
+        providerId:
+          $ref: "#/components/schemas/ProviderId"
+        displayName:
+          type: string
+        baseUrl:
+          type: string
+        secretRef:
+          type: string
+          description: 可空；与 AI Settings rules 脱敏同窗。
+        configured:
+          type: boolean
+      additionalProperties: true
+    LlmProviderDetail:
+      allOf:
+        - $ref: "#/components/schemas/LlmProviderSummary"
+      description: FR-MC401 详情。
+    LlmProviderUpsert:
+      type: object
+      properties:
+        displayName:
+          type: string
+        baseUrl:
+          type: string
+        secretRef:
+          type: string
+      additionalProperties: true
+      description: POST/PATCH body 下限；乐观锁见 If-Match。
+    LlmProviderList:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/LlmProviderSummary"
+      additionalProperties: true
+    LlmModelSummary:
+      type: object
+      required: [modelId]
+      properties:
+        modelId:
+          $ref: "#/components/schemas/ModelId"
+        providerId:
+          $ref: "#/components/schemas/ProviderId"
+        status:
+          type: string
+          description: 启用/下架等；所内 enum 终裁。
+        contextWindowTokens:
+          type: integer
+      additionalProperties: true
+    LlmModelList:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/LlmModelSummary"
+      additionalProperties: true
+    LlmModelPatch:
+      type: object
+      description: 启用/下架/上下文窗；与 agent-management defaultModelRef 允许集同窗。
+      properties:
+        status:
+          type: string
+        contextWindowTokens:
+          type: integer
+      additionalProperties: true
+    OrchestrationExecutionBudget:
+      type: object
+      description: |
+        与 [`execution-lifecycle.md`](../../requirements/domains/agent/agent-orchestration/execution-lifecycle.md) **§4 `FR-AO06`**、[`design/api.md`](../../design/api.md) **「编排执行预算」** 同窗。
+        嵌于 `AiGatewayDefaults`；计数口径见 [`runtime-contract.md`](../../requirements/domains/admin/tool-management/runtime-contract.md) **§3.1**。
+      required:
+        - maxToolCallsPerExecution
+        - maxOrchestrationStepsPerExecution
+      properties:
+        maxToolCallsPerExecution:
+          type: integer
+          minimum: 1
+          description: 同一 `executionId` 下达终态之工具逻辑调用次数上限（`RETRYING` 同 `toolCallSeq` 计一次）。
+        maxOrchestrationStepsPerExecution:
+          type: integer
+          minimum: 1
+          description: 同一 `executionId` 下编排步骤（`agent.orchestration.step` 或等价 `stepSeq`）单调计数上限。
+        maxModelTurnsPerExecution:
+          type: integer
+          minimum: 1
+          nullable: true
+          description: 可选；`null` 表示不设独立模型回合顶（产品与计费启用时再冻结口径）。
+      additionalProperties: false
+    AiGatewayDefaults:
+      type: object
+      description: FR-MC403～406 网关默认 profile；形状所内终裁。含 **FR-MC408** / **`FR-AO06`** 之 `orchestrationExecutionBudget`。
+      properties:
+        defaultProviderId:
+          $ref: "#/components/schemas/ProviderId"
+        defaultModelId:
+          $ref: "#/components/schemas/ModelId"
+        orchestrationExecutionBudget:
+          $ref: "#/components/schemas/OrchestrationExecutionBudget"
+      additionalProperties: true
+    AiHealthPolicy:
+      type: object
+      description: FR-MC407 阈值/周期；可与 defaults 合并 resource 的二选终裁。
+      additionalProperties: true
+    AiHealthProbeResult:
+      type: object
+      description: FR-MC407 同步 200 摘要。
+      properties:
+        ok:
+          type: boolean
+        latencyMs:
+          type: integer
+        checkedAt:
+          type: string
+          format: date-time
+        message:
+          type: string
+      additionalProperties: true

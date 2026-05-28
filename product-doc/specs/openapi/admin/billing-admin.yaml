@@ -1,0 +1,281 @@
+openapi: 3.0.3
+info:
+  title: "ChainUp AI Agent — 运营侧 Billing (admin/billing)"
+  version: "2026-05-26"
+  description: |
+    PATH 与 design/api「运营侧 Billing API」专节逐条对齐；与 internal/me 同窗 **CC-P0-03**（**Token 轨** **`FR-MC501～508`**）。
+    **Phase 2** **`admin/billing/commerce/*`**（**`FR-MC509～512`**）同窗 **`commerce-model`** / **`internal/billing-entitlements`** · **不**扩写 **CC-P0-03**。
+    Schemas：`../components/billing-schemas.yaml`（**D-5**、**D-12** 同窗字段见 components）。
+  contact:
+    name: "Jesson"
+    email: Jesson@chainup.com
+servers:
+  - url: https://api.example.invalid
+    description: 所内替换
+tags:
+  - name: contract
+    description: FR-MC501～508
+  - name: commerce_phase2
+    description: FR-MC509～512 · 商业轨运营面
+paths:
+  "/api/v1/admin/billing/summary":
+    get:
+      tags: [contract]
+      summary: "计费健康摘要 FR-MC501"
+      operationId: getAdminBillingSummary
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/billing-schemas.yaml#/components/schemas/AdminBillingSummaryResponse"
+  "/api/v1/admin/billing/pricing":
+    get:
+      tags: [contract]
+      summary: "费率与最小扣费读 FR-MC502"
+      operationId: getAdminBillingPricing
+      responses:
+        "200":
+          description: 所内终裁 schema
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+    patch:
+      tags: [contract]
+      summary: "费率与最小扣费写 FR-MC502（双签/审计同窗 rules）"
+      operationId: patchAdminBillingPricing
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        "200":
+          description: OK
+        "409":
+          description: 乐观锁/并发
+  "/api/v1/admin/billing/traces":
+    get:
+      tags: [contract]
+      summary: "单笔协查 query FR-MC503"
+      operationId: searchAdminBillingTraces
+      parameters:
+        - name: userId
+          in: query
+          schema:
+            $ref: "../components/identity-schemas.yaml#/components/schemas/UserIdMasked"
+        - name: executionId
+          in: query
+          schema:
+            $ref: "../components/identity-schemas.yaml#/components/schemas/ExecutionId"
+        - name: billingTraceId
+          in: query
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+  "/api/v1/admin/billing/traces/{billingTraceId}":
+    get:
+      tags: [contract]
+      summary: "按 billingTraceId 协查 FR-MC503"
+      operationId: getAdminBillingTrace
+      parameters:
+        - name: billingTraceId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+  "/api/v1/admin/billing/charges":
+    get:
+      tags: [contract]
+      summary: "平台流水列表 FR-MC504"
+      operationId: listAdminBillingCharges
+      parameters:
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 500
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+  "/api/v1/admin/billing/refunds":
+    post:
+      tags: [contract]
+      summary: "退款/冲正工单 FR-MC505 · SC-B15"
+      operationId: createAdminBillingRefund
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "../components/billing-schemas.yaml#/components/schemas/AdminRefundCreateRequest"
+      responses:
+        "200":
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/billing-schemas.yaml#/components/schemas/Problem"
+  "/api/v1/admin/billing/gateway-errors":
+    get:
+      tags: [contract]
+      summary: "扣费网关错误聚合 FR-MC506"
+      operationId: listAdminBillingGatewayErrors
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+  "/api/v1/admin/billing/exports":
+    post:
+      tags: [contract]
+      summary: "异步导出任务 FR-MC507"
+      operationId: createAdminBillingExport
+      responses:
+        "202":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/billing-schemas.yaml#/components/schemas/AsyncTaskAccepted"
+  "/api/v1/admin/billing/exports/{taskId}":
+    get:
+      tags: [contract]
+      summary: "导出任务状态 FR-MC507"
+      operationId: getAdminBillingExportTask
+      parameters:
+        - name: taskId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: 完成时可含短时下载 URL（D-18）
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+  "/api/v1/admin/billing/reconciliation-exports":
+    get:
+      tags: [contract]
+      summary: "财务对账文件 FR-MC508（与 D-12 对签字段同窗）"
+      operationId: getAdminBillingReconciliationExport
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "202":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/billing-schemas.yaml#/components/schemas/AsyncTaskAccepted"
+  "/api/v1/admin/billing/commerce/capability-catalog":
+    get:
+      tags: [commerce_phase2]
+      summary: "套餐/Capability SKU 映射矩阵读（FR-MC509）"
+      operationId: getAdminBillingCommerceCapabilityCatalog
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/billing-schemas.yaml#/components/schemas/AdminCommerceCapabilityCatalog"
+    patch:
+      tags: [commerce_phase2]
+      summary: "套餐/Capability SKU 映射矩阵写 · 双签/审计同窗 rules（FR-MC509）"
+      operationId: patchAdminBillingCommerceCapabilityCatalog
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "../components/billing-schemas.yaml#/components/schemas/AdminCommerceCapabilityCatalog"
+      responses:
+        "200":
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/billing-schemas.yaml#/components/schemas/Problem"
+        "409":
+          description: 乐观锁
+  "/api/v1/admin/billing/commerce/users/{userId}/overview":
+    get:
+      tags: [commerce_phase2]
+      summary: "按用户协查订阅·包余额·可与 execution join（FR-MC510）"
+      operationId: getAdminBillingCommerceUserOverview
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            $ref: "../components/identity-schemas.yaml#/components/schemas/UserIdMasked"
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/billing-schemas.yaml#/components/schemas/AdminCommerceUserOverview"
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/billing-schemas.yaml#/components/schemas/Problem"
+  "/api/v1/admin/billing/commerce/revenue-export-template":
+    get:
+      tags: [commerce_phase2]
+      summary: "加购包/订阅收入导出列模板（FR-MC511 · 可与 FR-MC508 合并实现）"
+      operationId: getAdminBillingCommerceRevenueExportTemplate
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/billing-schemas.yaml#/components/schemas/AdminCommerceRevenueExportTemplate"
+  "/api/v1/admin/billing/commerce/quota-blocked-summary":
+    get:
+      tags: [commerce_phase2]
+      summary: "配额用尽/阻断健康看板子集（FR-MC512）"
+      operationId: getAdminBillingCommerceQuotaBlockedSummary
+      parameters:
+        - name: window
+          in: query
+          schema:
+            type: string
+          description: 统计窗口示意；终裁在所内 MR
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/billing-schemas.yaml#/components/schemas/AdminCommerceQuotaBlockedSummary"

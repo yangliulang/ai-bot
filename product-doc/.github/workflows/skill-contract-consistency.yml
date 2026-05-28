@@ -1,0 +1,47 @@
+# Skill Contract · Git 正文 + registry + Vitest P0（同窗 eval.skill.*）
+name: skill-contract-consistency
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install PyYAML for skill manifest checker
+        run: pip install pyyaml
+
+      - name: Skill spec contract-complete (Python)
+        run: python3 specs/requirements/skill-specs/scripts/check_skill_contract_complete.py
+
+      - name: Runtime Publish bundle (11 skills · Git 全文快照)
+        run: |
+          node specs/requirements/skill-specs/scripts/build_runtime_publish_bundle.mjs
+          node specs/requirements/skill-specs/scripts/build_runtime_publish_bundle.mjs --check
+
+      - name: Registry ⊆ routing-engine
+        run: python3 specs/requirements/prompts/library/scripts/check_registry_vs_routing_engine.py
+
+      - name: governance-map ↔ registry promptPackId
+        run: python3 specs/requirements/prompts/library/scripts/check_governance_map_vs_registry.py
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: src/admin/package-lock.json
+
+      - name: Install admin deps
+        run: npm ci --prefix src/admin
+
+      - name: Vitest (skillContract + repo gates)
+        run: npm test --prefix src/admin

@@ -1,0 +1,48 @@
+feature: 2026-05-27--skill-publish-effective
+title: Skill Publish 生效链
+phase: done
+owner: product-agent
+next: null
+artifacts:
+  brief: brief.md
+  api: api.openapi.yaml
+  test_coverage: test/coverage.md
+blockers: []
+history:
+  - at: "2026-05-27T12:00:00+0800"
+    phase: planned
+    by: product-agent
+    note: 从模板创建功能包
+  - at: "2026-05-27T19:00:00+0800"
+    phase: contract_ready
+    by: product-agent
+    note: 定稿 brief/OpenAPI/测试追溯（P-07 SK-B1～B3/B5）；含页面是；check-test-coverage.sh；依赖 runtime-write-path done
+  - at: "2026-05-26T18:05:00+0800"
+    phase: backend_done
+    by: backend-agent
+    note: SK-B01 迁移+种子；Admin/Internal/Runtime DB effective；Prompt publish skillSpecRef 门禁；pytest 13 passed
+  - at: "2026-05-26T18:32:00+0800"
+    phase: tested
+    by: test-agent
+    note: P0 TC-01～TC-08 全通过；test_skill_publish_effective.py + write_path 13 passed；report.md
+  - at: "2026-05-26T18:35:00+0800"
+    phase: frontend_done
+    by: frontend-agent
+    note: /ai/tool-registry 联调 skill-specs API；admin-skill-specs.ts；Prompt skillSpecRef 错误文案
+  - at: "2026-05-26T20:00:00+0800"
+    phase: frontend_done
+    by: frontend-agent
+    note: UI 对齐 product-doc 原型（统计卡·Tab·三列表格·SkillOperationDrawer）；B/C/审计 Tab 占位
+  - at: "2026-05-26T18:45:00+0800"
+    phase: e2e_verified
+    by: test-agent
+    note: E2E-01～03 P0 全通过；Publish 0.2.0-e2e + 回退错误态；e2e-report.md；环境需 0029 迁移
+  - at: "2026-05-26T19:10:00+0800"
+    phase: ui_reviewed
+    by: designer-agent
+    note: 走查 /ai/tool-registry 通过；P1 Tab 计数/列表冻结徽章；AC-7 代码已接未页复现；design/ui-review.md
+  - at: "2026-05-26T19:25:00+0800"
+    phase: done
+    by: product-agent
+    note: 产品验收 AC-1～9；API TC-01～08 + E2E-01～03；P1 UI-P1-01～03 记入 backlog 迭代；closure P-07 SK-B1～B3/B5
+updated_at: "2026-05-26T19:25:00+0800"

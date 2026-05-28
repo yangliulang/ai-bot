@@ -1,0 +1,253 @@
+openapi: 3.0.3
+info:
+  title: "Coobit — 子账户合约私有 API"
+  version: "2026-05-09"
+  description: |
+    **独立 futures host**；与 [`design/api.md`](../../design/api.md) **矩阵「合约」** 及 **REST↔WS 对账** 行同窗。
+    **CC-P0-02 · B**：**已列** **`paths`** **与** **矩阵** **合约行情/账户/开平仓** **行** **同窗**（**2026-05-12**）。
+    同窗 [`exchange-schemas.yaml`](../components/exchange-schemas.yaml)。
+  contact:
+    name: "Jesson"
+    email: Jesson@chainup.com
+servers:
+  - url: https://futuresapi.example.invalid
+    description: 合约网关占位；所内冻结
+externalDocs:
+  description: 产业锚/扩展阅读
+  url: "https://exchangedocsv2.gitbook.io/open-api-doc-v2/futures.md"
+tags:
+  - name: futures-market
+  - name: futures-account
+  - name: futures-order
+  - name: futures-position
+paths:
+  "/fapi/v1/ping":
+    get:
+      tags: [futures-market]
+      summary: "连通探活"
+      operationId: coobitFuturesGetPing
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/exchange-schemas.yaml#/components/schemas/CoobitJsonValue"
+  "/fapi/v1/time":
+    get:
+      tags: [futures-market]
+      summary: "服务器时间"
+      operationId: coobitFuturesGetTime
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/exchange-schemas.yaml#/components/schemas/CoobitJsonValue"
+  "/fapi/v1/contracts":
+    get:
+      tags: [futures-market]
+      summary: "合约元数据"
+      operationId: coobitFuturesGetContracts
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/exchange-schemas.yaml#/components/schemas/CoobitJsonValue"
+  "/fapi/v1/depth":
+    get:
+      tags: [futures-market]
+      summary: "深度"
+      operationId: coobitFuturesGetDepth
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/exchange-schemas.yaml#/components/schemas/CoobitJsonValue"
+  "/fapi/v1/ticker":
+    get:
+      tags: [futures-market]
+      summary: "Ticker"
+      operationId: coobitFuturesGetTicker
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/exchange-schemas.yaml#/components/schemas/CoobitJsonValue"
+  "/fapi/v1/ticker_all":
+    get:
+      tags: [futures-market]
+      summary: "全市场 ticker"
+      operationId: coobitFuturesGetTickerAll
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/exchange-schemas.yaml#/components/schemas/CoobitJsonValue"
+  "/fapi/v1/index":
+    get:
+      tags: [futures-market]
+      summary: "指数/标记价相关"
+      operationId: coobitFuturesGetIndex
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/exchange-schemas.yaml#/components/schemas/CoobitJsonValue"
+  "/fapi/v1/klines":
+    get:
+      tags: [futures-market]
+      summary: "K 线"
+      operationId: coobitFuturesGetKlines
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/exchange-schemas.yaml#/components/schemas/CoobitJsonValue"
+  "/fapi/v1/account":
+    get:
+      tags: [futures-account]
+      summary: "合约账户 · 持仓/保证金摘要"
+      operationId: coobitFuturesGetAccount
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/exchange-schemas.yaml#/components/schemas/CoobitJsonValue"
+  "/fapi/v1/order":
+    get:
+      tags: [futures-order]
+      summary: "单笔委托查询"
+      operationId: coobitFuturesGetOrder
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/exchange-schemas.yaml#/components/schemas/CoobitJsonValue"
+    post:
+      tags: [futures-order]
+      summary: "开平仓下单 · P0"
+      operationId: coobitFuturesPostOrder
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/exchange-schemas.yaml#/components/schemas/CoobitJsonValue"
+  "/fapi/v1/openOrders":
+    get:
+      tags: [futures-order]
+      summary: "开放委托"
+      operationId: coobitFuturesGetOpenOrders
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/exchange-schemas.yaml#/components/schemas/CoobitJsonValue"
+  "/fapi/v1/cancel":
+    post:
+      tags: [futures-order]
+      summary: "撤单"
+      operationId: coobitFuturesPostCancel
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/exchange-schemas.yaml#/components/schemas/CoobitJsonValue"
+  "/fapi/v1/cancel_all":
+    post:
+      tags: [futures-order]
+      summary: "全撤"
+      operationId: coobitFuturesPostCancelAll
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/exchange-schemas.yaml#/components/schemas/CoobitJsonValue"
+  "/fapi/v1/myTrades":
+    get:
+      tags: [futures-order]
+      summary: "成交明细"
+      operationId: coobitFuturesGetMyTrades
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/exchange-schemas.yaml#/components/schemas/CoobitJsonValue"
+  "/fapi/v1/orderHistorical":
+    post:
+      tags: [futures-order]
+      summary: "历史委托（POST）"
+      operationId: coobitFuturesPostOrderHistorical
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/exchange-schemas.yaml#/components/schemas/CoobitJsonValue"
+  "/fapi/v1/profitHistorical":
+    post:
+      tags: [futures-order]
+      summary: "历史盈亏（POST）"
+      operationId: coobitFuturesPostProfitHistorical
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/exchange-schemas.yaml#/components/schemas/CoobitJsonValue"
+  "/fapi/v1/edit_lever":
+    post:
+      tags: [futures-position]
+      summary: "调杠杆"
+      operationId: coobitFuturesPostEditLever
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/exchange-schemas.yaml#/components/schemas/CoobitJsonValue"
+  "/fapi/v1/edit_position_margin":
+    post:
+      tags: [futures-position]
+      summary: "调仓位保证金"
+      operationId: coobitFuturesPostEditPositionMargin
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/exchange-schemas.yaml#/components/schemas/CoobitJsonValue"
+  "/fapi/v1/edit_user_margin_model":
+    post:
+      tags: [futures-position]
+      summary: "保证金模式"
+      operationId: coobitFuturesPostEditUserMarginModel
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/exchange-schemas.yaml#/components/schemas/CoobitJsonValue"
+  "/fapi/v1/edit_user_position_model":
+    post:
+      tags: [futures-position]
+      summary: "持仓模式"
+      operationId: coobitFuturesPostEditUserPositionModel
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/exchange-schemas.yaml#/components/schemas/CoobitJsonValue"

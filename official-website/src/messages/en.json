@@ -1,0 +1,416 @@
+{
+  "metadata": {
+    "home": {
+      "title": "ChainUp AI Agent — Natural Language Trading on Telegram",
+      "description": "AI-powered exchange agent on Telegram. Query markets, manage orders, and automate workflows on isolated Agent sub-accounts with confirm-before-write safety."
+    },
+    "features": {
+      "title": "Features — ChainUp AI Agent",
+      "description": "Explore natural-language trading, secure sub-accounts, confirm gates, and observability built for production exchange agents."
+    },
+    "guide": {
+      "title": "Getting Started — ChainUp AI Agent",
+      "description": "Step-by-step guide to enable your Agent sub-account, connect Telegram, and start trading with natural language."
+    }
+  },
+  "nav": {
+    "features": "Features",
+    "guide": "Guide",
+    "performance": "Performance",
+    "bind": "Bind TG",
+    "estimator": "Estimator",
+    "faq": "FAQ",
+    "startTour": "Product Tour",
+    "getStarted": "Get Started",
+    "openTelegram": "Open in Telegram"
+  },
+  "hero": {
+    "eyebrow": "Coobit × Telegram",
+    "tagline": "Agent reads. You confirm writes.",
+    "title": "AI-Powered Exchange Trading",
+    "subtitle": "Automated market queries, account insights, and guided order workflows — directly from Telegram. Funds stay on your Agent sub-account; every write requires your tap.",
+    "ctaTelegram": "Open in Telegram",
+    "ctaTour": "Take the tour"
+  },
+  "stats": {
+    "title": "Platform Performance",
+    "subtitle": "Live operational metrics — executions, latency, confirm rate, and active agents.",
+    "items": {
+      "executions": {
+        "label": "24h Executions",
+        "hint": "Rolling window"
+      },
+      "reads": {
+        "label": "Median Read Latency",
+        "hint": "P50 response"
+      },
+      "confirmRate": {
+        "label": "30d Confirm Rate",
+        "hint": "Type A accepted"
+      },
+      "agents": {
+        "label": "Active Agents",
+        "hint": "Bound sub-accounts"
+      }
+    }
+  },
+  "bindGuide": {
+    "eyebrow": "Telegram binding",
+    "title": "Bind your chat in four steps",
+    "subtitle": "Start from the official Bot, open the Agent bind page (same H5 as deeplink), save your sub-account API keys, then return to Telegram to trade.",
+    "steps": {
+      "0": {
+        "title": "Open the Telegram Bot",
+        "description": "Search for the official ChainUp Agent bot and send /start. The bot replies with a secure bind link."
+      },
+      "1": {
+        "title": "Open the bind Deeplink",
+        "description": "Tap the link in Telegram. It opens the Agent onboarding page at /onboarding/validate with your tg_* context prefilled."
+      },
+      "2": {
+        "title": "Validate and confirm binding",
+        "description": "Enter sub-account UID, API Key, and Secret on the H5 page. Confirm on the next screen to save the trading API binding."
+      },
+      "3": {
+        "title": "Chat in Telegram",
+        "description": "Return to the bot. Ask for prices, balances, and orders — writes still require Type A confirmation."
+      }
+    },
+    "openBot": "Open Telegram Bot",
+    "openBindPage": "Open bind page",
+    "safetyNote": "Only open bind links from the official bot or exchange. Never paste API secrets into unofficial sites.",
+    "visual": {
+      "botName": "ChainUp Agent",
+      "botStatus": "online",
+      "userHello": "/start",
+      "botWelcome": "Welcome. Tap below to bind this chat to your Agent sub-account.",
+      "bindButton": "Open bind page",
+      "deeplinkTag": "Agent bind H5",
+      "deeplinkHint": "Telegram passes tg_id and username into the onboarding URL automatically.",
+      "formTitle": "Validate sub-account API",
+      "fieldUidLabel": "Sub-account UID",
+      "fieldUidPlaceholder": "agentSubAccountUid",
+      "fieldKeyLabel": "API Key",
+      "fieldKeyPlaceholder": "••••••••••••",
+      "fieldSecretLabel": "Secret Key",
+      "fieldSecretPlaceholder": "••••••••••••",
+      "confirmBind": "Confirm binding",
+      "doneTitle": "Binding complete",
+      "doneHint": "Back in Telegram — try “What is BTC/USDT now?”"
+    }
+  },
+  "estimator": {
+    "title": "Token Usage Estimator",
+    "subtitle": "Model expected token billing from your sub-account USDT balance and usage profile.",
+    "balanceLabel": "Sub-account USDT balance",
+    "modeLabel": "Usage profile",
+    "modes": {
+      "light": {
+        "title": "Light",
+        "description": "~12 read queries / day, occasional writes"
+      },
+      "active": {
+        "title": "Active",
+        "description": "~40 mixed queries / day, regular automation"
+      }
+    },
+    "days": "{count} days",
+    "disclaimer": "Estimates only — actual billing depends on model usage, scenario complexity, and exchange matrix. Not financial advice."
+  },
+  "chart": {
+    "title": "Agent Activity Growth",
+    "subtitle": "Daily execution volume across read and write scenarios on Coobit.",
+    "period": "Last 12 weeks",
+    "axisStart": "Week 1",
+    "axisEnd": "Week 12"
+  },
+  "faq": {
+    "title": "Frequently Asked Questions",
+    "items": {
+      "what": {
+        "question": "What is ChainUp AI Agent?",
+        "answer": "An exchange-native AI agent that lets Coobit users query markets, inspect sub-account balances, and submit orders through natural language in Telegram — within the frozen API capability matrix."
+      },
+      "subaccount": {
+        "question": "Why a dedicated Agent sub-account?",
+        "answer": "Trading capital and token billing are isolated from your main ledger. You authorize creation via exchange deeplink; the agent never moves funds without explicit rules and your confirmation on writes."
+      },
+      "confirm": {
+        "question": "What is Type A confirmation?",
+        "answer": "Every write path (orders, cancels, config changes) surfaces a Telegram card you must tap to confirm before the exchange receives the request. No silent writes."
+      },
+      "billing": {
+        "question": "How does token billing work?",
+        "answer": "Usage-based token fees deduct from your Agent sub-account USDT balance. View statements through the exchange billing deeplink — not inside Telegram text alone."
+      },
+      "start": {
+        "question": "How do I get started?",
+        "answer": "Open Agent settings on Coobit (me/agent), authorize the sub-account, complete API binding, then follow the Telegram deeplink to bind your chat. VIP tier requirements apply."
+      },
+      "safe": {
+        "question": "Is my account safe?",
+        "answer": "The agent uses sub-account isolation, confirm-before-write gates, and audit trails. Crypto trading carries risk — never allocate more than you can afford to lose. Capabilities match the published API matrix only."
+      }
+    }
+  },
+  "ctaBand": {
+    "support": "Chat with us — Telegram support",
+    "telegram": "Open in Telegram",
+    "guideLink": "Read the full onboarding guide"
+  },
+  "features": {
+    "sectionTitle": "Built for real trading, not demos",
+    "sectionSubtitle": "Production-grade agent runtime with exchange API matrix compliance and full audit trails.",
+    "items": {
+      "nl": {
+        "title": "Natural language interface",
+        "description": "Ask for tickers, balances, and order status in plain language. Intent routing maps to frozen API capabilities."
+      },
+      "subaccount": {
+        "title": "Dedicated Agent sub-account",
+        "description": "Trading and token billing run on an isolated sub-account — never touching your main ledger without consent."
+      },
+      "confirm": {
+        "title": "Confirm-before-write",
+        "description": "Every write path requires explicit Type A confirmation in Telegram before hitting the exchange."
+      },
+      "billing": {
+        "title": "Transparent token billing",
+        "description": "Usage-based billing deducted from sub-account USDT. View statements via exchange billing deeplink."
+      },
+      "observability": {
+        "title": "Full observability",
+        "description": "Execution IDs, audit logs, and unknown-state handling — never silently fail a trade."
+      },
+      "i18n": {
+        "title": "Global-ready",
+        "description": "Multi-language support from day one. Same agent experience across regions and locales."
+      }
+    }
+  },
+  "demo": {
+    "title": "Try the conversation",
+    "subtitle": "Interactive preview — tap a prompt or type your own",
+    "placeholder": "Ask about BTC price, your balance…",
+    "send": "Send",
+    "prompts": [
+      "What's the BTC/USDT price?",
+      "Show my open orders",
+      "How's ETH funding today?"
+    ],
+    "responses": {
+      "price": "BTC/USDT: $96,842.50 (+2.34% 24h)\nVol 24h: $1.28B\nHigh: $97,120 · Low: $94,800\n\nLive account reads require Telegram binding first.",
+      "balance": "Agent Sub-account (Coobit)\nUSDT Available: 1,250.00\nBTC: 0.0245 (~$2,372)\nMargin: Cross · VIP 2\n\nSample data — bind Telegram for your real balances.",
+      "orders": "Open orders (sub-account)\n1. Limit Buy BTC/USDT 0.01 @ 95,000\n   Filled: 0% · Status: New\n2. Limit Sell ETH/USDT 0.5 @ 3,900\n   Filled: 0% · Status: New\n\nSample — connect Telegram to manage live orders.",
+      "order": "[Type A Confirm Required]\nLimit Buy · BTC/USDT\nSize: 0.01 BTC\nPrice: 95,000 USDT\nEst. cost: 950 USDT\n\nTap Confirm to route to Coobit.\n(Preview only — bind TG to execute.)",
+      "confirmed": "Order accepted · exec_a8f21c\nLimit Buy 0.01 BTC @ 95,000\nStatus: New on Coobit\n\nView in exchange or ask for fill updates.",
+      "eth": "ETH/USDT: $3,842.12 (-0.87% 24h)\nFunding rate: 0.0047% / 8h\nNext funding in 3h 14m",
+      "bindTelegram": "This is a website preview — live trading runs in Telegram.\n\n1. Open Coobit Agent settings (me/agent)\n2. Authorize your sub-account\n3. Bind this chat via deeplink\n\nt.me/chainup_online_ai_bot\n\nOnce bound, ask about prices, balances, and orders here.",
+      "greeting": "Hey — I'm ChainUp Agent.\n\nThis preview can't access your account yet. Head to Telegram to complete binding, then chat for real.",
+      "help": "I can quote markets, read sub-account balances, list orders, and draft trades (Type A confirm).\n\nFull flow requires Telegram binding first:\nt.me/chainup_online_ai_bot",
+      "thanks": "You're welcome.\n\nWhen you're ready, bind Telegram to unlock live reads and confirmed writes:\nt.me/chainup_online_ai_bot"
+    },
+    "scripts": [
+      {
+        "turns": [
+          {
+            "user": "What's the BTC/USDT price right now?",
+            "agent": "BTC/USDT: $96,842.50 (+2.34% 24h)\nVol 24h: $1.28B\nHigh: $97,120 · Low: $94,800\n\nWant depth or a specific timeframe?"
+          },
+          {
+            "user": "Show my sub-account balance first",
+            "agent": "Agent Sub-account (Coobit)\nUSDT Available: 1,250.00\nBTC: 0.0245 (~$2,372)\nUnrealized PnL: +$47.20\n\nAll balances are read-only until you confirm a write."
+          },
+          {
+            "user": "Place a limit buy 0.01 BTC at 95000",
+            "agent": "[Type A Confirm Required]\nLimit Buy · BTC/USDT\nSize: 0.01 BTC\nPrice: 95,000 USDT\nEst. cost: 950 USDT\nFee est.: 0.38 USDT\n\n[Confirm]  [Cancel]"
+          },
+          {
+            "user": "Confirm",
+            "agent": "Order accepted · exec_a8f21c\nLimit Buy 0.01 BTC @ 95,000\nStatus: New on Coobit\n\nI'll notify you on fill or partial fill."
+          }
+        ]
+      },
+      {
+        "turns": [
+          {
+            "user": "Any open orders on my sub-account?",
+            "agent": "Open orders (2)\n\n1. Limit Buy BTC/USDT\n   0.01 @ 95,000 · New · 0% filled\n2. Limit Sell ETH/USDT\n   0.5 @ 3,900 · New · 0% filled\n\nSay cancel + symbol to amend."
+          },
+          {
+            "user": "What's ETH doing today?",
+            "agent": "ETH/USDT: $3,842.12 (-0.87% 24h)\n24h range: $3,798 – $3,891\nFunding: 0.0047% / 8h (longs pay)\n\nSpot and perp data from Coobit read API."
+          },
+          {
+            "user": "Cancel the ETH limit sell",
+            "agent": "[Type A Confirm Required]\nCancel order #8821044\nLimit Sell ETH/USDT 0.5 @ 3,900\n\nThis cannot be undone after confirm.\n\n[Confirm]  [Cancel]"
+          }
+        ]
+      },
+      {
+        "turns": [
+          {
+            "user": "Give me a quick market overview",
+            "agent": "Top movers (24h)\nBTC +2.34% · ETH -0.87%\nSOL +4.12% · DOGE +1.03%\n\nSub-account notional: ~$3,622\nAll reads · no writes triggered."
+          },
+          {
+            "user": "How much USDT do I have left for fees?",
+            "agent": "Billing estimate\nUSDT available: 1,250.00\nAvg token cost (7d): ~$0.42 / query\nProjected 30d: ~$38–$52 at current usage\n\nDetailed CSV via exchange billing deeplink."
+          },
+          {
+            "user": "Set an alert when BTC drops below 94000",
+            "agent": "Pull alert registered · alert_c4e91\nCondition: BTC/USDT last < 94,000\nChannel: Telegram (this chat)\nCooldown: 15 min between pings\n\nManage alerts in Agent settings on Coobit."
+          }
+        ]
+      }
+    ],
+    "typing": "Agent is thinking…",
+    "guideHint": "Type your question or tap a suggestion, then send",
+    "guideBadge": "Your turn",
+    "autoLabel": "demo loop",
+    "interactiveLabel": "online",
+    "autoSubtitle": "Auto demo — hover to try yourself"
+  },
+  "howItWorks": {
+    "title": "How it works",
+    "subtitle": "From onboarding to your first trade in four steps",
+    "steps": {
+      "1": {
+        "title": "Enable Agent sub-account",
+        "description": "Authorize via exchange deeplink. VIP tier and whitelist checks apply."
+      },
+      "2": {
+        "title": "Connect Telegram",
+        "description": "Link your Telegram account to the Agent bot with a secure binding flow."
+      },
+      "3": {
+        "title": "Fund & configure",
+        "description": "Transfer USDT to your sub-account for trading and token usage fees."
+      },
+      "4": {
+        "title": "Trade naturally",
+        "description": "Chat in plain language. Writes always pass through confirm gates."
+      }
+    }
+  },
+  "cta": {
+    "title": "Ready to trade with your Agent?",
+    "subtitle": "Open Telegram and start the onboarding flow from your exchange account.",
+    "button": "Open in Telegram",
+    "note": "Requires Coobit account with eligible VIP tier"
+  },
+  "guide": {
+    "title": "Getting started guide",
+    "subtitle": "Everything you need to activate and use ChainUp AI Agent",
+    "eyebrow": "Coobit × Telegram",
+    "stepsLabel": "Four steps",
+    "stepLabel": "Step {step}",
+    "tourHint": "New here? Take the interactive product tour on the homepage.",
+    "ctaTitle": "Ready to get started?",
+    "ctaSubtitle": "Open the Telegram Bot to bind your session, or explore the interactive tour on the homepage.",
+    "sections": {
+      "prerequisites": {
+        "title": "Prerequisites",
+        "summary": "Confirm your account, tier, and client environment before onboarding.",
+        "items": [
+          "Active Coobit exchange account",
+          "Eligible VIP tier (see exchange Agent settings)",
+          "Telegram app installed on your device"
+        ]
+      },
+      "onboarding": {
+        "title": "Onboarding flow",
+        "summary": "Authorize a sub-account on the exchange, then bind your chat via Deeplink.",
+        "items": [
+          "Navigate to Agent settings in exchange (me/agent)",
+          "Review sub-account terms and authorize creation",
+          "Complete API binding confirmation",
+          "Open Telegram deeplink to bind your chat"
+        ]
+      },
+      "firstTrade": {
+        "title": "Your first interaction",
+        "summary": "Start with read-only queries; every write goes through Type A confirmation.",
+        "items": [
+          "Ask a read-only query: \"What's ETH price?\"",
+          "Check balance: \"Show my sub-account USDT\"",
+          "For writes, confirm Type A card before execution",
+          "View billing history via exchange billing deeplink"
+        ]
+      },
+      "safety": {
+        "title": "Safety reminders",
+        "summary": "Protect credentials, confirm every write, and stay within API bounds.",
+        "items": [
+          "Never share your Telegram login or API keys",
+          "All writes require explicit tap-to-confirm",
+          "Unknown states are preserved — not reported as failed",
+          "Capabilities limited to frozen API matrix"
+        ]
+      }
+    }
+  },
+  "tour": {
+    "welcome": {
+      "title": "Welcome to ChainUp AI Agent",
+      "description": "A quick walkthrough of the site — modeled after our product landing flow."
+    },
+    "hero": {
+      "title": "Hero & Telegram preview",
+      "description": "Value proposition plus a live conversation preview in the Telegram shell."
+    },
+    "stats": {
+      "title": "Platform performance",
+      "description": "Key operational metrics — executions, latency, confirm rate, active agents."
+    },
+    "bind": {
+      "title": "Telegram binding walkthrough",
+      "description": "Animated steps from Bot to deeplink H5 bind page and back to chat."
+    },
+    "estimator": {
+      "title": "Token estimator",
+      "description": "Adjust balance and usage profile to model token spend over 30/60/90 days."
+    },
+    "chart": {
+      "title": "Activity growth",
+      "description": "Weekly execution volume trend across the agent fleet."
+    },
+    "demo": {
+      "title": "Conversation demo",
+      "description": "Try sample prompts — including Type A confirm cards on write paths."
+    },
+    "faq": {
+      "title": "FAQ",
+      "description": "Common questions about sub-accounts, billing, and safety."
+    },
+    "cta": {
+      "title": "Get started",
+      "description": "Jump into Telegram or read the full onboarding guide."
+    },
+    "done": {
+      "title": "Tour complete",
+      "description": "Explore the guide for step-by-step onboarding details."
+    },
+    "next": "Next",
+    "prev": "Back",
+    "done_btn": "Finish"
+  },
+  "footer": {
+    "tagline": "Natural-language exchange agent for Telegram on Coobit",
+    "product": "Product",
+    "resources": "Resources",
+    "legal": "Legal",
+    "features": "Features",
+    "guide": "Guide",
+    "faq": "FAQ",
+    "docs": "Documentation",
+    "privacy": "Privacy Policy",
+    "terms": "Terms of Service",
+    "risk": "Risk Disclosure",
+    "copyright": "© {year} ChainUp. All rights reserved."
+  },
+  "featuresPage": {
+    "title": "Features",
+    "subtitle": "Production-grade capabilities for exchange-native AI agents"
+  }
+}

@@ -1,0 +1,44 @@
+feature: 2026-05-26--telegram-llm-narrate
+title: 场景 LLM narrate 扩面
+phase: done
+owner: product-agent
+next: null
+artifacts:
+  brief: brief.md
+  api: api.openapi.yaml
+  test_coverage: test/coverage.md
+blockers: []
+history:
+  - at: "2026-05-26T23:00:00+0800"
+    phase: done
+    by: product-agent
+    note: product.accept — AC-1～8 对照 test/report、design/ui-review；brief 勾选；/ai-settings UI 留后续 FE
+  - at: "2026-05-26T22:30:00+0800"
+    phase: ui_reviewed
+    by: designer-agent
+    note: 无 UI；ui-review N/A 通过；无 P0；待 product.accept
+  - at: "2026-05-26T22:15:00+0800"
+    phase: e2e_verified
+    by: test-agent
+    note: E2E N/A（无页面）；API 回归 10 passed；e2e-report 已填；待 designer N/A 走查
+  - at: "2026-05-26T22:00:00+0800"
+    phase: frontend_done
+    by: frontend-agent
+    note: 无 Admin/Deeplink 页面；integration.md 收口 N/A；无代码变更；待 test.e2e N/A
+  - at: "2026-05-26T21:30:00+0800"
+    phase: tested
+    by: test-agent
+    note: P0 TC-01～TC-08 + P1 TC-09 全通过；pytest test_telegram_llm_narrate 10 passed；Type-A 回归 1 passed；待 frontend 空跑
+  - at: "2026-05-26T21:00:00+0800"
+    phase: backend_done
+    by: backend-agent
+    note: gateway_defaults.telegramLlmNarrate；effective 解析；TG 九场景+timeline payload；pytest test_telegram_llm_narrate
+  - at: "2026-05-26T20:00:00+0800"
+    phase: contract_ready
+    by: product-agent
+    note: 建包定稿 brief/OpenAPI/测试追溯；gateway_defaults.telegramLlmNarrate 九场景+env 覆盖；含页面否；check-test-coverage 通过
+  - at: "2026-05-26T19:45:00+0800"
+    phase: planned
+    by: product-agent
+    note: 从模板创建功能包
+updated_at: "2026-05-26T23:00:00+0800"

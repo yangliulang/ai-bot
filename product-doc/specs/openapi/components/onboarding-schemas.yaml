@@ -1,0 +1,145 @@
+openapi: 3.0.3
+info:
+  title: "ChainUp AI Agent — 用户侧 Agent 开通/绑定 同窗 Schemas（fragment）"
+  version: "2026-05-13"
+  description: |
+    供 `user/onboarding.yaml` 以 `$ref` 引用。
+    字段下限与 [`onboarding/overview.md`](../../requirements/domains/agent/onboarding/overview.md)、
+    PRD **§8.2**、[`activation-policy.md`](../../requirements/domains/agent/onboarding/activation-policy.md) **§9** `agentState` **同窗**；
+    响应 **禁止** 含 API **Secret**。
+paths: {}
+components:
+  schemas:
+    TradingApiBindRejectCode:
+      type: string
+      description: |
+        **POST** `/api/v1/me/agent/bindings/trading-api` **保存时校验失败** 推荐 **`Problem.code`**；
+        与 [`initialization-flow` §1.2](../../requirements/domains/agent/onboarding/initialization-flow.md) **项 2**、**FR-WEB06** **同窗**。
+        **`AGENT_BIND_SUBACCOUNT_UID_MISMATCH`**：**`agentSubAccountUid`** **与 **`apiKey`/`apiSecret`** **经校验命中**之子账户 **`subUid`** **不一致**。
+        **多权限缺失** 可附带 **`details.missingPermissions`**（[`MissingPermissionKind`](#/components/schemas/MissingPermissionKind)[]），**`code`** 可为 **`AGENT_BIND_PERMISSION_INCOMPLETE`** **或** **单项最明显违例码**（以实现 **`initialization-flow`** **聚合失败** 策略为准）。
+      enum:
+        - AGENT_BIND_KEY_NOT_SUBACCOUNT
+        - AGENT_BIND_SUBACCOUNT_UID_MISMATCH
+        - AGENT_BIND_SUBACCOUNT_DISABLED
+        - AGENT_BIND_API_TRADING_DISABLED
+        - AGENT_BIND_SPOT_PERMISSION_DISABLED
+        - AGENT_BIND_MARGIN_PERMISSION_DISABLED
+        - AGENT_BIND_FUTURES_PERMISSION_DISABLED
+        - AGENT_BIND_PERMISSION_INCOMPLETE
+    MissingPermissionKind:
+      type: string
+      description: 权限缺项维度（与配置页 **FR-WEB06** ③ **逐项归因** 对齐）。
+      enum:
+        - API_TRADING
+        - SPOT
+        - MARGIN
+        - FUTURES
+    TradingApiBindProblemDetails:
+      type: object
+      description: 绑定校验失败时 **`Problem.details`** 扩展（可选）。
+      properties:
+        missingPermissions:
+          type: array
+          items:
+            $ref: "#/components/schemas/MissingPermissionKind"
+      additionalProperties: true
+    AgentStateUser:
+      type: string
+      description: 用户可见摘要态；与 PRD 附录 A §9 / activation-policy 同窗。
+      enum:
+        - NORMAL
+        - GLOBAL_OFF
+        - OPS_SUSPENDED
+        - MEMBERSHIP_BLOCKED
+        - AGENT_SUBACCOUNT_BLOCKED
+        - BILLING_BLOCKED
+    TradingApiBindingStatus:
+      type: string
+      description: 子账户交易 API 本产品绑定；所内 enum 终裁。
+      enum:
+        - NOT_BOUND
+        - PENDING_CONFIRM
+        - ACTIVE
+        - REVOKED
+        - ROTATION_REQUIRED
+    MeAgentStatus:
+      type: object
+      description: GET me/agent/status；FR-ON03/05 与控制台摘要同源（无 Secret）。
+      properties:
+        userId:
+          type: string
+        agentState:
+          $ref: "#/components/schemas/AgentStateUser"
+        lastProductBlockReason:
+          type: string
+        agentSubAccountId:
+          type: string
+        agentSubAccountStatus:
+          type: string
+        agentTradingApiBindingStatus:
+          $ref: "#/components/schemas/TradingApiBindingStatus"
+        agentTradingApiKeyId:
+          type: string
+        vipTier:
+          type: string
+        agentMinVipTier:
+          type: string
+      additionalProperties: true
+    TradingApiBindRequest:
+      type: object
+      description: |
+        POST bindings/trading-api：**当前产品线 Web 标准路径** **须同时提交** **`apiKey`** **与** **`apiSecret`**（**二者缺一** **不得**视为完成 **§1.2** 可归因校验；**禁止**弱化「仅传 Key、不传 Secret」的保存语义）。**Agent 产品线绑定页**在 TLS 请求体内短时传输，**服务端校验通过后**托管并完成绑定（同窗 **`initialization-flow` §1.2**、**FR-WEB01**）。
+        **Legacy**：仍可载 **`confirmToken`**（一键确认收口链路）；与 **`apiKey`/`apiSecret`** **成对提交** **互斥择一路径**（由 BFF 裁决；**首选**走 **`apiKey`+`apiSecret`**）。
+      properties:
+        idempotencyKey:
+          type: string
+        apiKey:
+          type: string
+          description: 子账户 API Key（非 Secret）；仅在 TLS 请求体内短时传输。
+        apiSecret:
+          type: string
+          description: 子账户 API Secret；响应 **禁止** 回显明文 Secret。
+        agentSubAccountUid:
+          type: string
+          description: |
+            用户在交易所侧可见的 **子账户 UID**（公档 **`subUid`** 同窗）；绑定页 **必填**（当前产品线 Web）。
+            服务端 **须** 与 **`apiKey`/`apiSecret`** **经交易所探测命中**之子账户 **`subUid`** **规范化一致比对**；不一致 → **`AGENT_BIND_SUBACCOUNT_UID_MISMATCH`**
+            （同窗 **`TradingApiBindRejectCode`**）。
+        deeplinkToken:
+          type: string
+          description: Telegram Deeplink 签发的一次性票据（若有）；非 Secret。
+        confirmToken:
+          type: string
+          description: 主站确认会话一次 token（Legacy）；非 Secret。
+      additionalProperties: true
+    TradingApiBindResult:
+      type: object
+      properties:
+        agentTradingApiBindingStatus:
+          $ref: "#/components/schemas/TradingApiBindingStatus"
+        agentTradingApiKeyId:
+          type: string
+        agentSubAccountId:
+          type: string
+      additionalProperties: true
+    ProvisioningConfirmRequest:
+      type: object
+      description: S2 主站一键确认后 BFF 收口；幂等（FR-ON04）。
+      properties:
+        idempotencyKey:
+          type: string
+        confirmToken:
+          type: string
+      additionalProperties: true
+    DeeplinkHint:
+      type: object
+      description: FR-T05 恢复链；返回主站 URL（非个性化 Secret）。
+      properties:
+        reasonCode:
+          type: string
+        deeplinkUrl:
+          type: string
+          format: uri
+        message:
+          type: string
+      additionalProperties: true

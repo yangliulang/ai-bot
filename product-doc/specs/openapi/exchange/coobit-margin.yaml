@@ -1,0 +1,74 @@
+openapi: 3.0.3
+info:
+  title: "Coobit — 子账户杠杆私有 API"
+  version: "2026-05-09"
+  description: |
+    与 [`design/api.md`](../../design/api.md) **矩阵「杠杆 · 杠杆下单、撤单」** 及 **REST↔WS 对账** 行同窗（**借还** PATH **书面延期** **不**在本文件承诺）。
+    **CC-P0-02 · B**：**已列** **`paths`** **与** **矩阵** **非延期** **杠杆下单撤单** **行** **同窗**（**2026-05-12**）。
+    同窗 [`exchange-schemas.yaml`](../components/exchange-schemas.yaml)。
+  contact:
+    name: "Jesson"
+    email: Jesson@chainup.com
+servers:
+  - url: https://api.example.invalid
+    description: 现货网关；与 paths 组成完整 URL
+externalDocs:
+  description: 产业锚/扩展阅读
+  url: "https://exchangedocsv2.gitbook.io/open-api-doc-v2/margin.md"
+tags:
+  - name: margin-order
+paths:
+  "/sapi/v2/margin/order":
+    get:
+      tags: [margin-order]
+      summary: "杠杆单笔委托查询"
+      operationId: coobitMarginGetOrder
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/exchange-schemas.yaml#/components/schemas/CoobitJsonValue"
+    post:
+      tags: [margin-order]
+      summary: "杠杆下单 · P0"
+      operationId: coobitMarginPostOrder
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/exchange-schemas.yaml#/components/schemas/CoobitJsonValue"
+  "/sapi/v2/margin/cancel":
+    post:
+      tags: [margin-order]
+      summary: "杠杆撤单"
+      operationId: coobitMarginPostCancel
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/exchange-schemas.yaml#/components/schemas/CoobitJsonValue"
+  "/sapi/v2/margin/openOrders":
+    get:
+      tags: [margin-order]
+      summary: "杠杆开放委托"
+      operationId: coobitMarginGetOpenOrders
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/exchange-schemas.yaml#/components/schemas/CoobitJsonValue"
+  "/sapi/v2/margin/myTrades":
+    get:
+      tags: [margin-order]
+      summary: "杠杆成交明细"
+      operationId: coobitMarginGetMyTrades
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/exchange-schemas.yaml#/components/schemas/CoobitJsonValue"

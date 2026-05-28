@@ -1,0 +1,269 @@
+openapi: 3.0.3
+info:
+  title: "ChainUp AI Agent — 运营侧 Access Control (admin/access-control)"
+  version: "2026-05-09"
+  description: |
+    PATH 与 design/api.md「运营侧 Access Control API」专节一致。
+    **`EligibilityEnvelope`** 与 **`access-control/eligibility-runtime` §4** 一致；**`code` 单源 `$ref` `agent-management` §7.1 enum**（**`../components/access-control-schemas.yaml`**）。
+  contact:
+    name: "Jesson"
+    email: Jesson@chainup.com
+servers:
+  - url: https://api.example.invalid
+    description: 所内替换
+tags:
+  - name: rollout
+  - name: whitelist
+  - name: bans
+  - name: users
+  - name: policy
+  - name: eligibility
+paths:
+  "/api/v1/admin/access-control/rollout":
+    get:
+      tags: [rollout]
+      summary: "灰度 / 渠道策略读 FR-MC601 · SC-AC-04"
+      operationId: getAccessControlRollout
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+    patch:
+      tags: [rollout]
+      summary: "灰度 / 渠道策略写 FR-MC601"
+      operationId: patchAccessControlRollout
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        "200":
+          description: OK
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/agent-management-schemas.yaml#/components/schemas/AgentManagementErrorBody"
+  "/api/v1/admin/access-control/whitelist":
+    get:
+      tags: [whitelist]
+      summary: "白名单集合读 FR-MC602"
+      operationId: listAccessControlWhitelist
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+    post:
+      tags: [whitelist]
+      summary: "白名单新增 FR-MC602"
+      operationId: createAccessControlWhitelistEntry
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        "201":
+          description: OK
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/agent-management-schemas.yaml#/components/schemas/AgentManagementErrorBody"
+  "/api/v1/admin/access-control/whitelist/{entryId}":
+    parameters:
+      - $ref: "#/components/parameters/WhitelistEntryId"
+    get:
+      tags: [whitelist]
+      summary: "白名单条目读"
+      operationId: getAccessControlWhitelistEntry
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+    patch:
+      tags: [whitelist]
+      summary: "白名单条目更新"
+      operationId: patchAccessControlWhitelistEntry
+      responses:
+        "200":
+          description: OK
+    delete:
+      tags: [whitelist]
+      summary: "白名单条目删除"
+      operationId: deleteAccessControlWhitelistEntry
+      responses:
+        "204":
+          description: OK
+  "/api/v1/admin/access-control/bans":
+    get:
+      tags: [bans]
+      summary: "封禁列表 FR-MC603"
+      operationId: listAccessControlBans
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+    post:
+      tags: [bans]
+      summary: "创建封禁 FR-MC603"
+      operationId: createAccessControlBan
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        "201":
+          description: OK
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/agent-management-schemas.yaml#/components/schemas/AgentManagementErrorBody"
+  "/api/v1/admin/access-control/bans/{banId}":
+    parameters:
+      - $ref: "#/components/parameters/BanId"
+    get:
+      tags: [bans]
+      summary: "单条封禁读 FR-MC603～604"
+      operationId: getAccessControlBan
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+    patch:
+      tags: [bans]
+      summary: "单条封禁更新（含时效）"
+      operationId: patchAccessControlBan
+      responses:
+        "200":
+          description: OK
+    delete:
+      tags: [bans]
+      summary: "撤销封禁"
+      operationId: deleteAccessControlBan
+      responses:
+        "204":
+          description: OK
+  "/api/v1/admin/access-control/users/{userId}/kyc-mirror":
+    parameters:
+      - $ref: "#/components/parameters/UserId"
+    get:
+      tags: [users]
+      summary: "KYC / 合规只读镜像 FR-MC605（禁止写回）"
+      operationId: getAccessControlKycMirror
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "404":
+          description: 用户不存在或无可同步镜像
+  "/api/v1/admin/access-control/region-policy":
+    get:
+      tags: [policy]
+      summary: "地域 / 风险测评策略读 FR-MC606（可选 V1）"
+      operationId: getAccessControlRegionPolicy
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+    patch:
+      tags: [policy]
+      summary: "地域 / 风险测评策略写 FR-MC606"
+      operationId: patchAccessControlRegionPolicy
+      responses:
+        "200":
+          description: OK
+  "/api/v1/admin/access-control/membership/min-vip-tier":
+    get:
+      tags: [policy]
+      summary: "VIP 最低门槛读 FR-MC607（与 keys §3 同窗）"
+      operationId: getAccessControlMinVipTier
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+    patch:
+      tags: [policy]
+      summary: "VIP 最低门槛写 FR-MC607（须与 trading-agent-config / keys 同窗 MR）"
+      operationId: patchAccessControlMinVipTier
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        "200":
+          description: OK
+        "409":
+          description: 并发或 keys 不同步
+  "/api/v1/admin/access-control/eligibility/evaluate":
+    post:
+      tags: [eligibility]
+      summary: "可选 BFF：EvaluateEligibility（eligibility-runtime §4）"
+      operationId: postAccessControlEvaluateEligibility
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "../components/access-control-schemas.yaml#/components/schemas/EvaluateEligibilityRequest"
+      responses:
+        "200":
+          description: 准入信封；**`code`** 与 §7.1 **enum** 同窗
+          content:
+            application/json:
+              schema:
+                $ref: "../components/access-control-schemas.yaml#/components/schemas/EligibilityEnvelope"
+        "400":
+          description: 参数错误
+components:
+  parameters:
+    UserId:
+      name: userId
+      in: path
+      required: true
+      schema:
+        type: string
+    WhitelistEntryId:
+      name: entryId
+      in: path
+      required: true
+      schema:
+        type: string
+    BanId:
+      name: banId
+      in: path
+      required: true
+      schema:
+        type: string

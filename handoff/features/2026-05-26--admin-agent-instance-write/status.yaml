@@ -1,0 +1,44 @@
+feature: 2026-05-26--admin-agent-instance-write
+title: Agent 实例能力扩展
+phase: done
+owner: product-agent
+next: null
+artifacts:
+  brief: brief.md
+  api: api.openapi.yaml
+  test_coverage: test/coverage.md
+blockers: []
+history:
+  - at: "2026-05-26T16:30:00+0800"
+    phase: done
+    by: product-agent
+    note: product.accept · AC-1～AC-9 对照 test/e2e/design 证据验收通过；P1 UI 记入 design/ui-review 待迭代
+  - at: "2026-05-26T16:15:00+0800"
+    phase: ui_reviewed
+    by: designer-agent
+    note: design/ui-review.md 通过（无 P0）；P1 列表绑定列/中文字段标签待迭代
+  - at: "2026-05-26T16:00:00+0800"
+    phase: e2e_verified
+    by: test-agent
+    note: E2E-01～E2E-04 P0 浏览器通过；test/e2e-report.md；联调前 alembic upgrade head
+  - at: "2026-05-26T15:30:00+0800"
+    phase: frontend_done
+    by: frontend-agent
+    note: agent-instances 写 API + 列表创建/详情 I05·I04 联调；integration.md 已填；admin build 通过
+  - at: "2026-05-26T15:10:00+0800"
+    phase: tested
+    by: test-agent
+    note: P0 TC-01～TC-08 全通过（pytest test_admin_p1_ops）；test/report.md 已填
+  - at: "2026-05-26T24:00:00+0800"
+    phase: backend_done
+    by: backend-agent
+    note: I02/I04/I05 存量路由核对通过；pytest test_admin_p1_ops 映射 AC-1～AC-6；backend/notes.md 已填
+  - at: "2026-05-26T23:30:00+0800"
+    phase: contract_ready
+    by: product-agent
+    note: 建包定稿 I02/I04/I05+Admin 写 UI；含页面是；check-test-coverage 通过；BE 存量已部分实现，FE 为主交付
+  - at: "2026-05-26T23:25:00+0800"
+    phase: planned
+    by: product-agent
+    note: 从模板创建功能包
+updated_at: "2026-05-26T16:30:00+0800"

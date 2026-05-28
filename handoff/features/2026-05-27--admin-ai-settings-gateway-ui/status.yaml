@@ -1,0 +1,44 @@
+feature: 2026-05-27--admin-ai-settings-gateway-ui
+title: Admin AI 网关开关 UI
+phase: done
+owner: product-agent
+next: null
+artifacts:
+  brief: brief.md
+  api: api.openapi.yaml
+  test_coverage: test/coverage.md
+blockers: []
+history:
+  - at: "2026-05-27T12:00:00+0800"
+    phase: planned
+    by: product-agent
+    note: 从模板创建功能包
+  - at: "2026-05-26T21:00:00+0800"
+    phase: contract_ready
+    by: product-agent
+    note: 定稿 brief/OpenAPI/测试追溯（P1 FE 债）；API 存量 nlu+narrate；含页面 /ai-settings；check-test-coverage.sh 通过
+  - at: "2026-05-26T21:30:00+0800"
+    phase: backend_done
+    by: backend-agent
+    note: 无新路由；回归 pytest 19 passed；GET/PATCH defaults 含 intentNluUseLlm+9 narrate；backend/notes.md
+  - at: "2026-05-27T10:00:00+0800"
+    phase: tested
+    by: test-agent
+    note: P0 TC-01～05 全通过；test_admin_ai_settings_gateway_ui.py 5 passed；report.md
+  - at: "2026-05-27T14:00:00+0800"
+    phase: frontend_done
+    by: frontend-agent
+    note: GatewayPolicyPanel + gateway-policy-constants；/ai-settings?tab=runtime；frontend/integration.md
+  - at: "2026-05-27T16:00:00+0800"
+    phase: e2e_verified
+    by: test-agent
+    note: E2E P0 E2E-01～03/05 通过；P1 E2E-04 跳过；test/e2e-report.md
+  - at: "2026-05-27T18:00:00+0800"
+    phase: ui_reviewed
+    by: designer-agent
+    note: design/ui-review.md 无 P0；P1 无障碍/错误态抽测可选迭代
+  - at: "2026-05-27T20:00:00+0800"
+    phase: done
+    by: product-agent
+    note: product.accept — AC-1～8；API TC-01～05 + E2E-01～03/05；brief 勾选；P1 E2E-04/UI-P1-01～02 backlog；product/accept.md
+updated_at: "2026-05-27T20:00:00+0800"

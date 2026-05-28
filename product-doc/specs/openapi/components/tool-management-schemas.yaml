@@ -1,0 +1,168 @@
+openapi: 3.0.3
+info:
+  title: "ChainUp AI Agent — Tool Management 同窗 Schemas（fragment）"
+  version: "2026-05-15"
+  description: |
+    供 `admin/tool-management.yaml` 以 `$ref` 引用。
+    `toolId` / 风险级同窗 [`trade-assistance.md`](../../requirements/domains/agent/exchange-agent/trade-assistance.md) **§8**、
+    [`runtime-contract.md`](../../requirements/domains/admin/tool-management/runtime-contract.md) **§1～§2**；
+    运营面同窗 [`tool-management/functions.md`](../../requirements/domains/admin/tool-management/functions.md) **FR-TM01～05**。
+paths: {}
+components:
+  schemas:
+    ToolId:
+      type: string
+      description: 与 trade-assistance §8、observability §2.1 登记同窗。
+      example: skill.spot.limit_order
+    ToolRiskLevel:
+      type: string
+      description: runtime-contract §2 · Tool Risk Level。
+      enum:
+        - LOW
+        - MEDIUM
+        - HIGH
+    MatrixPathStatus:
+      type: string
+      description: FR-TM01 矩阵列；所内 display 与 enable 门槛同窗 SC-MCV1-05。
+      enum:
+        - FROZEN
+        - TBD
+        - DEFERRED
+    ToolRegistryEntry:
+      type: object
+      required: [toolId]
+      properties:
+        toolId:
+          $ref: "#/components/schemas/ToolId"
+        domain:
+          type: string
+          description: exchange_read / model / tool.web.* 等标签。
+        pathSummary:
+          type: string
+        matrixStatus:
+          $ref: "#/components/schemas/MatrixPathStatus"
+        toolRiskLevel:
+          $ref: "#/components/schemas/ToolRiskLevel"
+        enabledOperational:
+          type: boolean
+          description: |
+            运营启用闸；仍受矩阵冻结约束。
+            C 类外网工具：未登记或 false 时运行时不应选用；true 时方可进入路由（并须满足 trade-assistance §8.4、T05 等）。
+        owner:
+          type: string
+        lastMatrixChangeRef:
+          type: string
+          description: PR 或变更单 ref。
+        externalToolCompliance:
+          type: object
+          description: |
+            CC-P1-02 · C 类（`tool.web.*` 等）合规登记摘要；与 ADR-003、trade-assistance §8.4 同窗。
+            生产启用外网工具前建议填全；法务终裁以工单登记为准。
+          properties:
+            rateLimitPerMinute:
+              type: integer
+              minimum: 1
+              description: 调用侧速率上限（示意；终裁以策略引擎为准）。
+            piiFieldTags:
+              type: array
+              items:
+                type: string
+              description: 输入/输出中可能含 PII 的字段标签。
+            legalReviewTicketId:
+              type: string
+              description: |
+                法务书面对签工单号；CC-P1-02 关闭条件之一。
+                生产环境「将 C 类外网工具置为启用（写闸）」时默认要求非空（实现可拒绝 NULL）；停用态不要求本字段有值。
+                与「仅 enabledOperational=true 的工具可被调用」同窗：未启用=不调用，与 ADR-003、trade-assistance §8.4 对签。
+            dataResidencyNote:
+              type: string
+              description: 数据出境/驻留说明摘要（与 ADR-003 同窗）。
+          additionalProperties: true
+      additionalProperties: true
+    ToolRegistryList:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/ToolRegistryEntry"
+      additionalProperties: true
+    ToolJsonSchemaView:
+      type: object
+      description: FR-TM02 Schema 运营视图；可嵌入 JSON Schema 子集 + PII 元数据。
+      properties:
+        toolId:
+          $ref: "#/components/schemas/ToolId"
+        inputSchema:
+          type: object
+          description: JSON Schema 形状；终裁见实现。
+          additionalProperties: true
+        outputSchema:
+          type: object
+          additionalProperties: true
+        piiFields:
+          type: array
+          items:
+            type: string
+      additionalProperties: true
+    ToolPolicy:
+      type: object
+      description: FR-TM03 · denyByDefault 默认 true；与 CC-P1-02 C 类同窗。
+      required: [toolId, denyByDefault]
+      properties:
+        toolId:
+          $ref: "#/components/schemas/ToolId"
+        denyByDefault:
+          type: boolean
+        allowedIamRoles:
+          type: array
+          items:
+            type: string
+        allowedScenarioIds:
+          type: array
+          items:
+            type: string
+        notes:
+          type: string
+      additionalProperties: true
+    ToolPolicyPatch:
+      type: object
+      description: PATCH body；未出现字段视为不变。
+      properties:
+        denyByDefault:
+          type: boolean
+        allowedIamRoles:
+          type: array
+          items:
+            type: string
+        allowedScenarioIds:
+          type: array
+          items:
+            type: string
+        notes:
+          type: string
+      additionalProperties: true
+    ToolEnableResult:
+      type: object
+      properties:
+        toolId:
+          $ref: "#/components/schemas/ToolId"
+        enabledOperational:
+          type: boolean
+        effectiveAt:
+          type: string
+          format: date-time
+      additionalProperties: true
+    ToolObservabilityLink:
+      type: object
+      description: FR-TM05 · 跳转 observability 或嵌入 URL 模板。
+      properties:
+        toolId:
+          $ref: "#/components/schemas/ToolId"
+        drilldownUrl:
+          type: string
+          format: uri
+        queryTemplate:
+          type: string
+          description: 所内可选用 query 模板串。
+      additionalProperties: true

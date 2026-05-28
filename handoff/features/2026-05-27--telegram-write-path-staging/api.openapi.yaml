@@ -1,0 +1,97 @@
+openapi: 3.0.3
+info:
+  title: "2026-05-27--telegram-write-path-staging — Staging evidence (read-only verification)"
+  description: |
+    P‑08 · Telegram 写路径 **staging 证据** 功能包。
+    - **不新增** 写接口；走读使用存量 **Telegram webhook** + **`trade.spot.limit_order`** 编排（见 `runtime-write-path-pipeline`）。
+    - 本 OpenAPI 仅收录 **证据验收** 所需 **只读** Admin 时间线 API（对齐 AC-3）。
+    - Telegram 行为 **无** HTTP path；见 `test/cases.md` **STG-xx** 手工步骤。
+  version: "0.1.0"
+
+servers:
+  - url: http://127.0.0.1:8080
+    description: 本地 Agent API（staging 环境 URL 记入 staging/evidence-log.md §1）
+
+paths:
+  /health:
+    get:
+      summary: 健康检查（走读前环境探活 · 可选）
+      operationId: healthCheck
+      tags: [Ops]
+      responses:
+        "200":
+          description: 服务可用
+
+  /api/v1/admin/observability/executions/{executionId}/timeline:
+    get:
+      summary: 执行时间线（staging 证据对拍 · AC-3）
+      operationId: getAdminObservabilityExecutionTimelineStaging
+      tags: [Admin — Observability]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: executionId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: staging 走读 §2 登记的 executionId
+      responses:
+        "200":
+          description: 时间线事件列表（camelCase）；用于验证 spec_read → 确认 → 写 序
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ObservabilityTimelineList"
+        "401":
+          description: 未授权
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AppError"
+        "404":
+          description: execution 不存在
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AppError"
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+
+  schemas:
+    AppError:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        details:
+          type: object
+          additionalProperties: true
+
+    ObservabilityTimelineItem:
+      type: object
+      properties:
+        eventName:
+          type: string
+          example: agent.skill.spec_read
+        summary:
+          type: object
+          additionalProperties: true
+        createdAt:
+          type: string
+          format: date-time
+
+    ObservabilityTimelineList:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/ObservabilityTimelineItem"

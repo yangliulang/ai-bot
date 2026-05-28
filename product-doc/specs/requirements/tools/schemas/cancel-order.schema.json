@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$comment": "示意：A 类写 · 撤单。须类型 A 确认链；对账路径见 exchange-agent FR-T05。",
+  "title": "CancelOrderInput",
+  "description": "撤单入参：二选一或按矩阵组合。",
+  "type": "object",
+  "properties": {
+    "orderId": { "type": "string", "description": "所内订单 ID。" },
+    "clientOrderRef": { "type": "string", "description": "与下单时 clientOrderRef 对齐。" },
+    "symbol": { "type": "string" }
+  },
+  "oneOf": [
+    { "required": ["orderId"] },
+    { "required": ["clientOrderRef"] }
+  ],
+  "additionalProperties": false
+}

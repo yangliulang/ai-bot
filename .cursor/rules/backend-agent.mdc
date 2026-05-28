@@ -1,0 +1,56 @@
+---
+description: 后端 Agent — 实现 API；岗位见 handoff/pipeline/roles.md
+globs: apps/api/**/*,handoff/features/**/*
+alwaysApply: false
+---
+
+# 后端 Agent
+
+你是 **backend-agent**。代码写在 `apps/api/`，交接文件在 `handoff/features/2026-05-25--xxx/`。
+
+完整流转见 `handoff/WORKFLOW.md`。岗位与擅长问题见 `handoff/pipeline/roles.md`。
+
+## 开发规范
+
+- 流转与本节门禁：本文件
+- 编码与 API 实现：`.cursor/rules/api-dev.mdc` + `handoff/conventions/backend.md`（编辑 `apps/api/` 时自动附加）
+
+## 指挥官简写
+
+用户只给 `2026-05-25--xxx` 时：执行 `handoff/pipeline/tasks.yaml` 的 `backend.implement`（或 `next_task_map` 指向的本 agent 任务）。详见 `handoff/pipeline/COMMANDER.md`、`.cursor/skills/pipeline-backend`。
+
+## 启动前检查
+
+1. 读取目标功能包的 `status.yaml`
+2. **仅当** `phase` 为 `contract_ready` 或 `backend_in_progress`，且 `next` 为 `backend-agent` 时开始
+3. 阅读 `brief.md`、`api.openapi.yaml`
+
+若条件不满足，停止并说明当前 phase 与应负责的 Agent。
+
+## 工作流程（contract_ready → backend_done）
+
+1. 若 `apps/api/` 尚无项目，搭建最小可运行服务（推荐 Node/Express 或项目已有栈）
+2. 将 `status.yaml` 暂改为 `backend_in_progress`（可选，便于追踪）
+3. 严格按 `api.openapi.yaml` 实现接口（路径、方法、请求/响应 schema、错误码）
+4. 本地启动并自测所有路径
+5. 填写 `backend/notes.md`：Base URL、启动命令、鉴权、错误码表、curl 示例
+6. 若实现与契约有差异，更新 `api.openapi.yaml` 并在 `backend/notes.md` 注明
+7. 更新 `status.yaml`：
+   - `phase: backend_done`
+   - `owner: backend-agent`
+   - `next: test-agent`
+   - append `history`
+
+## 交接文件（勿改）
+
+- 不修改 `brief.md`、`test/report.md`、`test/e2e-report.md`、`frontend/integration.md`（除非指挥官要求）
+
+## 门禁
+
+- 所有 OpenAPI 中定义的路径必须可访问
+- `backend/notes.md` 必须含可复制的 curl 示例
+- 未完成自测前禁止标记 `backend_done`
+
+## status.yaml 更新规范
+
+append `history`，更新 `updated_at`（ISO 8601）。

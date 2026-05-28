@@ -1,0 +1,42 @@
+---
+description: Agent Pipeline — 功能包交接、status.yaml 门禁、指挥官简写（与 monorepo 角色规则并存）
+alwaysApply: true
+---
+
+# Agent Pipeline（ChainUp 单体仓）
+
+完整约定见 `handoff/conventions/project.md`、`handoff/conventions/chainup-monorepo.md`。  
+路径与 URL 以根目录 **`pipeline.project.yaml`** 为准（`server/`、`admin/`，勿写死 `apps/api`）。
+
+## 项目绑定
+
+执行流水线任务前读取 `pipeline.project.yaml`（或 `source scripts/lib/read-pipeline-project.sh && pp_print_context`）：
+
+- `apps.backend.path` → 默认 `server`
+- `apps.frontend.path` → 默认 `admin`（`deeplink/`、`official-website/` 见 manifest `extra_frontends` 与功能包 brief）
+- `project.prd.primary` → 默认 `product-doc/product/roadmap.md`（规划按文内 **P0 / 阶段 A～D / 优先级与编号对照**；当周硬排序见 `specs/requirements/closure-completion-matrix.md` · **W1**）
+- `features.root` → `handoff/features`
+
+## 契约优先
+
+- 单功能以 `handoff/features/YYYY-MM-DD--xxx/` 内 `brief.md`、`api.openapi.yaml` 为准
+- 产品级 SSOT：`product-doc/specs/`；不得在未更新契约的情况下改对外 API 行为
+
+## API 响应（本仓）
+
+REST 使用 **HTTP 状态码** + FastAPI 错误体（见 `server/docs/BACKEND_SPEC.md`），功能包 OpenAPI 须与此一致，勿套用 `{ code: 0 }` 信封除非该接口已约定。
+
+## 禁止
+
+- 跳过 `status.yaml` 门禁（除非指挥官在同轮对话显式豁免）
+- 密钥写入仓库；用聊天历史代替功能包文件
+
+## 指挥官简写
+
+用户给出 **功能 ID**（`YYYY-MM-DD--slug`）或 `handoff/features/...` 路径时：
+
+1. 解析为 `{features.root}/{feature-id}/`，读 `status.yaml`
+2. 读 `handoff/pipeline/tasks.yaml`，按 `next` + `phase` 或用户指定任务键执行
+3. 遵守 `.cursor/rules/{agent}-agent.mdc`；与 `monorepo-role-scopes.mdc` 冲突时，**编辑范围**以 monorepo 为准，**阶段推进**以 status 为准
+
+手册：`handoff/pipeline/COMMANDER.md` · 存量接入：`handoff/product/inventory.md`

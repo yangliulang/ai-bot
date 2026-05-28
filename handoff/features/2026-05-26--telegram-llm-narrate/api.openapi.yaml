@@ -1,0 +1,139 @@
+openapi: 3.0.3
+info:
+  title: "2026-05-26--telegram-llm-narrate — Telegram LLM narrate policy"
+  description: |
+    增量契约：Admin **`gateway_defaults.telegramLlmNarrate`** 与 Telegram 已绑定回合 **effective narrate** 行为。
+    Admin 路由鉴权与存量 **`product-doc/specs/openapi/admin/ai-settings.yaml`** 一致（Bearer）。
+    Telegram narrate 无独立 HTTP 路由；行为通过 webhook 单测 + Admin defaults 验证。
+  version: "0.1.0"
+
+servers:
+  - url: http://127.0.0.1:8080
+    description: 本地 Agent API
+
+paths:
+  /api/v1/admin/ai/defaults:
+    get:
+      summary: 读取网关默认 profile（含 telegramLlmNarrate）（AC-1）
+      operationId: getAiGatewayDefaultsTelegramNarrate
+      tags: [admin-ai]
+      responses:
+        "200":
+          description: 合并后的 gateway defaults
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AiGatewayDefaultsTelegramNarrate"
+              example:
+                defaultProviderId: demo
+                defaultModelId: gpt-4.1-mini
+                intentNluUseLlm: false
+                telegramLlmNarrate:
+                  readMarketTicker: false
+                  readMarketDepth: false
+                  readMarketTrades: false
+                  readAccountBalance: false
+                  wealthHoldingsRead: false
+                  spotFlashConfirm: false
+                  spotLimitConfirm: false
+                  futuresMarketConfirm: false
+                  futuresLimitConfirm: false
+    patch:
+      summary: 部分更新 telegramLlmNarrate 等 defaults 字段（AC-1、AC-8）
+      operationId: patchAiGatewayDefaultsTelegramNarrate
+      tags: [admin-ai]
+      parameters:
+        - name: If-Match
+          in: header
+          required: false
+          schema:
+            type: string
+          description: 文档 row_version（可选，与存量 PATCH 一致）
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AiGatewayDefaultsTelegramNarratePatch"
+            examples:
+              singleScenario:
+                summary: 仅开启 depth narrate（AC-8）
+                value:
+                  telegramLlmNarrate:
+                    readMarketDepth: true
+              tickerOn:
+                summary: 开启 ticker narrate
+                value:
+                  telegramLlmNarrate:
+                    readMarketTicker: true
+      responses:
+        "200":
+          description: 更新后 defaults（嵌套对象深度合并）
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AiGatewayDefaultsTelegramNarrate"
+        "409":
+          description: 版本冲突
+        "422":
+          description: 模型 catalog 校验失败等
+
+components:
+  schemas:
+    TelegramLlmNarrateFlags:
+      type: object
+      description: |
+        Telegram 各场景 LLM narrate / Type-A preamble 开关（AC-1、AC-6）。
+        未出现的键合并时视为 false。
+      properties:
+        readMarketTicker:
+          type: boolean
+          default: false
+          description: read.market.ticker 成功后可选 LLM 叙述
+        readMarketDepth:
+          type: boolean
+          default: false
+        readMarketTrades:
+          type: boolean
+          default: false
+        readAccountBalance:
+          type: boolean
+          default: false
+        wealthHoldingsRead:
+          type: boolean
+          default: false
+        spotFlashConfirm:
+          type: boolean
+          default: false
+          description: 闪兑 Type-A 确认前可选 LLM preamble
+        spotLimitConfirm:
+          type: boolean
+          default: false
+        futuresMarketConfirm:
+          type: boolean
+          default: false
+        futuresLimitConfirm:
+          type: boolean
+          default: false
+      additionalProperties: false
+
+    AiGatewayDefaultsTelegramNarrate:
+      type: object
+      description: 网关默认 profile 子集（本包增量字段；其它字段与存量 defaults 一致）
+      properties:
+        telegramLlmNarrate:
+          $ref: "#/components/schemas/TelegramLlmNarrateFlags"
+        defaultProviderId:
+          type: string
+        defaultModelId:
+          type: string
+        intentNluUseLlm:
+          type: boolean
+      additionalProperties: true
+
+    AiGatewayDefaultsTelegramNarratePatch:
+      type: object
+      properties:
+        telegramLlmNarrate:
+          $ref: "#/components/schemas/TelegramLlmNarrateFlags"
+      additionalProperties: true

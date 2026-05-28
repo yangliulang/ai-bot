@@ -1,0 +1,201 @@
+openapi: 3.0.3
+info:
+  title: "2026-05-28--prompt-runtime-assembly-write — Prompt Runtime write-path assembly"
+  description: |
+    CC-P1-04 · **OP-PR** · **AC-09a～f** 写路径 TRADING 拼装链与 Observability join。
+    - **不新增** 写交易接口；验收 **只读** effective / execution / timeline。
+    - **200** 响应为 FastAPI **直出** camelCase；**4xx** 为 **`AppError`**。
+  version: "0.1.0"
+
+servers:
+  - url: http://127.0.0.1:8080
+    description: 本地 Agent API
+
+paths:
+  /api/v1/internal/prompts/effective:
+    get:
+      summary: 已发布 Prompt 生效视图（写路径 TRADING · AC-4）
+      operationId: getInternalPromptEffectiveWritePath
+      tags: [Internal — Prompts]
+      parameters:
+        - name: scenarioId
+          in: query
+          required: true
+          schema:
+            type: string
+          examples:
+            limitOrder:
+              value: trade.spot.limit_order
+            flashConvert:
+              value: trade.spot.flash_convert
+            amendLimit:
+              value: trade.spot.amend_limit_order
+        - name: If-None-Match
+          in: header
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: PUBLISHED 包生效快照
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EffectivePromptView"
+        "304":
+          description: 未修改
+        "404":
+          description: 无 PUBLISHED 包
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AppError"
+
+  /api/v1/agent/execution/{executionId}:
+    get:
+      summary: 执行详情（promptPackVersion join · AC-6）
+      operationId: getAgentExecutionPromptJoin
+      tags: [Agent — Execution]
+      parameters:
+        - name: executionId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: 含 scenarioId、promptPackVersion、resolvedPromptBinding
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AgentExecutionDetail"
+        "404":
+          description: execution 不存在
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AppError"
+
+  /api/v1/admin/observability/executions/{executionId}/timeline:
+    get:
+      summary: 执行时间线（trading_write prompt.snapshot · AC-5/AC-6）
+      operationId: getAdminObservabilityExecutionTimelinePromptJoin
+      tags: [Admin — Observability]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: executionId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: 时间线 items；含 prompt.snapshot / intent_nlu 等
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ObservabilityTimelineList"
+        "404":
+          description: execution 不存在
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AppError"
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+
+  schemas:
+    AppError:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        details:
+          type: object
+          additionalProperties: true
+
+    PromptMessage:
+      type: object
+      properties:
+        role:
+          type: string
+          enum: [system, user, assistant]
+        content:
+          type: string
+
+    ResolvedPromptBinding:
+      type: object
+      properties:
+        scenarioId:
+          type: string
+        promptPackId:
+          type: string
+        promptPackType:
+          type: string
+        promptPackVersion:
+          type: string
+
+    EffectivePromptView:
+      type: object
+      required: [scenarioId, promptPackVersion, messages, resolvedPromptBinding]
+      properties:
+        scenarioId:
+          type: string
+        promptPackVersion:
+          type: string
+        etag:
+          type: string
+        messages:
+          type: array
+          items:
+            $ref: "#/components/schemas/PromptMessage"
+        variableSchema:
+          type: object
+          additionalProperties: true
+        resolvedPromptBinding:
+          $ref: "#/components/schemas/ResolvedPromptBinding"
+
+    AgentExecutionDetail:
+      type: object
+      properties:
+        executionId:
+          type: string
+        scenarioId:
+          type: string
+        promptPackVersion:
+          type: string
+          nullable: true
+        resolvedPromptBinding:
+          $ref: "#/components/schemas/ResolvedPromptBinding"
+
+    ObservabilityTimelineItem:
+      type: object
+      properties:
+        eventName:
+          type: string
+          example: prompt.snapshot
+        stepKind:
+          type: string
+          example: trading_write
+        summary:
+          type: object
+          additionalProperties: true
+        createdAt:
+          type: string
+          format: date-time
+
+    ObservabilityTimelineList:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/ObservabilityTimelineItem"

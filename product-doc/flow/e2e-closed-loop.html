@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>端到端闭环流程图 · ChainUp AI Agent</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #f6f7f9;
+      --fg: #1a1a1a;
+      --muted: #5c6370;
+      --border: #dfe3e8;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #121418;
+        --fg: #e8eaed;
+        --muted: #9aa0a8;
+        --border: #2d3239;
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 1.25rem clamp(1rem, 4vw, 2rem) 3rem;
+      font-family: system-ui, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--fg);
+      line-height: 1.5;
+    }
+    header {
+      max-width: 120rem;
+      margin-bottom: 1rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid var(--border);
+    }
+    h1 {
+      font-size: clamp(1.15rem, 2.5vw, 1.5rem);
+      font-weight: 600;
+      margin: 0 0 0.5rem;
+    }
+    .meta {
+      font-size: 0.875rem;
+      color: var(--muted);
+      margin: 0;
+    }
+    .meta a { color: inherit; }
+    #diagram {
+      width: 100%;
+      overflow: auto;
+      padding: 1rem 0;
+      min-height: 480px;
+      display: flex;
+      justify-content: center;
+    }
+    #diagram svg {
+      max-width: 100%;
+      height: auto;
+    }
+    /* 避免 color-scheme 继承导致 Mermaid SVG 文字/线条被 UA 错误着色 */
+    #diagram {
+      color-scheme: only light;
+    }
+    @media (prefers-color-scheme: dark) {
+      #diagram {
+        color-scheme: only dark;
+      }
+    }
+    .err {
+      color: #c0392b;
+      padding: 1rem;
+      background: rgba(192, 57, 43, 0.08);
+      border-radius: 8px;
+      white-space: pre-wrap;
+      font-size: 0.875rem;
+    }
+    footer {
+      margin-top: 2rem;
+      font-size: 0.8125rem;
+      color: var(--muted);
+      max-width: 52rem;
+    }
+    footer ul { margin: 0.5rem 0 0; padding-left: 1.25rem; }
+    .diagram-tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin: 0 0 0.75rem;
+      max-width: 120rem;
+    }
+    .diagram-tabs button {
+      font: inherit;
+      font-size: 0.8125rem;
+      padding: 0.4rem 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: transparent;
+      color: var(--fg);
+      cursor: pointer;
+    }
+    .diagram-tabs button[aria-selected="true"] {
+      background: var(--fg);
+      color: var(--bg);
+      border-color: var(--fg);
+    }
+    .diagram-caption {
+      font-size: 0.8125rem;
+      color: var(--muted);
+      max-width: 72rem;
+      margin: 0 0 0.5rem;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>端到端闭环总览（Telegram → Runtime → 运营台 → 模型）</h1>
+    <p class="meta">
+      v1.8.2 四 Tab（与 <code>e2e-closed-loop.md</code> 同源）：<strong>Memory/Market 横切</strong>、<strong>写路径 S4～S10</strong>、<strong>阶段 F</strong> 含 <strong>技能与工具 §0</strong> · <strong>计费三入口 §0</strong>（<strong>RUNTIME_PUB</strong> 仅所内）；<strong>Speckit 域索引</strong> <code>specs/requirements/spec.md</code>；开通 TG→Agent 绑定页保存→§1.2 下限→实例绑定、门禁、自动化/Pull、504→OBS→对账、consume-and-bill、Tool/C 类闸、Runtime 横切；写路径 Walkthrough 前须对签 <code>runtime-freeze</code> §3；开放面 <code>closure-remaining</code> §7～§7.6。<strong>对上交易所 HTTP：<code>openapi-ai</code>（pin）</strong>+<code>design/api</code>+<code>allowlist</code> · <code>integrations/exchange/overview</code>。<strong>架构语言</strong>（Runtime/Gateway/意图中心）：<a href="../specs/design/architecture.md">architecture</a>。条文：
+      <a href="../specs/requirements/spec.md">spec.md</a> ·
+      <a href="../specs/requirements/flows/README.md">flows/</a> ·
+      <a href="e2e-closed-loop.md">e2e-closed-loop.md</a> ·
+      <a href="../product/flows.md">flows §0～§7</a> ·
+      <a href="../product/end-to-end-guide.md">end-to-end-guide</a>
+    </p>
+  </header>
+
+  <nav class="diagram-tabs" aria-label="图表切换">
+    <button type="button" data-diagram="business" aria-selected="true">业务场景总图</button>
+    <button type="button" data-diagram="e2e" aria-selected="false">端到端鸟瞰</button>
+    <button type="button" data-diagram="runtimeFirst" aria-selected="false">Runtime-first 逻辑容器</button>
+    <button type="button" data-diagram="sequence" aria-selected="false">单笔写路径时序</button>
+  </nav>
+  <p id="diagram-caption" class="diagram-caption"></p>
+  <div id="diagram" aria-busy="true">加载图表…</div>
+
+  <footer>
+    <p>需联网加载 Mermaid（CDN）。导出 PNG/SVG 可使用浏览器打印或 <a href="https://mermaid.live" rel="noopener noreferrer">Mermaid Live</a>。</p>
+    <ul>
+      <li>准入 / 安全防护 / 人工确认：<code>admin-console/demo-routing.md</code>（<code>access</code> · <code>/prompts/safety</code> · <code>/ai/confirmation-rules</code>）</li>
+      <li>执行记录 / 协查：<a href="../specs/requirements/domains/admin/observability-management/admin-console-runtime-executions-reconciliation.md"><code>runtime-executions-reconciliation</code> §0</a> · <a href="../specs/requirements/domains/admin/observability-management/admin-console-observability-reconciliation.md"><code>observability-reconciliation</code> §0</a></li>
+      <li>提示词治理 / 实例管理：<a href="../specs/requirements/domains/admin/prompt-management/admin-console-prompt-strategy-reconciliation.md"><code>prompt-strategy-reconciliation</code> §0</a> · <a href="../specs/requirements/domains/admin/agent-management/admin-console-agent-instances-reconciliation.md"><code>agent-instances-reconciliation</code> §0</a></li>
+      <li>技能与工具 Demo IA：<a href="../specs/requirements/domains/admin/tool-management/admin-console-tool-registry-reconciliation.md"><code>tool-registry-reconciliation</code> §0</a> · <code>/ai/tool-registry</code></li>
+      <li>计费与账务 Demo IA：<a href="../specs/requirements/domains/admin/billing-management/admin-console-billing-pages-reconciliation.md"><code>billing-reconciliation</code> §0</a> · 总览 / 商业运营 / 核销</li>
+      <li>Prompt 拼装（PRS）：<code>prompt-runtime/README</code> · <code>prompt-management/runtime-injection</code> · <code>prompts/library/scenarios/registry</code></li>
+      <li>Memory / Market 横切：<code>Runtime/memory-runtime</code> · <code>design/memory-runtime-injection</code> · <code>market-narrative-runtime/README</code> · <code>design/market-narrative-runtime</code></li>
+      <li>写路径十步 / Timeline 三轨：<code>Runtime/domain-model</code> · <code>skill-specs/production-runtime</code> · <code>confirmation-flow</code></li>
+      <li>业务场景（人话）：<a href="../product/flows.md"><code>product/flows.md</code> §0～§7</a> · Tab「业务场景总图」</li>
+      <li>Skill：运营台 <code>ai.tool-registry</code>（§0 对齐）· 所内 Publish <code>skill-specs/PUBLISH</code> SK-B01（Demo 无发布按钮）</li>
+      <li><code>scenarioId</code>：<code>routing-engine.md</code>（文首「写路径 · 编排下限对签」→ <code>runtime-freeze.md</code> §3.1～§3.11）</li>
+      <li>开通链：<code>activate-trading-agent</code> · <code>initialization-flow</code> §1.2（<strong>下限校验</strong> · UID≡<code>subUid</code> · <code>FR-WEB06</code> · <code>user/onboarding.yaml</code> <code>bindings/trading-api</code>）· <code>design/api</code> 绑定探测矩阵 · <code>telegram-binding</code> §2 · <code>permission-authorization</code></li>
+      <li>Speckit 聚合域段：<code>specs/requirements/spec.md</code>（openapi-ai / integrations 同窗）；推荐阅读补链：<code>specs/requirements/README.md</code> 小团队路径 · 第 4 条</li>
+      <li>对上 Coobit 私网：<code>openapi-ai</code>（Skill/CLI pin）· <code>integrations/exchange/overview.md</code> · <code>agent-coobit-api-allowlist</code></li>
+      <li>504 / 对账 / 观测：<code>architecture</code> · <code>Runtime/recovery</code> · <code>observability/overview</code></li>
+      <li>计费：用户侧 <code>consume-and-bill</code> · H5 <code>/subaccount/billing</code>（<a href="../specs/requirements/domains/web/admin-console-web-billing-reconciliation.md"><code>web-billing-reconciliation</code> §0</a>）；运营台 <code>billing-reconciliation</code> §0（三侧栏 + 商业运营五 Tab）</li>
+      <li>契约开放面（§7）· 走读缺口（§7.1）· 闭环路径（§7.5）· MR 清单（§7.6）：<code>closure-remaining.md</code></li>
+      <li>统一交易语义（Intent→Canonical→Gateway，文档真源；Gateway 实现不在本规格仓）：<a href="../specs/design/adr/004-intent-centric-execution-and-canonical-trading-model.md">ADR-004</a> · <a href="../specs/design/canonical-trading-model.md">canonical-trading-model</a> · <a href="../specs/requirements/contract-closure.md#cc-p1-07">CC-P1-07</a> · <a href="../product/requirements-review.md#cc-adr004-review-checklist">requirements-review §7.5</a></li>
+      <li>系统工程叙事：<a href="../specs/design/architecture.md"><code>architecture.md</code></a>「与通用 Agent 栈之对照」（Runtime / Gateway / 意图中心 vs Prompt+Tool-only）</li>
+      <li>人类一篇读懂（Runtime-first · Pre/Post Gate · Sequence）：<a href="../product/end-to-end-guide.md"><code>product/end-to-end-guide.md</code></a> §2</li>
+      <li>Tool 生产策略 / ADR-003：<code>domains/admin/tool-management/</code>（Demo B/C 在 <code>ai.tool-registry</code>）</li>
+    </ul>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js"></script>
+  <script>
+    (function () {
+      /** 与 flow/e2e-closed-loop.md 中 ```mermaid``` 块同源 */
+      var graphLinesBusiness = [
+        "flowchart TB",
+        '  ENTRY([用户触达<br/>Bot · 宣传链 · Deeplink])',
+        "",
+        '  subgraph CONFIG["上线前 · end-to-end-guide §4"]',
+        "    C1[登记 skillId / toolId]",
+        "    C2[Git skill-specs §1～§6]",
+        "    C3[发布 Prompt 16 包]",
+        "    C4[启用 Tool / 技能]",
+        "    C5[Bot · FEATURE_*]",
+        "    C1 --> C2 --> C3 --> C4 --> C5",
+        "  end",
+        "",
+        '  subgraph ONBOARD["§1 开通 · activate-trading-agent"]',
+        "    ENTRY --> TG_MSG[Telegram 发消息]",
+        '    TG_MSG --> BIND_OK{"实例已绑定?"}',
+        '    BIND_OK -->|"否"| DEEPLINK["类型 B + Agent 绑定页"]',
+        '    DEEPLINK --> SAVE{"保存 Key · §1.2 下限"}',
+        '    SAVE -->|"409 可归因"| DEEPLINK',
+        '    SAVE -->|"通过"| READY["实例 + API 绑定就绪"]',
+        '    BIND_OK -->|"是"| READY',
+        '    READY --> FUND["子账户 USDT / VIP / 权益<br/>交易侧与 Agent 配额分域"]',
+        "  end",
+        "",
+        '  subgraph SESSION["§2 每次会话"]',
+        "    FUND --> USER_MSG[用户自然语言]",
+        '    USER_MSG --> GATE{"门禁快照<br/>API · VIP · 计费 · Pause"}',
+        '    GATE -->|"阻断 FR-T05"| BLOCK_B["可读原因 + 单一下一步"]',
+        '    GATE -->|"通过"| MEM_STM["记忆召回 · STM<br/>L0/L1 同会话"]',
+        '    MEM_STM --> LTM_GATE{"LTM 语义记忆<br/>FEATURE 默认 OFF"}',
+        '    LTM_GATE -->|"OFF"| PRS_B["Prompt 拼装 · 对话策略<br/>块5 含 Memory"]',
+        '    LTM_GATE -->|"ON·草案"| LTM_REC["LTM 偏好召回<br/>semanticNarrativeBlock"]',
+        "    LTM_REC --> PRS_B",
+        '    PRS_B --> ROUTE{"意图分流"}',
+        '    ROUTE -->|"歧义/信息不足"| CLAR_IR["意图澄清<br/>FR-AO02 · 禁止臆测"]',
+        "    CLAR_IR --> USER_MSG",
+        "  end",
+        "",
+        '  subgraph READ["§6 只读 · read-analyze-and-search"]',
+        '    ROUTE -->|"问价/分析/检索"| READ_PATH["B/C 工具只读<br/>默认无类型 A"]',
+        '    READ_PATH --> READ_OK{"标的/范围够?"}',
+        '    READ_OK -->|"否"| CLAR_READ["澄清追问"]',
+        "    CLAR_READ --> USER_MSG",
+        "    READ_OK -->|是| READ_ANS[应答]",
+        '    READ_ANS -.->|"写入 STM"| MEM_UPD["回合记忆更新<br/>tool/卡片/拒答"]',
+        "    MEM_UPD -.-> MEM_STM",
+        '    READ_ANS --> PIVOT{"话锋转交易/理财?"}',
+        "    PIVOT -->|是| ROUTE",
+        "    PIVOT -->|否| END_READ([本轮结束])",
+        "  end",
+        "",
+        '  subgraph TRADE["§3 交易写 · trade-via-agent"]',
+        '    ROUTE -->|"交易写"| TRACK{"四轨恰一"}',
+        "    TRACK --> T1[闪兑 · 含现货市价]",
+        "    TRACK --> T2[现货限价挂单]",
+        "    TRACK --> T3[全仓杠杆]",
+        "    TRACK --> T4[合约]",
+        "    T1 --> SLOT[槽位补齐 · 读 Skill]",
+        "    T2 --> SLOT",
+        "    T3 --> SLOT",
+        "    T4 --> SLOT",
+        '    SLOT --> SLOT_OK{"槽位 S6<br/>FR-T07 · FR-T12"}',
+        '    SLOT_OK -->|"不全/校验失败"| CLAR_TR["澄清追问<br/>禁止猜价猜量"]',
+        "    CLAR_TR --> USER_MSG",
+        '    SLOT_OK -->|"通过"| TYPE_A["类型 A 确认卡 · ADR-001"]',
+        "    TYPE_A -->|用户确认| EXEC[交易所写 · Gateway]",
+        "    TYPE_A -->|改参/取消| CLAR_TR",
+        '    EXEC --> OUTCOME{"应答终局"}',
+        "  end",
+        "",
+        '  subgraph WEALTH["§3 理财 · wealth-via-agent"]',
+        '    ROUTE -->|"理财"| W_KIND{"触及理财写?"}',
+        "    W_KIND -->|否| W_READ[推荐/持仓/只读]",
+        "    W_KIND -->|是| W_CARD[产品卡 + 确认闸门]",
+        '    W_CARD --> W_PARM{"金额/产品够?"}',
+        '    W_PARM -->|"否"| CLAR_W["澄清 · 宜≤1 轮"]',
+        "    CLAR_W --> USER_MSG",
+        "    W_PARM -->|是| W_EXEC[申购/赎回等]",
+        "    W_READ --> W_END([理财应答])",
+        '    W_EXEC --> W_OUT{"应答终局"}',
+        "  end",
+        "",
+        '  subgraph BILL["§4 计费 · consume-and-bill"]',
+        '    OUTCOME -->|"成功"| RECEIPT["Receipt · 用户可见 S9"]',
+        '    W_OUT -->|"成功"| RECEIPT',
+        '    OUTCOME -->|"504 UNKNOWN"| RECON',
+        '    W_OUT -->|"504"| RECON',
+        "    RECEIPT -.-> MEM_UPD",
+        "    RECEIPT --> DEBIT[权益核销 S5/S10]",
+        "    READ_ANS -.->|若可计费| DEBIT",
+        '    DEBIT --> BH5["站内 /subaccount/billing<br/>ab · ab_up · ab_pk Deeplink"]',
+        "    BH5 --> END_OK([闭环完成])",
+        "    END_READ --> END_OK",
+        "  end",
+        "",
+        '  subgraph EXCEP["§5 异常 · recovery"]',
+        "    RECON[查单对账 · 勿谎报成交]",
+        "    RECON --> RECEIPT",
+        "  end",
+        "",
+        '  subgraph AUTO["§7 自动化 · automation-alerts"]',
+        "    AUTO_CFG[条件单 / Pull / 到期阈值]",
+        "    AUTO_CFG --> TASK[taskId 调度]",
+        "    TASK --> PUSH[Telegram 推送]",
+        "  end",
+        "",
+        "  CONFIG -.->|配置被 Runtime 消费| GATE",
+        "  ENTRY -.->|可并行配置| AUTO_CFG",
+        "  BLOCK_B -.->|绑定/API/站内| DEEPLINK",
+        '  AGCTX_B["上下文策略<br/>agent-context"] -.->|budget·trim| MEM_STM',
+        "  END_READ -.->|下一条 TG 消息| USER_MSG",
+        "  END_OK -.->|下一条 TG 消息| USER_MSG",
+      ];
+
+      var graphLines = [
+        "flowchart TB",
+        '  subgraph phaseA["阶段 A · 会话与开通门禁"]',
+        '    TG["Telegram 消息入口"]',
+        '    BIND{"Telegram 实例绑定就绪？"}',
+        "    TG --> BIND",
+        '    BIND -->|"否"| LINK["可读摘要 + Deeplink<br/>Agent 绑定页 · 不须交易所主站"]',
+        '    BIND -->|"是"| GATE{"门禁快照 R2<br/>FR-T02 · billing §7.4.1 · FR-T05 · VIP · CHANNEL"}',
+        '    LINK --> PAGE["单页配置<br/>TG + UID + Key/Secret"]',
+        '    PAGE --> SAVE{"保存·§1.2 下限<br/>FR-WEB06 · bindings/trading-api"}',
+        '    SAVE -->|"409·可归因"| PAGE',
+        '    SAVE -->|"通过"| BINDOK["实例化 + API 绑定<br/>billing §2"]',
+        "    BINDOK --> TG",
+        '    TG -.->|"initialization §1.2"| PAGE',
+        '    GATE -->|"阻断"| BLOCK["稳定归因 + 恢复 Deeplink"]',
+        "    BLOCK --> TG",
+        '    GATE -->|"通过"| OK_A["可接单执行上下文"]',
+        "  end",
+        "",
+        '  subgraph phaseB["阶段 B · Prompt · 上下文 · 意图分类"]',
+        '    OK_A --> UTTER["用户自然语言 · S1"]',
+        '    UTTER --> PRUN["Prompt 包加载<br/>SYSTEM/SAFETY/场景族"]',
+        '    PRUN --> MEM_REC["Memory 召回<br/>STM L0/L1 · memory-runtime"]',
+        '    MEM_REC --> LTM_G{"Semantic Gate<br/>FEATURE 默认 OFF"}',
+        '    LTM_G -->|"OFF"| CTX_ASM["上下文块5<br/>Facts·Memory·budget"]',
+        '    LTM_G -->|"ON·草案"| LTM_REC["LTM 偏好召回<br/>semanticNarrativeBlock"]',
+        "    LTM_REC --> CTX_ASM",
+        '    CTX_ASM --> PRS_ASM["Prompt 拼装 · PRS<br/>块1～6 · Tool Schema · 步5"]',
+        '    PRS_ASM --> IR{"意图路由 · S2<br/>scenarioId · FR-T07 · FR-AO02"}',
+        '    IR --> QA_ROOT["问答·行情·检索·分析<br/>read-analyze-and-search"]',
+        '    IR --> WH_ROOT["理财意图<br/>FEATURE_AGENT_WEALTH"]',
+        '    IR --> TX_ROOT["交易写意图<br/>FEATURE_TRADING"]',
+        '    IR -.->|"歧义"| CLAR["澄清·分步<br/>FR-AO02"]',
+        "    CLAR -.-> UTTER",
+        "  end",
+        "",
+        '  subgraph phaseC["阶段 C · 交易四轨互斥 · S3 R1"]',
+        '    TX_ROOT --> TX_GATE{"交易门禁 R1<br/>子账户·API·FEATURE_TRADING"}',
+        '    TX_GATE --> RID["scenarioId 冻结<br/>routing-engine · runtime-freeze §3"]',
+        '    RID --> PRS_W["Prompt 拼装 · PRS<br/>scenarioId 配方 · 步5"]',
+        '    PRS_W --> REG_SK["Skill·tool 登记<br/>skillId · ADR-002 · §8"]',
+        '    REG_SK --> R4{"四轨恰一<br/>trade-via-agent"}',
+        '    R4 --> FCV["闪兑轨<br/>trade.spot.flash_convert<br/>含现货市价写"]',
+        '    R4 --> SPL["现货限价挂单"]',
+        '    R4 --> MRG["全仓杠杆"]',
+        '    R4 --> FUT["合约交易"]',
+        "  end",
+        "",
+        '  subgraph phaseD["阶段 D · 写路径 S4～S9 · confirmation-flow"]',
+        '    FCV --> RS["读 Skill 操作规范 · S4<br/>read_skill · FR-T11 · SC-OBS11"]',
+        "    SPL --> RS",
+        "    MRG --> RS",
+        "    FUT --> RS",
+        '    RS --> EID["executionId 起票 · S5<br/>FR-T01"]',
+        '    EID --> SLOT["槽位校验 · S6<br/>FR-T07 · FR-T12"]',
+        '    SLOT --> SLOT_OK{"槽位齐全?<br/>禁猜价猜量"}',
+        '    SLOT_OK -->|"否 · 澄清"| CLAR_SLOT["澄清追问<br/>→ 下轮用户输入 S1"]',
+        "    CLAR_SLOT -.-> UTTER",
+        '    SLOT_OK -->|"是"| R3["风险闸 R3<br/>单笔/单日 · FR-T09"]',
+        '    R3 --> BUDGET["执行预算顶<br/>FR-AO06 · R4"]',
+        '    BUDGET --> TCONF["类型 A 确认 · S7<br/>Telegram · ADR-001"]',
+        '    TCONF --> CANON["Canonical Command<br/>Intent→领域动词 · ADR-004"]',
+        '    CANON --> TEXEC["Gateway→Adapter · S8<br/>call_exchange_write · CC-P1-07"]',
+        '    TEXEC --> TDONE{"交易所应答终局"}',
+        '    TDONE -->|"成功"| USER_VIS["Receipt · S9<br/>用户可见摘要 FR-T05"]',
+        '    TDONE -->|"504·UNKNOWN"| FAIL504',
+        "  end",
+        "",
+        '  subgraph phaseW["阶段 · 理财分流·确认·执行"]',
+        '    WH_ROOT --> WCHAIN["四类分流·卡片 §2.5.5<br/>wealth-via-agent"]',
+        '    WCHAIN --> WD{"触及理财写？"}',
+        '    WD -->|"是"| WRS["读 Skill · FR-AO04<br/>read_skill_operation_spec"]',
+        '    WRS --> WCONF["确认闸门<br/>类型 A 或主站 Deeplink §8.3"]',
+        '    WCONF --> WEXEC["理财执行<br/>申购·赎回等"]',
+        '    WD -->|"否"| WOUT["只读应答"]',
+        '    WEXEC --> WDONE{"理财应答终局"}',
+        '    WDONE -->|"504·UNKNOWN"| FAIL504',
+        '    WDONE -->|"成功"| WEND["应答"]',
+        "    WOUT --> WEND",
+        "    WEND --> CBILL",
+        "  end",
+        "",
+        '  subgraph phaseQ["阶段 · 问答与只读"]',
+        '    QA_ROOT --> QPRI{"须子账户私有读？"}',
+        '    QPRI -->|"是"| QF2["FR-T02 · R1"]',
+        '    QPRI -->|"否"| QTS["B/C 工具链 §8.3～8.4"]',
+        "    QF2 --> QTS",
+        '    QTS --> PRS_R["Prompt 拼装 · PRS<br/>只读/分析配方"]',
+        '    PRS_R --> MKT["Market Narrative<br/>Facts·phase·hints<br/>SC-MRP01 · SC-OBS09"]',
+        '    MKT --> QOUT["应答<br/>默认无类型 A"]',
+        "    QOUT --> CBILL",
+        "  end",
+        "",
+        '  subgraph phaseAUTO["阶段 · 自动化·Pull·task"]',
+        '    MON_ROOT["监控·条件·Pull<br/>automation-alerts"]',
+        '    TSCHED["taskId·调度<br/>task-scheduler"]',
+        '    TDELIV["触发→Telegram"]',
+        "    MON_ROOT --> TSCHED --> TDELIV",
+        "  end",
+        "",
+        '  subgraph phaseE["阶段 E · Timeline·观测·计费 S10"]',
+        '    TIMELINE["运维 Timeline<br/>自 S5 持续 · FR-MC801 · SC-OBS08"]',
+        '    OBS["observability 事件<br/>tool·scenarioId·traceKey"]',
+        '    FAIL504["504·UNKNOWN<br/>SC-OBS03 · boundaries"]',
+        '    RECONCILE["查单·对账<br/>recovery · D-7"]',
+        '    CBILL["consume-and-bill S5<br/>ENTITLEMENT_DEBIT · 轨 B · D-5"]',
+        '    BH5["Billing H5 · /subaccount/billing<br/>me/commerce · FR-B17～B20"]',
+        '    RTPLAT["Runtime 横切<br/>队列·重试·锁 · persistence"]',
+        "  end",
+        "",
+        '  subgraph phaseF["阶段 F · 运营控制台配置回流"]',
+        '    UI["执行记录·Timeline 检索"]',
+        '    PROMPT_CFG["提示词治理·模型配置<br/>prompt-strategy · ai-settings"]',
+        '    TOOL_REG["技能与工具<br/>ai.tool-registry · §0"]',
+        '    RUNTIME_PUB["Skill Runtime Publish<br/>所内 SK-B01 · Demo 无 UI"]',
+        '    BILLING_ADM["计费与账务<br/>总览·商业运营·核销"]',
+        '    ORCH["运行场景<br/>runtime-orchestration"]',
+        '    BOT["Bot·Webhook·CHANNEL"]',
+        '    RULE_ACC["准入规则<br/>access · VIP·灰度·封禁"]',
+        '    RULE_SAFE["安全防护<br/>prompt-safety · SAFETY"]',
+        '    RULE_HITL["人工确认规则<br/>confirmation-rules"]',
+        '    RULE_TM["Tool 策略·C 类闸<br/>tool-mgmt · ADR-003"]',
+        '    AGCTX["上下文·压缩<br/>agent-context · memory §11"]',
+        '    FREEZE_G["全局闸·Pause<br/>freeze · GLOBAL"]',
+        '    INST["实例·模板 I02<br/>agent-management"]',
+        "  end",
+        "",
+        "  IR --> MON_ROOT",
+        "  FAIL504 --> OBS",
+        "  FAIL504 --> RECONCILE",
+        "  RECONCILE --> USER_VIS",
+        "  USER_VIS --> CBILL",
+        "  EID --> TIMELINE",
+        "  RS --> TIMELINE",
+        "  TEXEC --> TIMELINE",
+        "  WEXEC --> TIMELINE",
+        "  QTS --> TIMELINE",
+        "  MKT --> TIMELINE",
+        "  TIMELINE --> OBS",
+        "  RID --> OBS",
+        "  PRS_ASM --> TIMELINE",
+        "  PRS_W --> TIMELINE",
+        "  PRS_R --> TIMELINE",
+        "  WRS --> OBS",
+        "  TSCHED --> OBS",
+        "  TDELIV --> OBS",
+        "  TSCHED --> CBILL",
+        "  CBILL --> BH5",
+        "  OBS --> UI",
+        '  RTPLAT -.->|"横切"| TEXEC',
+        '  RTPLAT -.->|"横切"| RID',
+        '  RTPLAT -.->|"横切"| TIMELINE',
+        '  PROMPT_CFG -.->|"有效 configVersion"| RID',
+        '  PROMPT_CFG -.->|"prompt 包版本"| PRUN',
+        '  PROMPT_CFG -.->|"registry 配方"| PRS_ASM',
+        '  PROMPT_CFG -.->|"scenarioId 配方"| PRS_W',
+        '  ORCH -.->|"拼装字母"| PRS_ASM',
+        '  TOOL_REG -.->|"manifest·登记"| REG_SK',
+        '  TOOL_REG -.->|"块6 Tool Schema"| PRS_ASM',
+        '  TOOL_REG -.->|"Enable·§1～§6"| RS',
+        '  RUNTIME_PUB -.->|"PUBLISHED L0"| RS',
+        '  BILLING_ADM -.->|"商品·扣次·配额"| CBILL',
+        '  ORCH -.->|"scenarioId"| RID',
+        '  BOT -.->|"渠道因子"| GATE',
+        '  RULE_ACC -.->|"用户·实例门禁"| GATE',
+        '  RULE_ACC -.->|"产品线开关"| TX_GATE',
+        '  RULE_SAFE -.->|"提示词·合规闸"| IR',
+        '  RULE_SAFE -.->|"SAFETY·prompt"| PRUN',
+        '  RULE_HITL -.->|"HITL·类型 A"| TCONF',
+        '  RULE_HITL -.->|"理财确认"| WCONF',
+        '  RULE_TM -.->|"Enable·策略"| RID',
+        '  RULE_TM -.->|"C 类合规"| QTS',
+        '  RULE_TM -.->|"矩阵·写闸"| TEXEC',
+        '  AGCTX -.->|"budget·trim §11"| CTX_ASM',
+        '  AGCTX -.->|"memory 策略"| MEM_REC',
+        '  FREEZE_G -.->|"熔断"| GATE',
+        '  FREEZE_G -.->|"Pause"| TX_GATE',
+        '  INST -.->|"I02 门禁链"| GATE',
+        '  CTX_ASM -.->|"块5 输入"| PRS_ASM',
+        '  PRS_ASM -.->|"Semantic 不覆盖类型 A"| TCONF',
+      ];
+
+      var graphLinesRuntimeFirst = [
+        "flowchart TD",
+        '  U[User / Telegram]',
+        '  RT[Agent Runtime]',
+        '  PG[Pre Gates<br/>S3 · FR-T02 · 额度 S2]',
+        '  SR[Scenario Router<br/>scenarioId · S2]',
+        '  SK[Skill 规范读<br/>read_skill · S4]',
+        '  PA[Prompt 拼装 · Assembler<br/>PRS 块 1～6 + Context]',
+        '  LLM[LLM]',
+        '  INT[Trading Intent]',
+        '  CAN[Canonical Action]',
+        '  PV[Post Validation<br/>S6 · S7 前风险闸]',
+        '  TA[类型 A 确认<br/>S7 · ADR-001]',
+        '  GW[Execution Gateway]',
+        '  AD[Exchange Adapter]',
+        '  RC[Receipt / 计费 S9～S10]',
+        "  U --> RT",
+        "  RT --> PG",
+        '  PG --> MEM["Memory 召回<br/>STM L0/L1 · LTM 闸"]',
+        "  MEM --> SR",
+        "  SR --> PA",
+        "  PA --> SK",
+        "  SK --> LLM",
+        "  LLM --> INT",
+        "  INT --> PV",
+        "  PV --> TA",
+        "  TA --> CAN",
+        "  CAN --> GW",
+        "  GW --> AD",
+        "  AD --> RC",
+        "  RC --> U",
+      ];
+
+      var graphLinesSequence = [
+        "sequenceDiagram",
+        "  participant U as User",
+        "  participant RT as Runtime",
+        "  participant PG as Pre Gates",
+        "  participant SR as Scenario Router",
+        "  participant MEM as Memory",
+        "  participant PA as Prompt 拼装 PRS",
+        "  participant LLM as LLM",
+        "  participant SK as Skill Runtime",
+        "  participant PV as Post Validation",
+        "  participant TA as 类型 A",
+        "  participant GW as Execution Gateway",
+        "  participant AD as Exchange Adapter",
+        "  U->>RT: 用户输入 S1",
+        "  RT->>PG: 门禁 + executionId S3/S5",
+        "  alt Pre Gate 失败",
+        "    PG-->>U: FR-T05 阻断",
+        "  else 通过",
+        "    RT->>SR: scenarioId S2",
+        "    RT->>MEM: STM/L1 召回 · session/execution",
+        "    MEM->>PA: 上下文块 · episodic",
+        "    RT->>PA: PRS 拼装 步5 · 块1～6 + Tool Schema",
+        "    RT->>SK: read_skill_operation_spec S4",
+        "    PA->>LLM: 上下文",
+        "    loop 多轮 · 槽位/只读 tool（同 executionId）",
+        "      LLM->>RT: 意图或 tool 调用",
+        "      RT->>PV: S6 校验",
+        "      alt 槽位不全 / 校验失败",
+        "        PV-->>U: 澄清追问 · FR-T07（禁止臆测）",
+        "        U->>RT: 用户补充 · S1",
+        "      end",
+        "    end",
+        "    RT->>TA: 确认卡 S7",
+        "    U->>RT: 用户确认",
+        "    RT->>GW: Canonical 写命令 S8",
+        "    GW->>AD: Adapter",
+        "    AD->>RT: 结果 / UNKNOWN",
+        "    RT->>LLM: Tool Result（若需生成话术）",
+        "    LLM->>U: 最终回复 S9",
+        "    RT->>MEM: 回合写入 STM L0/L1",
+        "  end",
+      ];
+
+      var diagrams = {
+        business: {
+          caption:
+            "Tab 1 · 业务场景总图：含 Memory 召回/写入（STM·LTM）、缺参澄清与多轮对话；对齐 flows §0～§7。",
+          lines: graphLinesBusiness,
+        },
+        e2e: {
+          caption:
+            "Tab 2 · 端到端鸟瞰（阶段 A～F）：含 Prompt 拼装 · PRS（阶段 B/C/Q）；写路径含 Canonical→Gateway。",
+          lines: graphLines,
+        },
+        runtimeFirst: {
+          caption:
+            "Tab 3 · Runtime-first 逻辑容器（Memory 召回 → 场景 → PRS）：与 product/end-to-end-guide.md §2.2 同窗。",
+          lines: graphLinesRuntimeFirst,
+        },
+        sequence: {
+          caption:
+            "Tab 4 · 单笔写路径时序（含 PRS 拼装 步5）：与 product/end-to-end-guide.md §2.6 同窗。",
+          lines: graphLinesSequence,
+        },
+      };
+
+      var FONT =
+        'system-ui, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif';
+
+      function isDarkMode() {
+        return (
+          window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: dark)").matches
+        );
+      }
+
+      /** base 主题 + themeVariables：时序图 actor/signal/alt 框在深浅色下均可读 */
+      function buildMermaidTheme() {
+        var dark = isDarkMode();
+        var common = {
+          fontFamily: FONT,
+          darkMode: dark,
+        };
+        if (dark) {
+          return {
+            theme: "base",
+            themeVariables: Object.assign(common, {
+              background: "#121418",
+              mainBkg: "#252a31",
+              primaryColor: "#2d3239",
+              primaryTextColor: "#e8eaed",
+              primaryBorderColor: "#6b7280",
+              secondaryColor: "#1e2228",
+              secondaryTextColor: "#e8eaed",
+              secondaryBorderColor: "#6b7280",
+              tertiaryColor: "#2d3239",
+              tertiaryTextColor: "#e8eaed",
+              lineColor: "#c8ccd2",
+              textColor: "#e8eaed",
+              actorBkg: "#252a31",
+              actorBorder: "#6b7280",
+              actorTextColor: "#e8eaed",
+              actorLineColor: "#9aa0a8",
+              signalColor: "#d0d4da",
+              signalTextColor: "#e8eaed",
+              labelBoxBkgColor: "#1e2228",
+              labelBoxBorderColor: "#6b7280",
+              labelTextColor: "#e8eaed",
+              loopTextColor: "#e8eaed",
+              noteBkgColor: "#2d3239",
+              noteTextColor: "#e8eaed",
+              noteBorderColor: "#6b7280",
+              activationBkgColor: "#1a1f26",
+              activationBorderColor: "#6b7280",
+              sequenceNumberColor: "#e8eaed",
+            }),
+          };
+        }
+        return {
+          theme: "base",
+          themeVariables: Object.assign(common, {
+            background: "#f6f7f9",
+            mainBkg: "#ececff",
+            primaryColor: "#e8ecf4",
+            primaryTextColor: "#1a1a1a",
+            primaryBorderColor: "#5c6370",
+            secondaryColor: "#f0f2f5",
+            secondaryTextColor: "#1a1a1a",
+            secondaryBorderColor: "#5c6370",
+            tertiaryColor: "#dfe3e8",
+            tertiaryTextColor: "#1a1a1a",
+            lineColor: "#333333",
+            textColor: "#1a1a1a",
+            actorBkg: "#ececff",
+            actorBorder: "#5c6370",
+            actorTextColor: "#1a1a1a",
+            actorLineColor: "#5c6370",
+            signalColor: "#333333",
+            signalTextColor: "#1a1a1a",
+            labelBoxBkgColor: "#f0f2f5",
+            labelBoxBorderColor: "#5c6370",
+            labelTextColor: "#1a1a1a",
+            loopTextColor: "#1a1a1a",
+            noteBkgColor: "#fff5ad",
+            noteTextColor: "#1a1a1a",
+            noteBorderColor: "#aaaa33",
+            activationBkgColor: "#f4f4f4",
+            activationBorderColor: "#666666",
+            sequenceNumberColor: "#1a1a1a",
+          }),
+        };
+      }
+
+      function applyMermaidTheme() {
+        var palette = buildMermaidTheme();
+        mermaid.initialize(
+          Object.assign(
+            {
+              startOnLoad: false,
+              securityLevel: "loose",
+              flowchart: {
+                htmlLabels: true,
+                curve: "basis",
+                padding: 12,
+              },
+              sequence: {
+                diagramMarginX: 12,
+                diagramMarginY: 12,
+                useMaxWidth: true,
+                messageAlign: "center",
+              },
+            },
+            palette
+          )
+        );
+      }
+
+      var mount = document.getElementById("diagram");
+      var captionEl = document.getElementById("diagram-caption");
+      var tabButtons = document.querySelectorAll(".diagram-tabs button");
+      var renderSeq = 0;
+      var currentDiagramKey = "business";
+
+      function setTabSelected(key) {
+        tabButtons.forEach(function (btn) {
+          var on = btn.getAttribute("data-diagram") === key;
+          btn.setAttribute("aria-selected", on ? "true" : "false");
+        });
+      }
+
+      function renderDiagram(key) {
+        var spec = diagrams[key];
+        if (!spec) return;
+        currentDiagramKey = key;
+        renderSeq += 1;
+        var mySeq = renderSeq;
+        var id = "e2e-diagram-" + key + "-" + mySeq;
+        mount.setAttribute("aria-busy", "true");
+        mount.textContent = "加载图表…";
+        captionEl.textContent = spec.caption;
+        setTabSelected(key);
+        applyMermaidTheme();
+
+        mermaid
+          .render(id, spec.lines.join("\n"))
+          .then(function (result) {
+            if (mySeq !== renderSeq) return;
+            mount.innerHTML = result.svg;
+            if (result.bindFunctions) result.bindFunctions(mount);
+            mount.removeAttribute("aria-busy");
+          })
+          .catch(function (e) {
+            if (mySeq !== renderSeq) return;
+            mount.innerHTML =
+              '<div class="err" role="alert">图表渲染失败（请检查网络与 CDN）。\n' +
+              String(e && e.message ? e.message : e) +
+              "</div>";
+            mount.removeAttribute("aria-busy");
+          });
+      }
+
+      tabButtons.forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          renderDiagram(btn.getAttribute("data-diagram"));
+        });
+      });
+
+      if (window.matchMedia) {
+        window
+          .matchMedia("(prefers-color-scheme: dark)")
+          .addEventListener("change", function () {
+            renderDiagram(currentDiagramKey);
+          });
+      }
+
+      renderDiagram("business");
+    })();
+  </script>
+</body>
+</html>

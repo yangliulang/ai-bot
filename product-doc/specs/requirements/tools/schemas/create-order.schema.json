@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$comment": "示意：A 类写 · 下单。toolRiskLevel=MEDIUM；禁止无脑自动 Retry — runtime-contract §3。",
+  "title": "CreateOrderInput",
+  "description": "下单入参形状示例；clientOrderRef/idempotencyKey 与 FR-T01 对签。",
+  "type": "object",
+  "required": ["symbol", "side"],
+  "properties": {
+    "symbol": { "type": "string" },
+    "side": {
+      "type": "string",
+      "enum": ["BUY", "SELL"]
+    },
+    "orderType": {
+      "type": "string",
+      "enum": ["MARKET", "LIMIT"],
+      "default": "LIMIT"
+    },
+    "quantity": { "type": "string", "description": "数量字符串，精度以所内规则为准。" },
+    "price": { "type": "string", "description": "限价必填；市价省略或按矩阵。" },
+    "clientOrderRef": {
+      "type": "string",
+      "description": "客户端幂等键 / 与 idempotencyKey 关系以 OpenAPI 冻结为准。"
+    }
+  },
+  "additionalProperties": false
+}

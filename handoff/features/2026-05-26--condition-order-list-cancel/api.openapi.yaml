@@ -1,0 +1,212 @@
+openapi: 3.0.3
+info:
+  title: "2026-05-26--condition-order-list-cancel — Futures condition orders read/cancel"
+  description: |
+    Phase 2.5 · 合约 **条件单查询 / 撤销** HTTP 契约（路线图 Step 2.5 存量实现收口）。
+    - **200** 为 FastAPI **`response_model` 直出**（camelCase），**非** `{ code: 0, data }` 信封。
+    - **4xx/5xx** 为 **`AppError`**：`code` + `message` + 可选 `details`。
+    - 实现 SSOT：`server/docs/BACKEND_SPEC.md` Phase2.5、`server/tests/test_futures_cancel_condition_trade.py`。
+    - **不含** `POST …/condition-order`（创建）与 `POST …/futures/cancel`（普通撤单）。
+  version: "0.1.0"
+
+servers:
+  - url: http://127.0.0.1:8080
+    description: 本地 Agent API
+
+paths:
+  /api/v1/agent/trade/futures/condition-orders:
+    get:
+      summary: 查询合约条件单/计划委托（openOrders 过滤）
+      operationId: futuresConditionOrdersRead
+      tags: [Agent — Futures condition]
+      parameters:
+        - name: userId
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Telegram tg_id 十进制字符串
+        - name: symbol
+          in: query
+          required: false
+          schema:
+            type: string
+          description: 可选合约标的（如 BTC-USDT）
+      responses:
+        "200":
+          description: 条件单列表（`orders` 已过滤；`totalOpenOrders` 为过滤前总数）
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FuturesConditionOrdersResponse"
+              example:
+                scenarioId: automation.condition_orders_read
+                symbol: BTC-USDT
+                contractName: E-BTC-USDT
+                totalOpenOrders: 2
+                orders:
+                  - orderId: "1"
+                    contractName: E-BTC-USDT
+                    triggerPrice: "90000"
+                    triggerType: "3UP"
+                    status: INIT
+        "403":
+          description: 未绑定或功能关闭
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AppError"
+              examples:
+                subaccount:
+                  value:
+                    code: AGENT_SUBACCOUNT_REQUIRED
+                    message: 未发现该用户的托管 API 绑定
+                featureOff:
+                  value:
+                    code: FEATURE_AGENT_FUTURES_OFF
+                    message: 合约 Agent 能力未开启
+        "502":
+          description: 交易所 openOrders 失败
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AppError"
+              example:
+                code: AGENT_FUTURES_OPEN_ORDERS_FAILED
+                message: 查询合约挂单失败
+
+  /api/v1/agent/trade/futures/cancel-condition:
+    post:
+      summary: 撤销合约条件单（POST /fapi/v1/cancel）
+      operationId: futuresConditionOrderCancel
+      tags: [Agent — Futures condition]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FuturesConditionCancelRequest"
+            example:
+              userId: "79"
+              symbol: BTC-USDT
+              orderId: "111"
+      responses:
+        "200":
+          description: 撤单成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FuturesConditionCancelResponse"
+              example:
+                scenarioId: automation.condition_order_cancel
+                orderId: "111"
+                orderIdString: "111"
+                contractName: E-BTC-USDT
+                symbol: BTC-USDT
+                status: CANCELLED
+                exchangeOrderPreview:
+                  orderId: "111"
+        "400":
+          description: 交易所拒单
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AppError"
+              example:
+                code: AGENT_FUTURES_CANCEL_REJECTED
+                message: 交易所拒绝撤单
+        "403":
+          description: 未绑定或功能关闭
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AppError"
+              examples:
+                subaccount:
+                  value:
+                    code: AGENT_SUBACCOUNT_REQUIRED
+                    message: 未发现该用户的托管 API 绑定
+                featureOff:
+                  value:
+                    code: FEATURE_AGENT_FUTURES_OFF
+                    message: 合约 Agent 写能力未开启
+        "502":
+          description: 交易所写超时/网关异常（若映射为 UNKNOWN 见 write-unknown-global 包）
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AppError"
+
+components:
+  schemas:
+    AppError:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        details:
+          type: object
+          additionalProperties: true
+
+    FuturesConditionOrdersResponse:
+      type: object
+      required: [scenarioId, orders, totalOpenOrders]
+      properties:
+        scenarioId:
+          type: string
+          enum: [automation.condition_orders_read]
+        symbol:
+          type: string
+          nullable: true
+        contractName:
+          type: string
+          nullable: true
+        totalOpenOrders:
+          type: integer
+          minimum: 0
+        orders:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+          description: 仅含条件单/计划委托行（含 triggerType 等）
+
+    FuturesConditionCancelRequest:
+      type: object
+      required: [userId, symbol, orderId]
+      properties:
+        userId:
+          type: string
+        symbol:
+          type: string
+        orderId:
+          type: string
+
+    FuturesConditionCancelResponse:
+      type: object
+      required: [scenarioId, exchangeOrderPreview]
+      properties:
+        scenarioId:
+          type: string
+          enum: [automation.condition_order_cancel]
+        orderId:
+          type: string
+          nullable: true
+        orderIdString:
+          type: string
+          nullable: true
+        contractName:
+          type: string
+          nullable: true
+        symbol:
+          type: string
+          nullable: true
+        status:
+          type: string
+          nullable: true
+        exchangeOrderPreview:
+          type: object
+          additionalProperties: true

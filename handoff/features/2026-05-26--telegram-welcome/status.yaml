@@ -1,0 +1,49 @@
+feature: 2026-05-26--telegram-welcome
+title: 开通欢迎语
+phase: done
+owner: product-agent
+next: null
+artifacts:
+  brief: brief.md
+  api: api.openapi.yaml
+  test_coverage: test/coverage.md
+  backend_notes: backend/notes.md
+  test_report: test/report.md
+  frontend_integration: frontend/integration.md
+  e2e_report: test/e2e-report.md
+  ui_review: design/ui-review.md
+blockers: []
+history:
+  - at: "2026-05-26T14:02:38+0800"
+    phase: planned
+    by: product-agent
+    note: 从模板创建功能包
+  - at: "2026-05-26T19:30:00+0800"
+    phase: contract_ready
+    by: product-agent
+    note: 定稿 brief/OpenAPI/测试追溯；AC-1～8；Admin 三语+E2E；check-test-coverage 通过
+  - at: "2026-05-26T14:10:00+0800"
+    phase: backend_done
+    by: backend-agent
+    note: 欢迎语解析/发送/幂等；confirm+me 响应字段；test_telegram_activation_welcome 6/6
+  - at: "2026-05-26T14:20:00+0800"
+    phase: tested
+    by: test-agent
+    note: P0 TC-01～09 + P1 TC-10 全通过；pytest 10 passed；check-test-coverage OK
+  - at: "2026-05-26T14:16:00+0800"
+    phase: frontend_done
+    by: frontend-agent
+    note: Admin §4 三语欢迎语 UX；telegram-runtime-params 三键 PATCH；vitest 2 passed
+  - at: "2026-05-26T14:25:00+0800"
+    phase: e2e_verified
+    by: test-agent
+    note: E2E-01 浏览器通过；E2E-02 保存/回显 API 补强；E2E-04～08 N/A；E2E-03 跳过
+  - at: "2026-05-26T14:30:00+0800"
+    phase: ui_reviewed
+    by: designer-agent
+    note: UI 走查通过；无 P0；P1 placeholder 键名待迭代
+  - at: "2026-05-26T14:35:00+0800"
+    phase: done
+    by: product-agent
+    note: product.accept — AC-1～8 全通过；PHASE1 AC-09o 缺口收口；P1 时间线事件/实机 TG 未做
+updated_at: "2026-05-26T14:35:00+0800"

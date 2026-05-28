@@ -1,0 +1,19 @@
+feature: 2026-05-25--slug
+title: 功能标题（创建时修改）
+phase: planned
+owner: product-agent
+next: product-agent
+artifacts:
+  brief: brief.md
+  api: api.openapi.yaml
+  test_coverage: test/coverage.md
+blockers: []
+# 可跳过步骤（定稿时按 test/coverage「含页面」等填写；任务键见 handoff/WORKFLOW.md）
+# 例：无 UI → [frontend.integrate, test.e2e, designer.review]
+skips: []
+history:
+  - at: "2026-05-25T00:00:00+08:00"
+    phase: planned
+    by: product-agent
+    note: 从模板创建功能包
+updated_at: "2026-05-25T00:00:00+08:00"

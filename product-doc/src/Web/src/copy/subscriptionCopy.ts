@@ -1,0 +1,23 @@
+export const SUBSCRIPTION_COPY = {
+  mySubscriptionTitle: "订阅与购买",
+  mySubscriptionIntro: "升级档位或购买加购包；当前配额与 Capability 核销流水请在「账单与消耗」查看。",
+  currentTierLabel: "当前档位（摘要）",
+  billingNav: "账单与消耗",
+  subscriptionNav: "订阅与购买",
+  navMySubscription: "订阅与购买",
+  navUpgrade: "升级套餐",
+  navBuyPack: "购买加购包",
+  periodActive: "生效中",
+  viewBilling: "查看配额与核销流水",
+  upgradeNow: "升级套餐",
+  buyPackNow: "购买加购包",
+  upgradePageTitle: "升级 Agent 套餐",
+  upgradePageIntro: "选择目标档位后使用加密货币支付；支付确认后配额在数分钟内生效。",
+  packPageTitle: "购买加购包",
+  packPageIntro: "加购额度在链上到账后叠加至当前订阅，不与周期配额合并重置。",
+  checkoutTitle: "支付订单",
+  payWithCrypto: "加密货币支付",
+  demoDisclaimer: "演示环境：地址与链上监听为模拟，不会发起真实转账。",
+  checkoutAdminOrderNote:
+    " （演示）本订单不会自动写入运营台「订阅订单」列表；请在 Admin 静态 Mock 或生产 PSP 中对读订单号。",
+} as const;

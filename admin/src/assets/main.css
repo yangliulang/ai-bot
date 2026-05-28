@@ -1,0 +1,177 @@
+@import '@fontsource-variable/geist/index.css';
+@import '@fontsource-variable/geist-mono/index.css';
+@import 'tailwindcss';
+
+/* Taste / 管理端：单一强调色（emerald）、slate 中性、Geist 字体体系 */
+@theme {
+  --font-sans: 'Geist Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'Geist Mono Variable', ui-monospace, 'SF Mono', Menlo, monospace;
+
+  --radius-ui: 0.375rem;
+  --radius-ui-lg: 0.5rem;
+
+  --ease-ui: cubic-bezier(0.16, 1, 0.3, 1);
+  --duration-ui: 200ms;
+}
+
+@utility admin-panel {
+  border-radius: var(--radius-ui-lg);
+  border-width: 1px;
+  border-color: rgb(30 41 59 / 0.85);
+  background-color: rgb(15 23 42 / 0.45);
+  box-shadow: inset 0 1px 0 0 rgb(255 255 255 / 0.04);
+}
+
+@utility admin-seg {
+  border-radius: var(--radius-ui);
+  padding: 0.375rem 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition-property: transform, color, background-color, border-color, opacity, box-shadow;
+  transition-duration: var(--duration-ui);
+  transition-timing-function: var(--ease-ui);
+}
+
+@utility admin-seg-active {
+  background-color: rgb(30 41 59);
+  color: rgb(248 250 252);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.06);
+}
+
+@utility admin-seg-idle {
+  color: rgb(148 163 184);
+}
+
+/*
+ * 全局壳层动效：`UiModal` 内容层用 flex 居中；动画仅 **`opacity`**，避免 `@keyframes transform` 与居中/transform 抢占（Reka Presence 仍依赖 `animation-name`）。
+ * 侧栏 Drawer 使用 Vue `<Transition name="admin-drawer-*">`。
+ */
+.admin-modal-overlay[data-state='open'] {
+  animation: admin-modal-overlay-in 240ms var(--ease-ui) both;
+}
+
+.admin-modal-overlay[data-state='closed'] {
+  animation: admin-modal-overlay-out 185ms var(--ease-ui) both;
+}
+
+.admin-modal-content[data-state='open'] {
+  animation: admin-modal-content-in 275ms var(--ease-ui) both;
+}
+
+.admin-modal-content[data-state='closed'] {
+  animation: admin-modal-content-out 215ms var(--ease-ui) both;
+}
+
+@keyframes admin-modal-overlay-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes admin-modal-overlay-out {
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
+  }
+}
+
+/* 内容与 `translate` 居中解耦：`UiModal` 用 flex 全屏占位居中，keyframes 不写 transform，避免与 Tailwind/transform 抢占 */
+@keyframes admin-modal-content-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes admin-modal-content-out {
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
+  }
+}
+
+.admin-drawer-scrim-enter-active,
+.admin-drawer-scrim-leave-active {
+  transition: opacity 240ms var(--ease-ui);
+}
+
+.admin-drawer-scrim-enter-from,
+.admin-drawer-scrim-leave-to {
+  opacity: 0;
+}
+
+.admin-drawer-panel-enter-active,
+.admin-drawer-panel-leave-active {
+  transition:
+    transform 300ms var(--ease-ui),
+    opacity 260ms var(--ease-ui);
+}
+
+.admin-drawer-panel-enter-from,
+.admin-drawer-panel-leave-to {
+  opacity: 0.92;
+  transform: translateX(100%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .admin-modal-overlay[data-state],
+  .admin-modal-content[data-state] {
+    animation-duration: 1ms !important;
+  }
+
+  .admin-drawer-scrim-enter-active,
+  .admin-drawer-scrim-leave-active,
+  .admin-drawer-panel-enter-active,
+  .admin-drawer-panel-leave-active {
+    transition-duration: 1ms !important;
+  }
+}
+
+@layer base {
+  html {
+    color-scheme: dark;
+  }
+
+  body {
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  :where(code, kbd, samp, pre) {
+    font-family: var(--font-mono);
+  }
+}
+
+/* 技能与工具 · 行状态（交互语义保留，视觉对齐 admin slate/emerald） */
+.admin-tool-registry-page .admin-tool-registry-stat-card {
+  min-height: 4.5rem;
+}
+.admin-tool-registry-page tr.admin-tool-registry-row--tbd > td {
+  background: rgb(15 23 42 / 0.55);
+}
+.admin-tool-registry-page tr.admin-tool-registry-row--disabled > td {
+  background: rgb(15 23 42 / 0.35);
+}
+.admin-tool-registry-page tr.admin-tool-registry-row--active > td {
+  background: rgb(16 185 129 / 0.06);
+}
+.admin-tool-registry-page tr.admin-tool-registry-row--active > td:first-child {
+  box-shadow: inset 3px 0 0 rgb(16 185 129);
+}
+.admin-skill-spec-md-preview {
+  word-break: break-word;
+}

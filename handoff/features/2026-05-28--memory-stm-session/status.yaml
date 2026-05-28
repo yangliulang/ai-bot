@@ -1,0 +1,43 @@
+---
+feature: 2026-05-28--memory-stm-session
+title: Memory STM 会话基线
+phase: done
+owner: product-agent
+next: null
+artifacts:
+  brief: brief.md
+  api: api.openapi.yaml
+  test_coverage: test/coverage.md
+blockers: []
+skips:
+- frontend.integrate
+- test.e2e
+- designer.review
+history:
+- at: '2026-05-28T10:00:00+08:00'
+  phase: planned
+  by: product-agent
+  note: 从模板创建功能包
+- at: '2026-05-28T11:30:00+08:00'
+  phase: contract_ready
+  by: product-agent
+  note: OP-MEM · eval.memory.session_clear_stm 定稿 · skips API-only
+- at: '2026-05-27T12:00:00+08:00'
+  phase: backend_done
+  by: backend-agent
+  note: STM store + eval_memory_stm + runtime memory API · pytest 10/10 green
+- at: '2026-05-27T14:27:00+08:00'
+  phase: tested
+  by: test-agent
+  note: API P0 11/11 + P1 1/1 green · pytest 10/10 · live curl TC-09/10 OK · evidence
+    §1-3 审查通过
+- at: '2026-05-27T14:27:47+08:00'
+  phase: ui_reviewed
+  by: commander
+  note: 'pipeline-skip: 跳过 frontend.integrate（skips: frontend.integrate, test.e2e,
+    designer.review）'
+- at: '2026-05-27T14:30:00+08:00'
+  phase: done
+  by: product-agent
+  note: AC-1～AC-10 验收通过 · OP-MEM STM 基线 · eval.memory.session_clear_stm 0.1.0 真跑
+updated_at: '2026-05-27T14:30:00+08:00'

@@ -1,0 +1,285 @@
+openapi: 3.0.3
+info:
+  title: "ChainUp AI Agent — Prompt Management 同窗 Schemas（fragment）"
+  version: "2026-05-09"
+  description: |
+    供 `admin/prompt-management.yaml` 以 `$ref` 引用。
+    **`ScenarioId`** **同窗** [`identity-schemas.yaml`](./identity-schemas.yaml)。
+    同窗 [`prompt-management/functions.md`](../../requirements/domains/admin/prompt-management/functions.md) **FR-PM01～08**、
+    [`runtime-injection.md`](../../requirements/domains/admin/prompt-management/runtime-injection.md)、
+    [`observability/overview.md`](../../requirements/observability/overview.md) **§2.3**（**`ResolvedPromptBinding`**；**事件外层** **`agent.prompt.binding_resolved`** → **`observability-schemas.yaml` · `AgentPromptBindingResolvedEvent`**）。
+paths: {}
+components:
+  schemas:
+    PromptPackId:
+      type: string
+    PromptPackType:
+      type: string
+      description: |
+        **拼装槽位大类 + 与该类同窗的生命周期/IAM**：FR-PM02（SYSTEM）～FR-PM04（SAFETY），及 **扩展场景族 `TRADING`、`ANALYSIS`**（行情分析 / 解读等非交易写链路等，同窗 FR-PM03：须 `scenarioId` 等）。
+        **业务能力 SKU 全集不得由本 enum 穷尽**：产品矩阵 **`scenarioId` 寄存器**、Orchestration/模板 **`promptPackRef` 绑定** 与 **`functions.md` §1.2 PM-C15** **为准**；新能力优先扩寄存器/绑定而非堆砌枚举。
+        别名 **`POLICY`** 若出现在历史实现中 **应对齐映射为 `SAFETY`**（以单一 enum 为准）。
+      enum:
+        - SYSTEM
+        - TRADING
+        - ANALYSIS
+        - SAFETY
+    PromptPackLifecycle:
+      type: string
+      enum:
+        - DRAFT
+        - PUBLISHED
+        - LOCKED
+    PromptPackVersion:
+      type: string
+      description: 单调版本串；与 observability §2.3、runtime-injection 同窗。
+    PromptPackSummary:
+      type: object
+      required: [promptPackId, promptPackType]
+      properties:
+        promptPackId:
+          $ref: "#/components/schemas/PromptPackId"
+        promptPackType:
+          $ref: "#/components/schemas/PromptPackType"
+        scenarioId:
+          nullable: true
+          allOf:
+            - $ref: "./identity-schemas.yaml#/components/schemas/ScenarioId"
+        promptPackVersion:
+          $ref: "#/components/schemas/PromptPackVersion"
+        lifecycle:
+          $ref: "#/components/schemas/PromptPackLifecycle"
+        etag:
+          type: string
+      additionalProperties: true
+    PromptPackList:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/PromptPackSummary"
+      additionalProperties: true
+    PromptPackCreateRequest:
+      type: object
+      required: [promptPackType]
+      properties:
+        promptPackType:
+          $ref: "#/components/schemas/PromptPackType"
+        scenarioId:
+          nullable: true
+          allOf:
+            - $ref: "./identity-schemas.yaml#/components/schemas/ScenarioId"
+      additionalProperties: true
+    ResolvedPromptBinding:
+      type: object
+      description: |
+        **Prompt 绑定快找（V1 冻结）**：一轮可计费回合开端解析完成后之 **结构化快照**（**不含** Prompt 正文 / `messages`）。
+        - **契约同窗**：[`observability/overview.md`](../../requirements/observability/overview.md) **§2.3** 事件 `agent.prompt.binding_resolved` 之字段集（**本 schema 为事件 payload 之逻辑核**；`userId`、`executionId`、`ts` **由事件外层**或 **观测管道**挂载）；
+          [`runtime-injection.md`](../../requirements/domains/admin/prompt-management/runtime-injection.md) **§3**（`resolvedPromptBinding` / **SC-PM-09**、**SC-OBS04**）。
+        - **槽位**：`system*` / `safety*` 对应 **SYSTEM / SAFETY** 已发布包；`runtimeClarify*` / `runtimeOutputContract*` 对应 **SYSTEM 横切块**（`pp-runtime-clarify`、`pp-runtime-output-contract` · **SC-PM-22**）；`trading*` 对应 **场景策略正文** 槽位（**`TRADING` 或 `ANALYSIS` 族** 二选一，见 `PromptPackType`）；无装配之类别 **须** `id`+`version` **均为 `null`**（**禁止**半缺）。
+        - **Few-shot**：仅 **`fewShotDigest`**（序列化 **hash**）；**禁止**用本对象承载示例明文。
+      required:
+        - scenarioId
+      properties:
+        scenarioId:
+          description: 当前回合路由键；与 `routing-engine`、§2.3 一致。
+          allOf:
+            - $ref: "./identity-schemas.yaml#/components/schemas/ScenarioId"
+        sessionId:
+          description: 与 `executionId` 不同之时带上，便于跨执行会话 join（可选）。
+          nullable: true
+          allOf:
+            - $ref: "./identity-schemas.yaml#/components/schemas/SessionId"
+        systemPromptPackId:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/PromptPackId"
+        systemPromptPackVersion:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/PromptPackVersion"
+        safetyPromptPackId:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/PromptPackId"
+        safetyPromptPackVersion:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/PromptPackVersion"
+        tradingPromptPackId:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/PromptPackId"
+        tradingPromptPackVersion:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/PromptPackVersion"
+        runtimeClarifyPromptPackId:
+          description: SYSTEM 横切澄清包（`pp-runtime-clarify`）；未装配时为 `null`。
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/PromptPackId"
+        runtimeClarifyPromptPackVersion:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/PromptPackVersion"
+        runtimeOutputContractPromptPackId:
+          description: SYSTEM 横切输出契约包（`pp-runtime-output-contract`）；未装配时为 `null`。
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/PromptPackId"
+        runtimeOutputContractPromptPackVersion:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/PromptPackVersion"
+        fewShotDigest:
+          type: string
+          description: Few-shot 集合规范化字节串之 **摘要 hash**（**非**明文）；无 Few-shot 可省略或 `null`。
+          nullable: true
+        placeholderDenylistRevision:
+          type: string
+          description: 占位符 denylist 修订号；与 Publish 校验及 `PromptPackDetail` 同窗。
+          nullable: true
+        safetyPhraseBlocklistRevision:
+          type: string
+          description: Safety 用语闸修订号；与 §7.1 / `PromptPackDetail` 同窗。
+          nullable: true
+      additionalProperties: false
+    PromptPackDetail:
+      type: object
+      description: GET 包详情；含占位符闸修订与 resolvedPromptBinding。
+      required: [promptPackId, promptPackType]
+      properties:
+        promptPackId:
+          $ref: "#/components/schemas/PromptPackId"
+        promptPackType:
+          $ref: "#/components/schemas/PromptPackType"
+        scenarioId:
+          nullable: true
+          allOf:
+            - $ref: "./identity-schemas.yaml#/components/schemas/ScenarioId"
+        promptPackVersion:
+          $ref: "#/components/schemas/PromptPackVersion"
+        lifecycle:
+          $ref: "#/components/schemas/PromptPackLifecycle"
+        etag:
+          type: string
+        placeholderDenylistRevision:
+          type: string
+        safetyPhraseBlocklistRevision:
+          type: string
+        resolvedPromptBinding:
+          $ref: "#/components/schemas/ResolvedPromptBinding"
+      additionalProperties: true
+    PromptPackPatch:
+      type: object
+      description: 草稿 PATCH 正文；PM-C03 与 If-Match 同窗。
+      additionalProperties: true
+    PromptVersionEntry:
+      type: object
+      properties:
+        promptPackVersion:
+          $ref: "#/components/schemas/PromptPackVersion"
+        publishedAt:
+          type: string
+          format: date-time
+        lifecycle:
+          $ref: "#/components/schemas/PromptPackLifecycle"
+      additionalProperties: true
+    PromptVersionHistory:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/PromptVersionEntry"
+      additionalProperties: true
+    PromptPublishResult:
+      type: object
+      properties:
+        promptPackId:
+          $ref: "#/components/schemas/PromptPackId"
+        promptPackVersion:
+          $ref: "#/components/schemas/PromptPackVersion"
+        lifecycle:
+          $ref: "#/components/schemas/PromptPackLifecycle"
+      additionalProperties: true
+    PromptRollbackRequest:
+      type: object
+      required: [promptPackVersion]
+      properties:
+        promptPackVersion:
+          $ref: "#/components/schemas/PromptPackVersion"
+      additionalProperties: false
+    FewShotId:
+      type: string
+    FewShotExample:
+      type: object
+      required: [fewShotId]
+      properties:
+        fewShotId:
+          $ref: "#/components/schemas/FewShotId"
+        role:
+          type: string
+        content:
+          type: string
+      additionalProperties: true
+    FewShotList:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/FewShotExample"
+      additionalProperties: true
+    FewShotUpsert:
+      type: object
+      properties:
+        role:
+          type: string
+        content:
+          type: string
+      additionalProperties: true
+    PromptSandboxRunRequest:
+      type: object
+      description: FR-PM06；须与生产计费隔离。
+      properties:
+        promptPackId:
+          $ref: "#/components/schemas/PromptPackId"
+        scenarioId:
+          nullable: true
+          allOf:
+            - $ref: "./identity-schemas.yaml#/components/schemas/ScenarioId"
+        variables:
+          type: object
+          additionalProperties: true
+      additionalProperties: true
+    PromptSandboxRunResult:
+      type: object
+      properties:
+        runId:
+          type: string
+        status:
+          type: string
+      additionalProperties: true
+    EffectivePromptResponse:
+      type: object
+      description: FR-PM08；仅 PUBLISHED 态；禁草稿进用户链路。
+      required: [scenarioId, promptPackVersion]
+      properties:
+        scenarioId:
+          allOf:
+            - $ref: "./identity-schemas.yaml#/components/schemas/ScenarioId"
+        promptPackVersion:
+          $ref: "#/components/schemas/PromptPackVersion"
+        etag:
+          type: string
+        messages:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+        resolvedPromptBinding:
+          $ref: "#/components/schemas/ResolvedPromptBinding"
+      additionalProperties: true

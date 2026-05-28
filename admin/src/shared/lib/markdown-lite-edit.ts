@@ -1,0 +1,42 @@
+/**
+ * Markdown Lite 选区编辑辅助（对齐 product-doc `markdownLiteEdit.ts`）
+ *
+ * 作者: 杨永的Agent
+ * 日期: 2026-05-19
+ * 修改功能: 加粗/标题/列表/围栏代码块插入与包裹
+ */
+
+export function markdownLiteWrapSelection(
+  value: string,
+  start: number,
+  end: number,
+  wrapBefore: string,
+  wrapAfter: string,
+  emptyPlaceholder: string,
+): { next: string; focusStart: number; focusEnd: number } {
+  const hasSel = start !== end
+  const slice = hasSel ? value.slice(start, end) : emptyPlaceholder
+  const next = `${value.slice(0, start)}${wrapBefore}${slice}${wrapAfter}${value.slice(end)}`
+  const innerStart = start + wrapBefore.length
+  const innerEnd = innerStart + slice.length
+  return { next, focusStart: innerStart, focusEnd: innerEnd }
+}
+
+export function markdownLiteInsertPrefixAtLogicalLineHead(
+  value: string,
+  caret: number,
+  prefix: string,
+): { next: string; focus: number } {
+  const lineStart = value.lastIndexOf('\n', caret - 1) + 1
+  let lineEnd = value.indexOf('\n', caret)
+  if (lineEnd < 0) lineEnd = value.length
+
+  let insertAt = lineStart
+  const line = value.slice(lineStart, lineEnd)
+  const mo = /^(\s*)([-*]|\d+\.)\s+/.exec(line)
+  if (mo) insertAt = lineStart + mo[0].length
+
+  const next = `${value.slice(0, insertAt)}${prefix}${value.slice(insertAt)}`
+  const focus = caret >= insertAt ? caret + prefix.length : insertAt + prefix.length
+  return { next, focus }
+}

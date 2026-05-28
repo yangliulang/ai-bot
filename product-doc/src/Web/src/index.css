@@ -1,0 +1,47 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+:root {
+  --coolbit-bg: #f5f5f5;
+  --coolbit-surface: #ffffff;
+  --coolbit-text: #1a1a1a;
+  --coolbit-text-secondary: #666666;
+  --coolbit-border: #ebebeb;
+  --coolbit-radius-lg: 12px;
+}
+
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  min-height: 100dvh;
+  font-family:
+    system-ui,
+    -apple-system,
+    "PingFang SC",
+    "Helvetica Neue",
+    "Microsoft YaHei",
+    sans-serif;
+  color: var(--coolbit-text);
+  background: var(--coolbit-bg);
+}
+
+#root {
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+code {
+  font-size: 0.88em;
+  padding: 0.12em 0.38em;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+}

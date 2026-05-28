@@ -1,0 +1,204 @@
+openapi: 3.0.3
+info:
+  title: "2026-05-26--nlu-llm-strategy — Intent NLU LLM policy"
+  description: |
+    增量契约：Admin **`gateway_defaults.intentNluUseLlm`** 与 Agent **`intent/recognize`** 有效策略字段。
+    Admin 路由鉴权与存量 **`product-doc/specs/openapi/admin/ai-settings.yaml`** 一致（Bearer）。
+    Intent 路由须 DB 会话（与其它 Agent 写库路由一致）。
+  version: "0.1.0"
+
+servers:
+  - url: http://127.0.0.1:8080
+    description: 本地 Agent API
+
+paths:
+  /api/v1/admin/ai/defaults:
+    get:
+      summary: 读取网关默认 profile（含 intentNluUseLlm）（AC-1）
+      operationId: getAiGatewayDefaultsIntentNlu
+      tags: [admin-ai]
+      responses:
+        "200":
+          description: 合并后的 gateway defaults
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AiGatewayDefaultsIntentNlu"
+              example:
+                defaultProviderId: demo
+                defaultModelId: gpt-4.1-mini
+                intentNluUseLlm: false
+    patch:
+      summary: 更新 intentNluUseLlm 等 defaults 字段（AC-1）
+      operationId: patchAiGatewayDefaultsIntentNlu
+      tags: [admin-ai]
+      parameters:
+        - name: If-Match
+          in: header
+          required: false
+          schema:
+            type: string
+          description: 文档 row_version（可选，与存量 PATCH 一致）
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AiGatewayDefaultsIntentNluPatch"
+            example:
+              intentNluUseLlm: true
+      responses:
+        "200":
+          description: 更新后 defaults
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AiGatewayDefaultsIntentNlu"
+        "409":
+          description: 版本冲突
+        "422":
+          description: 模型 catalog 校验失败等
+
+  /api/v1/agent/intent/recognize:
+    post:
+      summary: 意图识别 — 可配置 LLM 优先策略（AC-2～AC-8）
+      operationId: intentRecognizeWithNluPolicy
+      tags: [agent]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/IntentRecognizeRequest"
+            example:
+              text: 查询 BTC 账户余额
+              locale: zh-Hans
+      responses:
+        "200":
+          description: NLU 草案 + 裁决 plan（LLM 或 keyword）
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/IntentRecognizeResponseIntentNlu"
+              examples:
+                llm:
+                  summary: LLM 草案成功
+                  value:
+                    scenarioId: read.account.balance
+                    confidence: 0.88
+                    nlu:
+                      source: llm_structured_v1
+                    nluSource: llm_structured_v1
+                    effectiveIntentNluUseLlm: true
+                    plan:
+                      nextStep: ROUTE_READ_SKILL
+                    orchestrationVersion: intent-router.policy.v2
+                    effectiveLocale: zh-Hans
+                keyword:
+                  summary: 关闭 LLM 或回退
+                  value:
+                    scenarioId: read.account.balance
+                    confidence: 0.75
+                    nlu:
+                      source: keyword_v1
+                    nluSource: keyword_v1
+                    effectiveIntentNluUseLlm: false
+                    plan:
+                      nextStep: ROUTE_READ_SKILL
+                    orchestrationVersion: intent-router.policy.v2
+                    effectiveLocale: zh-Hans
+
+components:
+  schemas:
+    AiGatewayDefaultsIntentNlu:
+      type: object
+      description: 网关默认 profile 子集（本包增量字段；其它字段与存量 defaults 一致）
+      properties:
+        intentNluUseLlm:
+          type: boolean
+          description: |
+            为 true 时，在无 env 强制关闭前提下，intent/recognize 与 Telegram 已绑定会话优先尝试 LLM NLU。
+          default: false
+        defaultProviderId:
+          type: string
+        defaultModelId:
+          type: string
+        scenarioChatModel:
+          type: string
+      additionalProperties: true
+
+    AiGatewayDefaultsIntentNluPatch:
+      type: object
+      properties:
+        intentNluUseLlm:
+          type: boolean
+      additionalProperties: true
+
+    IntentRecognizeRequest:
+      type: object
+      required: [text]
+      properties:
+        text:
+          type: string
+        sessionId:
+          type: string
+        executionId:
+          type: string
+        locale:
+          type: string
+        previousScenarioId:
+          type: string
+
+    IntentNluDraft:
+      type: object
+      properties:
+        source:
+          type: string
+          enum: [keyword_v1, llm_structured_v1]
+        primaryIntentFamily:
+          type: string
+        scenarioIdCandidates:
+          type: array
+          items:
+            type: object
+
+    IntentPolicyPlan:
+      type: object
+      properties:
+        nextStep:
+          type: string
+        resolvedScenarioId:
+          type: string
+          nullable: true
+        clarify:
+          type: array
+          items:
+            type: string
+        policyCodes:
+          type: array
+          items:
+            type: string
+
+    IntentRecognizeResponseIntentNlu:
+      type: object
+      properties:
+        scenarioId:
+          type: string
+          nullable: true
+        confidence:
+          type: number
+        nlu:
+          $ref: "#/components/schemas/IntentNluDraft"
+        nluSource:
+          type: string
+          description: 同 nlu.source
+        effectiveIntentNluUseLlm:
+          type: boolean
+          description: 本请求是否进入 LLM NLU 尝试分支（AC-6）
+        plan:
+          $ref: "#/components/schemas/IntentPolicyPlan"
+        orchestrationVersion:
+          type: string
+        effectiveLocale:
+          type: string
+          enum: [zh-Hans, zh-Hant, en]

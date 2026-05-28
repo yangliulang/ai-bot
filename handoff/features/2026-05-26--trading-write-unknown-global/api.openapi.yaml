@@ -1,0 +1,276 @@
+openapi: 3.0.3
+info:
+  title: "2026-05-26--trading-write-unknown-global — Agent trade write UNKNOWN"
+  description: |
+    ChainUp 增量契约：交易所 **写路径** 在 **504 / 写超时** 时统一 **`AGENT_EXCHANGE_WRITE_UNKNOWN`**。
+    响应为 FastAPI **`AppError`** JSON（`code` + `message` + 可选 `details`），**非** `{ code: 0, data }` 信封。
+    **对账 HTTP**（§6）为存量契约，本文件引用路径与错误体，行为以 `server/docs/BACKEND_SPEC.md` §6 为准。
+  version: "0.1.0"
+
+servers:
+  - url: http://127.0.0.1:8080
+    description: 本地 Agent API
+
+paths:
+  /api/v1/agent/trade/spot/limit-order:
+    post:
+      summary: 现货限价写 — 504/超时 → AGENT_EXCHANGE_WRITE_UNKNOWN（AC-2 代表）
+      operationId: spotLimitOrderWriteUnknown
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SpotLimitOrderRequestMinimal"
+      responses:
+        "200":
+          description: 交易所确认成功
+        "502":
+          description: 写结果未知（504 或超时）
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AppErrorExchangeWriteUnknown"
+              example:
+                code: AGENT_EXCHANGE_WRITE_UNKNOWN
+                message: 交易所返回 504，订单终态未知，请稍后对账重试
+                details:
+                  http_status: 504
+                  path: /sapi/v2/order
+                  exchangeOutcome: unknown
+
+  /api/v1/agent/trade/spot/cancel:
+    post:
+      summary: 现货撤单写 — 504/超时 → UNKNOWN（AC-3）
+      operationId: spotCancelWriteUnknown
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserIdExecutionBody"
+      responses:
+        "502":
+          description: 撤单结果未知
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AppErrorExchangeWriteUnknown"
+
+  /api/v1/agent/trade/futures/order:
+    post:
+      summary: 合约下单写 — 504/超时 → UNKNOWN（AC-4）
+      operationId: futuresOrderWriteUnknown
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserIdExecutionBody"
+      responses:
+        "502":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AppErrorExchangeWriteUnknown"
+
+  /api/v1/agent/trade/futures/cancel:
+    post:
+      summary: 合约撤单写 — 504/超时 → UNKNOWN（AC-4）
+      operationId: futuresCancelWriteUnknown
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserIdExecutionBody"
+      responses:
+        "502":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AppErrorExchangeWriteUnknown"
+
+  /api/v1/agent/trade/margin/order:
+    post:
+      summary: 全仓杠杆下单写 — 504/超时 → UNKNOWN（AC-5）
+      operationId: marginOrderWriteUnknown
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserIdExecutionBody"
+      responses:
+        "502":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AppErrorExchangeWriteUnknown"
+
+  /api/v1/agent/trade/futures/condition-order:
+    post:
+      summary: 条件单创建写 — 504/超时 → UNKNOWN（AC-6）
+      operationId: futuresConditionOrderWriteUnknown
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserIdExecutionBody"
+      responses:
+        "502":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AppErrorExchangeWriteUnknown"
+
+  /api/v1/agent/trade/futures/cancel-condition:
+    post:
+      summary: 条件单撤销写 — 504/超时 → UNKNOWN（AC-6）
+      operationId: futuresCancelConditionWriteUnknown
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserIdExecutionBody"
+      responses:
+        "502":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AppErrorExchangeWriteUnknown"
+
+  /api/v1/agent/trading/reconcile:
+    post:
+      summary: 对账闭合 UNKNOWN 写（§6 存量 · AC-7）
+      operationId: tradingReconcileAfterUnknownWrite
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [userId]
+              properties:
+                userId:
+                  type: string
+                executionId:
+                  type: string
+      responses:
+        "200":
+          description: 对账结果
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TradingReconcileResponse"
+
+  /api/v1/agent/trading/reconcile/status:
+    get:
+      summary: 对账状态（无 reconcile 且时间线 unknown → UNKNOWN）（AC-7）
+      operationId: tradingReconcileStatusUnknown
+      parameters:
+        - name: userId
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: executionId
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TradingReconcileStatusResponse"
+
+components:
+  schemas:
+    UserIdExecutionBody:
+      type: object
+      required: [userId]
+      properties:
+        userId:
+          type: string
+          description: Telegram tg_id
+
+    SpotLimitOrderRequestMinimal:
+      type: object
+      required: [userId, symbol, side, volume, price]
+      properties:
+        userId:
+          type: string
+        symbol:
+          type: string
+        side:
+          type: string
+          enum: [BUY, SELL]
+        volume:
+          type: string
+        price:
+          type: string
+
+    AppErrorExchangeWriteUnknown:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+          enum: [AGENT_EXCHANGE_WRITE_UNKNOWN]
+        message:
+          type: string
+          description: 中性话术，不断言终态
+        details:
+          type: object
+          properties:
+            http_status:
+              type: integer
+              example: 504
+            path:
+              type: string
+            exchangeOutcome:
+              type: string
+              enum: [unknown]
+            reason:
+              type: string
+              enum: [timeout]
+
+    AppErrorRejected:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+          description: 如 AGENT_SPOT_ORDER_REJECTED（AC-8）
+        message:
+          type: string
+
+    TradingReconcileResponse:
+      type: object
+      properties:
+        reconcileId:
+          type: string
+        caseKind:
+          type: string
+        resolutionStatus:
+          type: string
+        stillUnknown:
+          type: boolean
+        userMessage:
+          type: string
+
+    TradingReconcileStatusResponse:
+      type: object
+      properties:
+        executionId:
+          type: string
+        resolutionStatus:
+          type: string
+        stillUnknown:
+          type: boolean
+        caseKind:
+          type: string

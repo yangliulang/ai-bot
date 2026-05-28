@@ -1,0 +1,104 @@
+openapi: 3.0.3
+info:
+  title: "ChainUp AI Agent — Agent Management 同窗 Schemas（fragment）"
+  version: "2026-05-09"
+  description: |
+    供 `admin/agent-management.yaml` 以 `$ref` 引用。
+    `code` **enum** 与 [`agent-management/functions.md`](../../requirements/domains/admin/agent-management/functions.md) **§7.1** **逐字冻结**；
+    与 **附录 A `agentState` / `lastProductBlockReason`**、**`access-control` I02 同窗** 对签（**SC-AC-08**：KYC 二码 **二选一或并排** 须在 MR 说明）。
+paths: {}
+components:
+  schemas:
+    AgentManagementErrorCode:
+      type: string
+      description: |
+        I02 及同窗写路径业务/门禁失败码；**OpenAPI enum 与需求表一致**，**禁止** silent 增码（须走 MR + **access-control** 同窗若适用）。
+      enum:
+        - AGENT_GLOBAL_OFF
+        - AGENT_OPS_SUSPENDED
+        - AGENT_COMPLIANCE_RESTRICTED
+        - AGENT_USER_BLOCKED
+        - AGENT_REGION_BLOCKED
+        - AGENT_KYC_REQUIRED
+        - AGENT_KYC_INSUFFICIENT
+        - AGENT_ROLLOUT_BLOCKED
+        - AGENT_BILLING_BLOCKED
+        - AGENT_MEMBERSHIP_BLOCKED
+        - AGENT_TEMPLATE_DISABLED
+        - AGENT_TEMPLATE_DEP_UNMET
+        - AGENT_QUOTA_EXCEEDED
+        - AGENT_SUBACCOUNT_REQUIRED
+        - AGENT_BATCH_PARTIAL
+    AgentManagementErrorBody:
+      type: object
+      required: [code]
+      properties:
+        code:
+          $ref: "#/components/schemas/AgentManagementErrorCode"
+        message:
+          type: string
+          description: 人类可读；**非** i18n SSOT。
+        failures:
+          type: array
+          description: |
+            **R06** 部分失败时与 `AGENT_BATCH_PARTIAL` 同窗；逐条实例级原因。
+          items:
+            $ref: "#/components/schemas/AgentBatchFailureItem"
+        details:
+          type: object
+          additionalProperties: true
+      additionalProperties: false
+    AgentBatchFailureItem:
+      type: object
+      required: [instanceId, code]
+      properties:
+        instanceId:
+          type: string
+        code:
+          $ref: "#/components/schemas/AgentManagementErrorCode"
+        message:
+          type: string
+      additionalProperties: false
+    AgentInstanceCreated:
+      type: object
+      description: I02 成功体子集；字段终裁见实现 MR。
+      required: [instanceId]
+      properties:
+        instanceId:
+          type: string
+        userId:
+          type: string
+        templateId:
+          type: string
+        runtimeInstanceState:
+          type: string
+          description: 与 **config / design** 状态枚举同窗。
+        agentSubAccountId:
+          type: string
+          nullable: true
+      additionalProperties: true
+    AgentTemplateId:
+      type: string
+      example: tmpl_01JXXXXX
+    AgentBatchRuntimeResult:
+      type: object
+      description: |
+        **R06** 批量 Runtime 响应：全成功时可仅返回 **`succeeded[]`**；部分失败时 **`code`** **=** **`AGENT_BATCH_PARTIAL`** 且 **`failures[]`** **非空**（与 §7.1 同窗）。
+      properties:
+        code:
+          $ref: "#/components/schemas/AgentManagementErrorCode"
+        message:
+          type: string
+        succeeded:
+          type: array
+          items:
+            type: string
+          description: 成功应用的 `instanceId` 列表。
+        failures:
+          type: array
+          items:
+            $ref: "#/components/schemas/AgentBatchFailureItem"
+      additionalProperties: true
+    AgentInstanceId:
+      type: string
+      example: inst_01JXXXXX

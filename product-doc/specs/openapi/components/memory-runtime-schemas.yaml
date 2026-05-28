@@ -1,0 +1,389 @@
+openapi: 3.0.3
+info:
+  title: "ChainUp AI Agent — Memory Runtime Context Schemas（fragment）"
+  version: "2026-05-27"
+  description: |
+    **Runtime Context · STM/LTM 与 Semantic 块**（**非** HTTP 公网 API）。
+    同窗 [`memory-runtime.md`](../../requirements/Runtime/memory-runtime.md) **§9～§16**、
+    [`runtime-injection.md` §2.4.1](../../requirements/domains/admin/prompt-management/runtime-injection.md)、
+    [`design/memory-runtime-injection.md`](../../design/memory-runtime-injection.md)、
+    [`keys` §2.1](../../requirements/domains/admin/trading-agent-config/keys.md)。
+    **LTM 默认 OFF** — **`FEATURE_SEMANTIC_NARRATIVE`**。
+paths: {}
+components:
+  schemas:
+    SemanticPropositionType:
+      type: string
+      description: "FR-MEM02 allowlist 登记类型（扩展须 MR）。"
+      enum:
+        - interaction_preference
+        - preferred_symbols
+        - risk_profile
+        - capability_boundary
+    InteractionPreferences:
+      type: object
+      description: "bind to FR-MEM02(a)。"
+      properties:
+        localeBucket:
+          type: string
+          enum:
+            - zh-Hans
+            - zh-Hant
+            - en
+        verbosity:
+          type: string
+          enum:
+            - brief
+            - normal
+            - detailed
+      additionalProperties: false
+    SemanticNarrativeBlock:
+      type: object
+      description: |
+        **allowlist 命题裁剪摘要** — **非** L3 全量。**须** **`semanticNarrativeEnabled=true`** **且无 **`userMemoryRevokedAt`**。
+      properties:
+        summary:
+          type: string
+          maxLength: 2048
+          description: "人话摘要 · 禁止含 Secret/完整 PII。"
+        propositionTypes:
+          type: array
+          items:
+            $ref: "#/components/schemas/SemanticPropositionType"
+        preferredSymbols:
+          type: array
+          maxItems: 20
+          items:
+            type: string
+        interactionPreferences:
+          $ref: "#/components/schemas/InteractionPreferences"
+        asOf:
+          type: string
+          format: date-time
+      additionalProperties: false
+    ShortTermMemoryMessageTurn:
+      type: object
+      description: "L0 单轮 · §15.1 allowlist（用户可见句）。"
+      required:
+        - role
+        - content
+      properties:
+        role:
+          type: string
+          enum:
+            - user
+            - assistant
+        content:
+          type: string
+          description: "用户可见正文 · 禁止 routingHints/clarify JSON 原文。"
+        turnIndex:
+          type: integer
+          minimum: 0
+        isRollingSummary:
+          type: boolean
+          default: false
+      additionalProperties: false
+    ShortTermMemoryL0Block:
+      type: object
+      description: "L0 回合工作记忆 · §15.1 · 有界窗口。"
+      properties:
+        maxTurns:
+          type: integer
+          description: "生效 `STM_L0_MAX_TURNS` 快照。"
+          default: 10
+        recentTurns:
+          type: array
+          items:
+            $ref: "#/components/schemas/ShortTermMemoryMessageTurn"
+        rollingSummary:
+          type: string
+          nullable: true
+          description: "可选压缩 storyline · 非经济真值。"
+      additionalProperties: false
+    ClarifySessionMemorySummary:
+      type: object
+      description: "L1 澄清槽人话摘要 · 非裸 ClarifySessionSnapshot JSON（§15.2 · SC-CLARIFY-03）。"
+      properties:
+        resolvedSlotsHumanSummary:
+          type: string
+        pendingMissingHumanSummary:
+          type: string
+          nullable: true
+        clarifyTurn:
+          type: integer
+          minimum: 1
+        abandoned:
+          type: boolean
+          default: false
+      additionalProperties: false
+    ShortTermMemoryL1Block:
+      type: object
+      description: "L1 Execution 归因记忆 · §15.2 · 绑定 executionId。"
+      required:
+        - executionId
+      properties:
+        executionId:
+          type: string
+        userVisibleFactsSummary:
+          type: string
+          nullable: true
+          description: "裁剪后 Facts · userVisible* · 非 raw tool JSON。"
+        typeAConfirmedPayloadRef:
+          type: string
+          nullable: true
+          description: "类型 A 已确认包引用/哈希 · 注入位 ②。"
+        clarifySummary:
+          $ref: "#/components/schemas/ClarifySessionMemorySummary"
+        provisional:
+          type: boolean
+          default: false
+          description: "未确认写参草案 · 不得单独驱动类型 A。"
+      additionalProperties: false
+    MemoryGovernanceGateStep:
+      type: string
+      description: "FR-STM11 装配前四步 · memory-runtime §16.1。"
+      enum:
+        - invalidate_stale
+        - filter_denylist
+        - inject_allowlist
+        - verify_retained
+    MemoryGovernanceGateResult:
+      type: object
+      description: "Prompt 装配前四原则硬闸结果（观测/调试 · 非用户可见）。"
+      required:
+        - passed
+        - stepsCompleted
+      properties:
+        passed:
+          type: boolean
+        stepsCompleted:
+          type: array
+          items:
+            $ref: "#/components/schemas/MemoryGovernanceGateStep"
+        invalidatedLayers:
+          type: array
+          items:
+            type: string
+            enum:
+              - L0_stale_turns
+              - L1_abandoned_clarify
+              - L1_terminal_execution
+              - L1_expired_confirm
+        filteredDenylistHits:
+          type: array
+          items:
+            type: string
+            description: "如 routing_hints_raw、clarify_json_raw。"
+        retainedCriticalRefs:
+          type: array
+          items:
+            type: string
+            description: "②④ 注入位仍保留之引用标识。"
+      additionalProperties: false
+    AgentRuntimeMemoryContext:
+      type: object
+      description: |
+        **块 5 · Runtime Context** 之记忆子对象。
+        **注入序** **须** **遵守** [`memory-runtime` §5](../../requirements/Runtime/memory-runtime.md)。
+        **装配前** **须** **通过** **`memoryGovernanceGate`**（**FR-STM11**）。
+      properties:
+        shortTermL0:
+          $ref: "#/components/schemas/ShortTermMemoryL0Block"
+        shortTermL1:
+          type: array
+          items:
+            $ref: "#/components/schemas/ShortTermMemoryL1Block"
+          description: "当前 session 活跃 execution 集合 · 默认宜 1 条写路径。"
+        memoryGovernanceGate:
+          $ref: "#/components/schemas/MemoryGovernanceGateResult"
+        configSnapshot:
+          $ref: "#/components/schemas/MemoryRuntimeConfigSnapshot"
+        semanticNarrativeEnabled:
+          type: boolean
+          description: "须与 FEATURE_SEMANTIC_NARRATIVE 同窗（FR-MEM01）。"
+        semanticNarrativeBlock:
+          $ref: "#/components/schemas/SemanticNarrativeBlock"
+        semanticNarrativeAsOf:
+          type: string
+          format: date-time
+        userMemoryRevokedAt:
+          type: string
+          format: date-time
+          description: "若存在 → MUST NOT 注入 semanticNarrativeBlock。"
+        sessionClearedAt:
+          type: string
+          format: date-time
+          description: "STM 清空（FR-STM01）· 可选观测对账。"
+      additionalProperties: true
+    MemoryTrimmedLayer:
+      type: string
+      description: "memory-runtime §11 裁剪层标识。"
+      enum:
+        - L0_messages
+        - L0_rolling_summary
+        - semantic_secondary
+        - L2_noncritical
+    MemoryTrimmedEventPayload:
+      type: object
+      description: "agent.context.memory_trimmed 事件体示意（观测 SSOT 终裁）。"
+      properties:
+        userId:
+          type: string
+        sessionId:
+          type: string
+        executionId:
+          type: string
+        trimmedLayers:
+          type: array
+          items:
+            $ref: "#/components/schemas/MemoryTrimmedLayer"
+        estimatedTokensSaved:
+          type: integer
+        ts:
+          type: string
+          format: date-time
+      additionalProperties: false
+    MemorySessionClearedEventPayload:
+      type: object
+      description: "agent.memory.session_cleared · FR-STM04。"
+      required:
+        - sessionId
+        - clearedAt
+      properties:
+        sessionId:
+          type: string
+        userId:
+          type: string
+        clearedAt:
+          type: string
+          format: date-time
+        clearMode:
+          type: string
+          enum:
+            - in_place
+            - rotate_session_id
+        abandonedClarifySessions:
+          type: integer
+        cancelledPendingConfirms:
+          type: integer
+      additionalProperties: false
+    MemoryResumeClassifiedEventPayload:
+      type: object
+      description: "agent.memory.resume_classified · memory-runtime §14.6.4 · Resume 门控观测。"
+      required:
+        - sessionId
+        - decision
+      properties:
+        userId:
+          type: string
+        sessionId:
+          type: string
+        executionId:
+          type: string
+          nullable: true
+        decision:
+          $ref: "#/components/schemas/ResumeClassifierDecision"
+        confidence:
+          type: number
+          minimum: 0
+          maximum: 1
+          nullable: true
+        episodePickReason:
+          type: string
+          nullable: true
+          description: "如 most_recent_stale_at、explicit_reference_match、rules_bypass。"
+        ts:
+          type: string
+          format: date-time
+      additionalProperties: false
+    WarmExecutionEpisode:
+      type: object
+      description: "温索引 · memory-runtime §14.6 · 非活跃 L1 默认注入。"
+      required:
+        - executionId
+        - sessionId
+        - staleAt
+        - resolvedSlotsHumanSummary
+      properties:
+        executionId:
+          type: string
+        sessionId:
+          type: string
+        staleAt:
+          type: string
+          format: date-time
+        resolvedSlotsHumanSummary:
+          type: string
+        intentSummary:
+          type: string
+          nullable: true
+        expiresAt:
+          type: string
+          format: date-time
+          description: "WARM_EXECUTION_INDEX_TTL_SEC 自 staleAt。"
+      additionalProperties: false
+    ResumeClassifierDecision:
+      type: string
+      enum:
+        - new_intent
+        - resume_prior_write
+        - need_one_clarify
+    ResumeClassifierResult:
+      type: object
+      description: "Resume 门控 · memory-runtime §14.6.4 · 非主对话 LLM。"
+      required:
+        - decision
+      properties:
+        decision:
+          $ref: "#/components/schemas/ResumeClassifierDecision"
+        confidence:
+          type: number
+          minimum: 0
+          maximum: 1
+        executionId:
+          type: string
+          nullable: true
+        episodePickReason:
+          type: string
+          nullable: true
+          description: "如 most_recent_stale_at、explicit_reference_match、rules_bypass。"
+        reason:
+          type: string
+          nullable: true
+      additionalProperties: false
+    MemoryRuntimeConfigSnapshot:
+      type: object
+      description: "Execution 步 2 生效 STM 配置键快照 · keys §2.1。"
+      properties:
+        stmL0MaxTurns:
+          type: integer
+        stmIdleResumePromptSec:
+          type: integer
+        stmIdleDefaultPolicy:
+          type: string
+          enum:
+            - stale_prior_write
+            - prompt_resume_or_new
+        stmClarifySessionTtlSec:
+          type: integer
+        resumeClassifierMode:
+          type: string
+          enum:
+            - rules_only
+            - rules_then_llm
+        resumeClassifierMinConfidence:
+          type: number
+          minimum: 0
+          maximum: 1
+        warmExecutionIndexTtlSec:
+          type: integer
+        stmSessionClearMode:
+          type: string
+          enum:
+            - in_place
+            - rotate_session_id
+        stmHotRecycleSessionIdleSec:
+          type: integer
+        stmHotRecycleExecutionAfterTerminalSec:
+          type: integer
+      additionalProperties: false

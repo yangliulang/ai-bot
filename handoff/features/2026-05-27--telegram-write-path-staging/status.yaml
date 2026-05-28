@@ -1,0 +1,54 @@
+feature: 2026-05-27--telegram-write-path-staging
+title: 主链 TG 写路径 staging 证据
+phase: done
+owner: product-agent
+next: null
+artifacts:
+  brief: brief.md
+  api: api.openapi.yaml
+  test_coverage: test/coverage.md
+  staging_evidence: staging/evidence-log.md
+  product_accept: product/accept.md
+blockers: []
+history:
+  - at: "2026-05-28T07:00:00+0800"
+    phase: planned
+    by: product-agent
+    note: 从 Phase-2 P2 backlog 创建功能包
+  - at: "2026-05-28T07:30:00+0800"
+    phase: contract_ready
+    by: product-agent
+    note: 定稿 brief/OpenAPI/证据模板/测试追溯（P-08 staging）；含页面否；check-test-coverage.sh 通过
+  - at: "2026-05-28T08:00:00+0800"
+    phase: backend_done
+    by: backend-agent
+    note: 无 server 生产变更；新增 scripts/verify_timeline_order.py；pytest test_write_path_pipeline 7 passed
+  - at: "2026-05-28T09:00:00+0800"
+    phase: tested
+    by: test-agent
+    note: pytest 7 passed（TC-03 代理）；TC-05 依赖 done；STG 手工待填 evidence；blockers 保留至 product.accept
+  - at: "2026-05-28T09:30:00+0800"
+    phase: frontend_done
+    by: frontend-agent
+    note: 含页面否；frontend.integrate 空跑；integration.md 已填；admin/deeplink 无变更；blockers 未清
+  - at: "2026-05-28T10:00:00+0800"
+    phase: e2e_verified
+    by: test-agent
+    note: E2E N/A；e2e-report.md；pytest 7 passed；STG-01 仍跳过；blockers 保留
+  - at: "2026-05-28T10:30:00+0800"
+    phase: ui_reviewed
+    by: designer-agent
+    note: designer.review 通过（无新增 UI N/A）；design/ui-review.md；blockers 仍保留至 product.accept
+  - at: "2026-05-28T11:00:00+0800"
+    phase: ui_reviewed
+    by: product-agent
+    note: product.accept 不通过 — staging/evidence-log.md 空白；AC-1～4/6/8 未满足；product/accept.md；待填 evidence 后重跑 accept
+  - at: "2026-05-28T12:00:00+0800"
+    phase: ui_reviewed
+    by: product-agent
+    note: product.accept 复验仍不通过 — evidence-log 仍为空模板；blockers 未清
+  - at: "2026-05-26T20:45:00+0800"
+    phase: done
+    by: product-agent
+    note: 指挥官提供 executionId exec-3d132b3ad3ad44；evidence-log §1～§5 已填；timeline ORDER_OK；product.accept 通过
+updated_at: "2026-05-26T20:45:00+0800"

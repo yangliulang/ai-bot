@@ -1,0 +1,61 @@
+openapi: 3.0.3
+info:
+  title: "ChainUp AI Agent — Access Control / 准入同窗 Schemas（fragment）"
+  version: "2026-05-09"
+  description: |
+    供 `admin/access-control.yaml` 以 `$ref` 引用。
+    **`EligibilityEnvelope`** 与 [`eligibility-runtime.md`](../../requirements/domains/admin/access-control/eligibility-runtime.md) **§4** 一致；
+    **`code`** **须** 与 [`agent-management/functions.md` §7.1](../../requirements/domains/admin/agent-management/functions.md) **OpenAPI `enum` 同窗**（**禁止**私增 · **SC-AC-08**）。
+    **`scenarioId`** 可选参数 **同窗** [`identity-schemas.yaml`](./identity-schemas.yaml)。
+paths: {}
+components:
+  schemas:
+    EligibilityEnvelope:
+      type: object
+      required: [allowed]
+      description: |
+        **§4 信封**：`allowed=false` 时 **`code`/`reason` 必填**（实现可用校验器收紧）；
+        `allowed=true` 时可带 **`capabilities`**（§10）。
+      properties:
+        allowed:
+          type: boolean
+        code:
+          nullable: true
+          allOf:
+            - $ref: "../components/agent-management-schemas.yaml#/components/schemas/AgentManagementErrorCode"
+          description: >
+            当 allowed 为 false 时须返回；与 I02 错误体、§7.1 enum 同窗。
+        reason:
+          type: string
+          nullable: true
+          description: 人类可读摘要；PII 见 access-control rules。
+        locale:
+          type: string
+          nullable: true
+        capabilities:
+          type: object
+          nullable: true
+          additionalProperties: true
+          description: eligibility-runtime §10 能力裁剪；终裁见 design。
+        evaluatedAt:
+          type: string
+          format: date-time
+          nullable: true
+        eligibilityDecisionId:
+          type: string
+          nullable: true
+      additionalProperties: false
+    EvaluateEligibilityRequest:
+      type: object
+      required: [userId]
+      properties:
+        userId:
+          type: string
+        channel:
+          type: string
+          description: 如 telegram、未来 H5；与 FR-MC601 渠道同窗。
+        scenarioId:
+          nullable: true
+          allOf:
+            - $ref: "./identity-schemas.yaml#/components/schemas/ScenarioId"
+      additionalProperties: true

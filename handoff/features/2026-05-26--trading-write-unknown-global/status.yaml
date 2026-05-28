@@ -1,0 +1,40 @@
+feature: 2026-05-26--trading-write-unknown-global
+title: 写路径 504 UNKNOWN 全局扩面
+phase: done
+owner: product-agent
+next: null
+artifacts:
+  brief: brief.md
+  api: api.openapi.yaml
+  test_coverage: test/coverage.md
+blockers: []
+history:
+  - at: "2026-05-26T15:00:00+0800"
+    phase: contract_ready
+    by: product-agent
+    note: 建包定稿 brief/OpenAPI/测试追溯；check-test-coverage.sh 通过；§6 reconcile 为存量依赖
+  - at: "2026-05-26T15:45:00+0800"
+    phase: backend_done
+    by: backend-agent
+    note: post_signed_* 写统一 AGENT_EXCHANGE_WRITE_UNKNOWN；HTTP finalize UNKNOWN；reconcile status 识别 payload；test_trading_write_unknown_global.py
+  - at: "2026-05-26T16:30:00+0800"
+    phase: tested
+    by: test-agent
+    note: P0 TC-01～TC-09 + P1 TC-10 全通过；pytest 19 passed；补 TC-03～06 HTTP；无页面，待 frontend 空跑
+  - at: "2026-05-26T17:00:00+0800"
+    phase: frontend_done
+    by: frontend-agent
+    note: 无 Admin/Deeplink 页面；integration.md 收口；无代码变更；待 test.e2e N/A
+  - at: "2026-05-26T17:30:00+0800"
+    phase: e2e_verified
+    by: test-agent
+    note: E2E N/A（无页面）；API 回归 19 passed；e2e-report 已填
+  - at: "2026-05-26T18:00:00+0800"
+    phase: ui_reviewed
+    by: designer-agent
+    note: 无 UI；ui-review N/A 通过；待 product.accept
+  - at: "2026-05-26T18:30:00+0800"
+    phase: done
+    by: product-agent
+    note: product.accept — AC-1～9 对照 test/report、design/ui-review；brief 勾选；Q2 TG 留 P1；Phase-1 P0 扩面收口
+updated_at: "2026-05-26T18:30:00+0800"

@@ -1,0 +1,14 @@
+openapi: 3.0.3
+info:
+  title: "ChainUp AI Agent — Coobit 子账户/公开 Exchange 同窗 Schemas（fragment）"
+  version: "2026-05-09"
+  description: |
+    供 `exchange/*.yaml` 以 `$ref` 引用。
+    字段级终裁以所内 OpenAPI / GitBook v2 为准；本 fragment 仅保证 **JSON 响应占位** 与 **`design/api.md` 矩阵 PATH** 同窗。
+paths: {}
+components:
+  schemas:
+    CoobitJsonValue:
+      type: object
+      description: 占位 JSON 对象；实际形状与 Spot/Margin/Futures/Wallet 文档对签。
+      additionalProperties: true

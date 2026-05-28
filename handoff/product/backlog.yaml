@@ -1,0 +1,184 @@
+---
+version: 1
+items:
+- slug: trading-write-unknown-global
+  feature_id: 2026-05-26--trading-write-unknown-global
+  priority: P0
+  title: 写路径 504 UNKNOWN 全局扩面
+  value: 写操作 504/UNKNOWN 终态与对账引导一致
+  depends_on: []
+  status: done
+  phase: 1
+- slug: admin-observability
+  feature_id: 2026-05-26--admin-observability
+  priority: P1
+  title: Observability Admin 对齐
+  value: 运营可查执行、tool-calls、llm
+  depends_on: []
+  status: done
+  phase: 1
+- slug: nlu-llm-strategy
+  feature_id: 2026-05-26--nlu-llm-strategy
+  priority: P1
+  title: NLU LLM 默认策略
+  value: 意图识别可配置 LLM 策略
+  depends_on: []
+  status: done
+  phase: 1
+- slug: telegram-welcome
+  feature_id: 2026-05-26--telegram-welcome
+  priority: P1
+  title: 开通欢迎语
+  value: 绑定后多语言欢迎与幂等
+  depends_on: []
+  status: done
+  phase: 1
+- slug: telegram-llm-narrate
+  feature_id: 2026-05-26--telegram-llm-narrate
+  priority: P1
+  title: 场景 LLM narrate 扩面
+  value: 九场景 narrate 开关与运行时生效
+  depends_on: []
+  status: done
+  phase: 1
+- slug: admin-agent-instance-write
+  feature_id: 2026-05-26--admin-agent-instance-write
+  priority: P1
+  title: Agent 实例能力扩展
+  value: Admin 实例创建/绑定/覆盖写路径
+  depends_on: []
+  status: done
+  phase: 1
+- slug: trading-reconcile
+  feature_id: 2026-05-26--trading-reconcile
+  priority: P1
+  title: 504 对账契约收口
+  value: 存量对账 HTTP 契约与测试追溯
+  depends_on: []
+  status: done
+  phase: 2
+- slug: runtime-write-path-pipeline
+  feature_id: 2026-05-27--runtime-write-path-pipeline
+  priority: P0
+  title: 写路径管线（read_skill + 事件序）
+  value: P-04/P-05 主链可验收
+  depends_on:
+  - 2026-05-26--trading-write-unknown-global
+  status: done
+  phase: 2
+- slug: skill-publish-effective
+  feature_id: 2026-05-27--skill-publish-effective
+  priority: P0
+  title: Skill Publish 生效链
+  value: 发布后仅 PUBLISHED 进运行时
+  depends_on: []
+  status: done
+  phase: 2
+- slug: admin-ai-settings-gateway-ui
+  feature_id: 2026-05-27--admin-ai-settings-gateway-ui
+  priority: P1
+  title: Admin AI 网关开关 UI
+  value: "/ai-settings 配置 NLU/narrate"
+  depends_on:
+  - 2026-05-26--nlu-llm-strategy
+  - 2026-05-26--telegram-llm-narrate
+  status: done
+  phase: 2
+- slug: condition-order-list-cancel
+  feature_id: 2026-05-26--condition-order-list-cancel
+  priority: P1
+  title: 条件单查撤契约收口
+  value: 已实现 API 的 brief/OpenAPI/测试
+  depends_on: []
+  status: done
+  phase: 2
+- slug: futures-cancel
+  feature_id: 2026-05-26--futures-cancel
+  priority: P1
+  title: 合约撤单契约收口
+  value: 已实现 cancel 的契约追溯
+  depends_on: []
+  status: done
+  phase: 2
+- slug: telegram-write-path-staging
+  feature_id: 2026-05-27--telegram-write-path-staging
+  priority: P2
+  title: 主链 TG 写路径 staging 证据
+  value: P-08 走读 executionId 证据
+  depends_on:
+  - 2026-05-27--runtime-write-path-pipeline
+  status: done
+  phase: 2
+- slug: pipeline-eval-orchestration-align
+  feature_id: 2026-05-28--pipeline-eval-orchestration-align
+  priority: P0
+  title: 管线 Eval + 编排 freeze 对拍
+  value: "**OP-AO3** · `eval.runtime.pipeline_write_order` · `runtime-freeze` §3 ·
+    W2 Eval；**含页面：否**"
+  depends_on: []
+  status: done
+  phase: 3
+- slug: prompt-runtime-assembly-write
+  feature_id: 2026-05-28--prompt-runtime-assembly-write
+  priority: P0
+  title: Prompt Runtime 写路径拼装链
+  value: "**CC-P1-04** · **OP-PR** · AC-09a～f · 写路径 TRADING 扩面；**含页面：否**"
+  depends_on: []
+  status: done
+  phase: 3
+- slug: skill-contract-eval-staging
+  feature_id: 2026-05-28--skill-contract-eval-staging
+  priority: P1
+  title: Skill 契约 Eval staging
+  value: "**OP-SKILL B** · W3 **SK-B03** · `eval.skill.*` P0 真跑；**含页面：否**"
+  depends_on: []
+  status: done
+  phase: 3
+- slug: registry-tool-idempotency
+  feature_id: 2026-05-28--registry-tool-idempotency
+  priority: P1
+  title: Registry toolId/skillId 幂等
+  value: "**CC-P1-03** · MR-E · `SC-MCV1-05` / `SC-OBS01`；**含页面：否**"
+  depends_on: []
+  status: done
+  phase: 3
+- slug: memory-stm-session
+  feature_id: 2026-05-28--memory-stm-session
+  priority: P2
+  title: Memory STM 会话基线
+  value: "**OP-MEM** · `eval.memory.session_clear_stm` · LTM 默认 OFF；**含页面：否**"
+  depends_on: []
+  status: done
+  phase: 3
+- slug: commerce-entitlement-s2-gate
+  feature_id: 2026-05-28--commerce-entitlement-s2-gate
+  priority: P0
+  title: Commerce S2 额度门禁
+  value: "**MR-BILL-B1** · `runConsumeAndBillS2CommerceGate` · **含页面：否**"
+  depends_on: []
+  status: queued
+  phase: 
+- slug: commerce-entitlement-s5-settle
+  feature_id: 2026-05-28--commerce-entitlement-s5-settle
+  priority: P0
+  title: Commerce S5 权益核销
+  value: "**MR-BILL-B2** · `POST …/entitlements/debit` · 依赖 S2 gate · **含页面：否**"
+  depends_on: []
+  status: queued
+  phase: 
+- slug: me-commerce-read-api
+  feature_id: 2026-05-28--me-commerce-read-api
+  priority: P1
+  title: 用户 me/commerce 读路径
+  value: "**`commerce-me.yaml`** · `/subaccount/billing` BFF 契约 · **含页面：否**（H5 另包可选）"
+  depends_on: []
+  status: queued
+  phase: 
+- slug: commerce-bill-staging
+  feature_id: 2026-05-28--commerce-bill-staging
+  priority: P2
+  title: 轨 B staging 证据与探针
+  value: "**`staging-mr-bill-runbook`** · SC-B20 样例 · 依赖 S5 · **含页面：否**"
+  depends_on: []
+  status: queued
+  phase: 

@@ -1,0 +1,47 @@
+---
+feature: 2026-05-28--pipeline-eval-orchestration-align
+title: 管线 Eval + 编排 freeze 对拍
+phase: done
+owner: product-agent
+next: null
+artifacts:
+  brief: brief.md
+  api: api.openapi.yaml
+  test_coverage: test/coverage.md
+  eval_evidence: eval/evidence/eval-pipeline-write-order.md
+  backend_notes: backend/notes.md
+  test_report: test/report.md
+blockers: []
+skips:
+- frontend.integrate
+- test.e2e
+- designer.review
+history:
+- at: '2026-05-28T08:00:00+0800'
+  phase: planned
+  by: product-agent
+  note: 从 Phase-3 P0 backlog 创建功能包
+- at: '2026-05-28T08:30:00+0800'
+  phase: contract_ready
+  by: product-agent
+  note: 定稿 brief/OpenAPI/eval 证据模板/测试追溯（OP-AO3 · eval.runtime.pipeline_write_order）；含页面否；check-test-coverage.sh
+    通过
+- at: '2026-05-28T10:00:00+0800'
+  phase: backend_done
+  by: backend-agent
+  note: eval_pipeline_write_order + orchestration_freeze_align；flash_convert catalog
+    补 read.skill；policy runtime-freeze §3 ref；pytest 29 passed
+- at: '2026-05-28T14:30:00+0800'
+  phase: tested
+  by: test-agent
+  note: P0 全绿（TC-01～TC-08）；eval 7 + freeze 8 + write_path 7 passed；证据 §1～§3 复核
+- at: '2026-05-27T11:10:11+08:00'
+  phase: ui_reviewed
+  by: commander
+  note: 'pipeline-skip: 跳过 frontend.integrate（skips: frontend.integrate, test.e2e,
+    designer.review）'
+- at: '2026-05-28T15:00:00+0800'
+  phase: done
+  by: product-agent
+  note: AC-1～AC-8 验收通过；OP-AO3 · eval.runtime.pipeline_write_order 0.1.0 证据就绪
+updated_at: '2026-05-28T15:00:00+0800'

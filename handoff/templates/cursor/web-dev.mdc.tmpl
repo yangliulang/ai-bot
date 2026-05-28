@@ -1,0 +1,28 @@
+---
+description: 前端 Web 开发规范（@FRONTEND_PATH@）
+globs: @FRONTEND_GLOB@
+alwaysApply: false
+---
+
+# Web 开发规范（Vue + Vite）
+
+> 由 `./scripts/sync-project-rules.sh` 根据 `pipeline.project.yaml` 生成，勿手改路径。
+
+默认控制台：`@FRONTEND_PATH@/`（Vue 3 · Pinia · ky）。  
+Deeplink：`deeplink/`（5174）— 若本功能涉及，见 `brief.md` 与 `frontend/integration.md`。
+
+## 对接
+
+- 开发态经 Vite proxy：`/api` → `@API_BASE_URL@`（勿写死完整域名）
+- 响应解析以 OpenAPI / `admin` 现有客户端为准（非 `{ code: 0 }` 统一信封）
+- Admin 契约：`product-doc/specs/openapi/admin/*.yaml`
+
+## 页面
+
+- 路由与交互以 `brief.md` + `frontend/integration.md` 为准
+- 主流程 + brief 要求的错误态；提交中 loading / 禁用
+
+## 功能开发时
+
+- 联调后更新 `frontend/integration.md`
+- 流转门禁见 `frontend-agent.mdc`

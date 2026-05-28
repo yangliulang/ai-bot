@@ -1,0 +1,223 @@
+openapi: 3.0.3
+info:
+  title: "2026-05-27--runtime-write-path-pipeline — Runtime write path (read_skill + timeline order)"
+  description: |
+    写路径管线：Runtime 读 **PUBLISHED** 技能规范 + 时间线 **五段因果序**（P‑04 / P‑05 · MR-RT-B4）。
+    - **200** 响应为 FastAPI **直出** camelCase（非 `{ code: 0 }` 信封）。
+    - **4xx/5xx** 为 **`AppError`**：`code` + `message` + 可选 `details`。
+    - Telegram 写路径 **无独立 HTTP path**；行为经 webhook 单测 + Admin timeline 验收（见 `test/cases.md`）。
+  version: "0.1.0"
+
+servers:
+  - url: http://127.0.0.1:8080
+    description: 本地 Agent API
+
+paths:
+  /api/v1/runtime/skill-operation-spec/effective:
+    get:
+      summary: 读取已发布技能操作规范（类型 A 前 · AC-1）
+      operationId: getEffectiveSkillOperationSpec
+      tags: [Runtime — Skill operation spec]
+      parameters:
+        - name: skillId
+          in: query
+          required: true
+          schema:
+            type: string
+          example: skill.spot.limit_order
+        - name: scenarioId
+          in: query
+          required: false
+          schema:
+            type: string
+          description: 可选；用于 scenario→skillId 校验
+          example: trade.spot.limit_order
+      responses:
+        "200":
+          description: 已发布规范元数据与正文节（不含 Secret）
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SkillOperationSpecEffective"
+        "403":
+          description: 未发布或引用无效
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AppError"
+              example:
+                code: PROMPT_SKILL_REF_INVALID
+                message: 技能操作规范未发布或版本无效
+        "404":
+          description: 未知 skillId
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AppError"
+
+  /api/v1/agent/trade/spot/limit-order:
+    post:
+      summary: 现货限价写（HTTP 代表路径 · AC-8 时间线序）
+      operationId: postAgentSpotLimitOrderWritePath
+      tags: [Agent — Trade spot]
+      description: |
+        存量写接口；本包增量要求 **execution 时间线** 满足 **read_skill → 确认 → 写** 五段序。
+        实现 SSOT 见 `server/docs/BACKEND_SPEC.md` 与 `agent_trade_spot.py`。
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SpotLimitOrderRequest"
+      responses:
+        "200":
+          description: 下单成功或业务成功体
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "400":
+          description: 交易所拒单等
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AppError"
+        "403":
+          description: 未绑定子账户
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AppError"
+        "502":
+          description: 交易所/网关失败
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AppError"
+
+  /api/v1/admin/observability/executions/{executionId}/timeline:
+    get:
+      summary: 执行时间线（验收五段序 · AC-5）
+      operationId: getAdminObservabilityExecutionTimeline
+      tags: [Admin — Observability]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: executionId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: 时间线事件列表（camelCase）
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ObservabilityTimelineList"
+        "404":
+          description: execution 不存在
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AppError"
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+
+  schemas:
+    AppError:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        details:
+          type: object
+          additionalProperties: true
+
+    SkillOperationSpecSection:
+      type: object
+      properties:
+        id:
+          type: string
+          description: 如 validation、confirmation、slots
+        title:
+          type: string
+        bodyMarkdown:
+          type: string
+          description: 节正文（可截断；完整版由 Publish 包管理）
+
+    SkillOperationSpecEffective:
+      type: object
+      required: [skillId, skillSpecVersion, specDigest]
+      properties:
+        skillId:
+          type: string
+        skillSpecVersion:
+          type: string
+        specDigest:
+          type: string
+          description: SHA-256 hex（UTF-8 正文）
+        scenarioId:
+          type: string
+          nullable: true
+        lifecycle:
+          type: string
+          enum: [PUBLISHED]
+        sections:
+          type: array
+          items:
+            $ref: "#/components/schemas/SkillOperationSpecSection"
+
+    SpotLimitOrderRequest:
+      type: object
+      required: [userId, symbol, side, quantity, price]
+      properties:
+        userId:
+          type: string
+        symbol:
+          type: string
+        side:
+          type: string
+          enum: [BUY, SELL]
+        quantity:
+          type: string
+        price:
+          type: string
+        newClientOrderId:
+          type: string
+
+    ObservabilityTimelineItem:
+      type: object
+      required: [eventName, createdAt]
+      properties:
+        eventName:
+          type: string
+        transitionTrigger:
+          type: string
+        stepKind:
+          type: string
+        outcome:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        payload:
+          type: object
+          additionalProperties: true
+
+    ObservabilityTimelineList:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/ObservabilityTimelineItem"

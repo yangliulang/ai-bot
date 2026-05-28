@@ -1,0 +1,44 @@
+feature: 2026-05-26--admin-observability
+title: Observability Admin 对齐
+phase: done
+owner: product-agent
+next: null
+artifacts:
+  brief: brief.md
+  api: api.openapi.yaml
+  test_coverage: test/coverage.md
+blockers: []
+history:
+  - at: "2026-05-26T13:15:00+0800"
+    phase: planned
+    by: product-agent
+    note: 从模板创建功能包（/pipeline-product-contract）
+  - at: "2026-05-26T13:17:42+0800"
+    phase: contract_ready
+    by: product-agent
+    note: 完成 brief、api.openapi.yaml、test 追溯；check-test-coverage.sh 通过；后端存量已实现见 backend/notes.md
+  - at: "2026-05-26T13:19:01+0800"
+    phase: backend_done
+    by: backend-agent
+    note: 核对 admin_observability tool-calls/llm 与功能包 OpenAPI 一致；pytest test_observability_tool_calls_and_llm 通过；backend/notes.md 已补 curl/鉴权
+  - at: "2026-05-26T13:22:00+0800"
+    phase: tested
+    by: test-agent
+    note: API P0 全通过（5 pytest + TC-06 交 E2E）；test/report.md 已填；新增 test_admin_observability_pipeline_p0.py
+  - at: "2026-05-26T13:28:00+0800"
+    phase: frontend_done
+    by: frontend-agent
+    note: ObservabilityPage tool/llm Tab 对接真实 API；admin-observability 客户端；frontend/integration.md 已更新
+  - at: "2026-05-26T14:05:00+0800"
+    phase: e2e_verified
+    by: test-agent
+    note: E2E P0 全通过（E2E-01～04）；test/e2e-report.md 已填；seed executionId exec-ec44260cef7941
+  - at: "2026-05-26T14:30:00+0800"
+    phase: ui_reviewed
+    by: designer-agent
+    note: UI 走查通过（无 P0）；design/ui-review.md 已填；P1 徽章/404 空表并存记入待迭代
+  - at: "2026-05-26T14:45:00+0800"
+    phase: done
+    by: product-agent
+    note: product.accept — AC-1～6 对照 API/E2E/UI 报告全部满足；brief 验收勾选；Phase-1 首包全链路收口
+updated_at: "2026-05-26T14:45:00+0800"

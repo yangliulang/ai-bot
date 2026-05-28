@@ -1,0 +1,44 @@
+feature: 2026-05-26--condition-order-list-cancel
+title: 条件单查撤契约收口
+phase: done
+owner: product-agent
+next: null
+artifacts:
+  brief: brief.md
+  api: api.openapi.yaml
+  test_coverage: test/coverage.md
+blockers: []
+history:
+  - at: "2026-05-27T21:00:00+0800"
+    phase: planned
+    by: product-agent
+    note: 从 Phase-2 backlog 创建功能包
+  - at: "2026-05-27T21:30:00+0800"
+    phase: contract_ready
+    by: product-agent
+    note: 定稿 brief/OpenAPI/测试追溯（Step 2.5 存量查撤）；含页面否；check-test-coverage.sh 通过
+  - at: "2026-05-27T22:00:00+0800"
+    phase: backend_done
+    by: backend-agent
+    note: 无代码变更；OpenAPI 对齐；新增 test_condition_order_list_cancel.py TC-04～07；pytest 13 passed；backend/notes.md
+  - at: "2026-05-27T23:00:00+0800"
+    phase: tested
+    by: test-agent
+    note: P0 TC-01～08 + P1 TC-09 全通过；pytest 13 passed；test/report.md
+  - at: "2026-05-27T23:30:00+0800"
+    phase: frontend_done
+    by: frontend-agent
+    note: 含页面否；frontend.integrate 空跑；integration.md 联调结论已填；admin/deeplink 无变更
+  - at: "2026-05-28T00:00:00+0800"
+    phase: e2e_verified
+    by: test-agent
+    note: E2E N/A；e2e-report.md；pytest 13 passed 回归
+  - at: "2026-05-28T00:30:00+0800"
+    phase: ui_reviewed
+    by: designer-agent
+    note: designer.review 通过（无 UI N/A）；design/ui-review.md；无 P0
+  - at: "2026-05-28T01:00:00+0800"
+    phase: done
+    by: product-agent
+    note: product.accept — AC-1～8 对照 test/report TC-01～08；brief 勾选；TG ccp/ccx 留 P1
+updated_at: "2026-05-28T01:00:00+0800"

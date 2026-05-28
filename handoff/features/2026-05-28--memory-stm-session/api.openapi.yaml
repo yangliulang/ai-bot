@@ -1,0 +1,177 @@
+openapi: 3.0.3
+info:
+  title: "2026-05-28--memory-stm-session — Memory STM session baseline"
+  description: |
+    OP-MEM · **`eval.memory.session_clear_stm`** · **`eval.memory.stm_vs_ltm_intent`**。
+    - **STM 清空** + **装配上下文预览**（同窗 `memory-runtime-schemas.yaml`）。
+    - **200** 为 FastAPI **直出** camelCase；**4xx** 为 **`AppError`**。
+    - **LTM 默认 OFF** — Semantic 块仅 **fixture/开关 ON** 时出现。
+  version: "0.1.0"
+
+servers:
+  - url: http://127.0.0.1:8080
+    description: 本地 Agent API
+
+paths:
+  /api/v1/runtime/memory/sessions/{sessionId}/clear-stm:
+    post:
+      summary: 清空本会话 STM（FR-STM01 · AC-9）
+      operationId: postRuntimeMemorySessionClearStm
+      tags: [Runtime — Memory]
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema:
+            type: string
+          example: "tg:123456789"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ClearSessionStmRequest"
+      responses:
+        "200":
+          description: STM 已清空 · 可观测 clearedAt
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClearSessionStmResponse"
+        "404":
+          description: 未知 session（若实现选择严格校验）
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AppError"
+
+  /api/v1/runtime/memory/sessions/{sessionId}/context:
+    get:
+      summary: 会话记忆装配预览（AC-9 · Prompt 块 5 对账）
+      operationId: getRuntimeMemorySessionContext
+      tags: [Runtime — Memory]
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: userId
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: semanticNarrativeEnabled
+          in: query
+          required: false
+          description: Eval/fixture 用 · 模拟 FEATURE_SEMANTIC_NARRATIVE ON
+          schema:
+            type: boolean
+            default: false
+      responses:
+        "200":
+          description: L0 计数 + AgentRuntimeMemoryContext 子集
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MemorySessionContextPreview"
+
+components:
+  schemas:
+    AppError:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        details:
+          type: object
+          additionalProperties: true
+
+    ClearSessionStmRequest:
+      type: object
+      required: [userId]
+      properties:
+        userId:
+          type: string
+        invalidatePendingTypeA:
+          type: boolean
+          default: true
+          description: FR-STM03 · 清空时作废未确认类型 A
+
+    ClearSessionStmResponse:
+      type: object
+      required: [sessionId, userId, clearedAt, pendingTypeAInvalidated]
+      properties:
+        sessionId:
+          type: string
+        userId:
+          type: string
+        clearedAt:
+          type: string
+          format: date-time
+        pendingTypeAInvalidated:
+          type: boolean
+        eventName:
+          type: string
+          example: agent.memory.session_cleared
+
+    SemanticNarrativeBlock:
+      type: object
+      description: 同窗 memory-runtime-schemas · allowlist 摘要（LTM ON fixture）
+      properties:
+        summary:
+          type: string
+          maxLength: 2048
+        propositionTypes:
+          type: array
+          items:
+            type: string
+        asOf:
+          type: string
+          format: date-time
+
+    AgentRuntimeMemoryContextPreview:
+      type: object
+      description: 块 5 记忆子对象预览（同窗 memory-runtime-schemas）
+      properties:
+        semanticNarrativeEnabled:
+          type: boolean
+        semanticNarrativeBlock:
+          $ref: "#/components/schemas/SemanticNarrativeBlock"
+        userMemoryRevokedAt:
+          type: string
+          format: date-time
+          nullable: true
+        sessionClearedAt:
+          type: string
+          format: date-time
+          nullable: true
+
+    MemorySessionContextPreview:
+      type: object
+      required: [sessionId, userId, l0MessageCount, memoryContext]
+      properties:
+        sessionId:
+          type: string
+        userId:
+          type: string
+        l0MessageCount:
+          type: integer
+          minimum: 0
+        l0MessagesPreview:
+          type: array
+          description: 最近 N 条（实现可截断 · 不含 Secret）
+          items:
+            type: object
+            properties:
+              role:
+                type: string
+              contentPreview:
+                type: string
+        pendingTypeAValid:
+          type: boolean
+        memoryContext:
+          $ref: "#/components/schemas/AgentRuntimeMemoryContextPreview"

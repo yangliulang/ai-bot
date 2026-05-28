@@ -1,0 +1,77 @@
+openapi: 3.0.3
+info:
+  title: "Coobit — 理财/多账本（钱包侧）"
+  version: "2026-05-09"
+  description: |
+    与 [`design/api.md`](../../design/api.md) **矩阵「理财」** 与 **「全 · 多账本划转」**（`universal_transfer*`）同窗。
+    **`accountType`=4 OTC** 等映射 **`/wealth-via-agent.md`**；细分 PATH **CC-P0-02** 书面延期。
+    **CC-P0-02 · B**：**已列** **`paths`** **与** **矩阵** **理财只读/申购赎回划转/全辖 transfer** **行** **同窗**（**2026-05-12**）。
+    同窗 [`exchange-schemas.yaml`](../components/exchange-schemas.yaml)。
+  contact:
+    name: "Jesson"
+    email: Jesson@chainup.com
+servers:
+  - url: https://api.example.invalid
+    description: 现货网关；与 paths 组成完整 URL
+externalDocs:
+  description: 产业锚/扩展阅读
+  url: "https://exchangedocsv2.gitbook.io/open-api-doc-v2/wallet.md"
+tags:
+  - name: wealth
+  - name: transfer
+paths:
+  "/sapi/v1/asset/account/by_type":
+    post:
+      tags: [wealth]
+      summary: "按类型查资产 · 理财只读"
+      operationId: coobitWealthPostAccountByType
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/exchange-schemas.yaml#/components/schemas/CoobitJsonValue"
+  "/sapi/v1/asset/universal_transfer":
+    post:
+      tags: [transfer]
+      summary: "多账本 universal 划转 · 申购/赎回/条件转账"
+      operationId: coobitWealthPostUniversalTransfer
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/exchange-schemas.yaml#/components/schemas/CoobitJsonValue"
+  "/sapi/v1/asset/universal_transfer_query":
+    post:
+      tags: [transfer]
+      summary: "universal 划转查询"
+      operationId: coobitWealthPostUniversalTransferQuery
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/exchange-schemas.yaml#/components/schemas/CoobitJsonValue"
+  "/sapi/v1/asset/transfer":
+    post:
+      tags: [transfer]
+      summary: "现货账本 transfer"
+      operationId: coobitWealthPostTransfer
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/exchange-schemas.yaml#/components/schemas/CoobitJsonValue"
+  "/sapi/v1/asset/transferQuery":
+    post:
+      tags: [transfer]
+      summary: "transfer 查询"
+      operationId: coobitWealthPostTransferQuery
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/exchange-schemas.yaml#/components/schemas/CoobitJsonValue"

@@ -1,0 +1,16 @@
+/** 侧栏导航图标键，与 `admin-nav/*.svg` 文件名（不含扩展名）一一对应 */
+export type AdminNavIconKey =
+  | 'executions'
+  | 'instances'
+  | 'prompts'
+  | 'orchestration'
+  | 'tool-registry'
+  | 'confirmation'
+  | 'safety'
+  | 'access'
+  | 'billing-overview'
+  | 'billing-pricing'
+  | 'billing-ledger'
+  | 'observability'
+  | 'channels'
+  | 'settings'

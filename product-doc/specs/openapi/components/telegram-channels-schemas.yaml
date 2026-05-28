@@ -1,0 +1,99 @@
+openapi: 3.0.3
+info:
+  title: "ChainUp AI Agent — Telegram 渠道运维同窗 Schemas（fragment）"
+  version: "2026-05-11"
+  description: |
+    供 `admin/telegram-channels.yaml` 以 `$ref` 引用。
+    能力面同窗 [`admin-bot-config.md`](../../requirements/domains/agent/telegram/admin-bot-config.md) **FR-TG-ADMIN-01～06**、**SC-TG-ADMIN-01～05**；
+    `secretRef` 语义同窗 **模块四 · AI Settings**（**禁止** Token 明文落默认审计字段）。
+paths: {}
+components:
+  schemas:
+    SecretRef:
+      type: string
+      description: >
+        密钥引用（Vault/KMS id 等）；**`TELEGRAM_BOT_TOKEN_SECRET_REF`** 见 `trading-agent-config/keys.md` §4.3。
+    TelegramBotIdentity:
+      type: object
+      description: FR-TG-ADMIN-01 · getMe 子集（服务端拉取；无 Token 明文字段）。
+      properties:
+        id:
+          type: string
+        username:
+          type: string
+        name:
+          type: string
+      additionalProperties: true
+    TelegramBotStatusResponse:
+      type: object
+      description: GET/PATCH bot 响应下限；FR-MC709～711。
+      properties:
+        bot:
+          $ref:  "#/components/schemas/TelegramBotIdentity"
+        channelTelegramEnabled:
+          type: boolean
+          description: CHANNEL_TELEGRAM 开关镜像（便于 OFF 时排障展示）。
+        lastFetchedAt:
+          type: string
+          format: date-time
+        lastErrorSummary:
+          type: string
+          description: 不含秘密的摘要。
+        secretRefFingerprint:
+          type: string
+          description: 掩码或指纹；非 Token 明文。
+        configVersion:
+          type: integer
+          description: 与全局 bundle / 模块七 `If-Match` 同窗（若合并 resource）。
+      additionalProperties: true
+    TelegramBotPatchRequest:
+      type: object
+      description: FR-TG-ADMIN-02/03 · PATCH body；高危字段须二次确认 + admin.audit（需求域）。
+      properties:
+        telegramBotTokenSecretRef:
+          $ref: "#/components/schemas/SecretRef"
+        runtimeParams:
+          type: object
+          description: TELEGRAM_* 非密钥项（`keys.md` §4.2）；含开通欢迎语 `TELEGRAM_AGENT_ACTIVATION_WELCOME_TEXT_ZH_CN`、`TELEGRAM_AGENT_ACTIVATION_WELCOME_TEXT_ZH_TW`、`TELEGRAM_AGENT_ACTIVATION_WELCOME_TEXT_EN` 与遗留 `TELEGRAM_AGENT_ACTIVATION_WELCOME_TEXT`（FR-TG-ADMIN-06）；键值所内终裁。
+          additionalProperties: true
+      additionalProperties: false
+    TelegramWebhookSetRequest:
+      type: object
+      description: FR-TG-ADMIN-04 · setWebhook；推荐服务端按 `TELEGRAM_WEBHOOK_URL_TEMPLATE` 拼装 URL。
+      properties:
+        url:
+          type: string
+        secretToken:
+          type: string
+        dropPendingUpdates:
+          type: boolean
+      additionalProperties: true
+    TelegramWebhookInfo:
+      type: object
+      description: getWebhookInfo 摘要同窗 Telegram Bot API（不含完整 Secret）。
+      properties:
+        url:
+          type: string
+        hasCustomCertificate:
+          type: boolean
+        pendingUpdateCount:
+          type: integer
+        lastErrorDate:
+          type: integer
+          description: Unix 时间（Bot API 原语义）。
+        lastErrorMessage:
+          type: string
+        maxConnections:
+          type: integer
+      additionalProperties: true
+    TelegramSelfTestResult:
+      type: object
+      description: FR-TG-ADMIN-05 · 同步 200；可改为 202 与 AsyncTaskAccepted（billing-schemas）同窗。
+      properties:
+        getMeOk:
+          type: boolean
+        getWebhookInfoOk:
+          type: boolean
+        errorSummary:
+          type: string
+      additionalProperties: true

@@ -1,0 +1,168 @@
+openapi: 3.0.3
+info:
+  title: "ChainUp AI Agent — Skill Operation Spec 同窗 Schemas（fragment）"
+  version: "2026-05-25"
+  description: |
+    **写路径操作契约**（`read_skill_operation_spec` / **FR-T11**）之 **Publish 与运行时读取**。
+    Git SSOT：[`skill-specs/`](../../requirements/skill-specs/) · [`PUBLISH.md`](../../requirements/skill-specs/PUBLISH.md) · [`manifest.yaml`](../../requirements/skill-specs/manifest.yaml)。
+    **非** Prompt 正文（`promptPack*`）；**同窗** [`trade-assistance` §4](../../requirements/domains/agent/exchange-agent/trade-assistance.md)。
+paths: {}
+components:
+  schemas:
+    SkillId:
+      type: string
+      description: |
+        稳定技能标识；**须** 与 Git 文件名一致（`skill.spot.limit_order` 等）。
+        **登记 SSOT**：`trade-assistance` §4、`skill-specs/manifest.yaml`。
+      pattern: "^skill\\.[a-z0-9_.]+$"
+      example: skill.spot.limit_order
+    SkillSpecVersion:
+      type: string
+      description: |
+        单调版本；Publish 后覆盖 Git 元数据 `skillSpecVersion`。
+        建议格式：`MAJOR.MINOR.PATCH-contract`（所内可冻结 SemVer）。
+      example: "0.2.0-contract"
+    SkillSpecLifecycle:
+      type: string
+      enum:
+        - DRAFT
+        - PUBLISHED
+        - DEPRECATED
+    SkillSpecDigest:
+      type: string
+      description: |
+        正文规范化字节串之 **SHA-256 hex**（可选）；观测事件 `agent.skill.spec_read.specDigest` 同窗。
+    SkillOperationSpecSummary:
+      type: object
+      required: [skillId, skillSpecVersion, lifecycle]
+      properties:
+        skillId:
+          $ref: "#/components/schemas/SkillId"
+        skillSpecVersion:
+          $ref: "#/components/schemas/SkillSpecVersion"
+        lifecycle:
+          $ref: "#/components/schemas/SkillSpecLifecycle"
+        scenarioIds:
+          type: array
+          description: 主/备 `scenarioId`（`routing-engine` 登记）；实现可只存主键。
+          items:
+            type: string
+        contractComplete:
+          type: boolean
+          description: Git 侧 `contract-complete`；Publish 门禁须为 true（`publishRequired` 条目）。
+        specDigest:
+          $ref: "#/components/schemas/SkillSpecDigest"
+        publishedAt:
+          type: string
+          format: date-time
+          nullable: true
+      additionalProperties: true
+    SkillOperationSpecList:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/SkillOperationSpecSummary"
+      additionalProperties: true
+    SkillOperationSpecBody:
+      type: object
+      description: |
+        **FR-T11 载荷**：单文件 **§1～§6** 自包含 Markdown 全文（UTF-8）。
+        **禁止** 仅存储「增量段」或外链指针。
+      required: [skillId, skillSpecVersion, bodyMarkdown]
+      properties:
+        skillId:
+          $ref: "#/components/schemas/SkillId"
+        skillSpecVersion:
+          $ref: "#/components/schemas/SkillSpecVersion"
+        bodyMarkdown:
+          type: string
+          description: 与 Git `specs/requirements/skill-specs/**/<skillId>.md` 全文一致。
+        specDigest:
+          $ref: "#/components/schemas/SkillSpecDigest"
+        sourceGitRef:
+          type: string
+          description: 可选；Publish 时记录的 commit SHA 或 MR id。
+          nullable: true
+      additionalProperties: false
+    SkillSpecPublishRequest:
+      type: object
+      description: |
+        从 CI/运营触发 Publish；**须** 通过 `check_skill_contract_complete.py`。
+        实现可 **仅** 接受 `skillId` + `skillSpecVersion` 并由服务端从已登记 Git 镜像拉取 `bodyMarkdown`。
+      required: [skillSpecVersion]
+      properties:
+        skillSpecVersion:
+          $ref: "#/components/schemas/SkillSpecVersion"
+        bodyMarkdown:
+          type: string
+          description: 若省略则由服务端按 `sourceGitRef` 解析；**若提供** 须与 Git 全文一致。
+        sourceGitRef:
+          type: string
+          nullable: true
+        specDigest:
+          $ref: "#/components/schemas/SkillSpecDigest"
+      additionalProperties: false
+    SkillSpecPublishResult:
+      type: object
+      required: [skillId, skillSpecVersion, lifecycle]
+      properties:
+        skillId:
+          $ref: "#/components/schemas/SkillId"
+        skillSpecVersion:
+          $ref: "#/components/schemas/SkillSpecVersion"
+        lifecycle:
+          $ref: "#/components/schemas/SkillSpecLifecycle"
+        specDigest:
+          $ref: "#/components/schemas/SkillSpecDigest"
+      additionalProperties: true
+    SkillSpecVersionHistory:
+      type: object
+      properties:
+        skillId:
+          $ref: "#/components/schemas/SkillId"
+        items:
+          type: array
+          items:
+            type: object
+            properties:
+              skillSpecVersion:
+                $ref: "#/components/schemas/SkillSpecVersion"
+              lifecycle:
+                $ref: "#/components/schemas/SkillSpecLifecycle"
+              publishedAt:
+                type: string
+                format: date-time
+            additionalProperties: true
+      additionalProperties: true
+    EffectiveSkillSpecResponse:
+      type: object
+      description: |
+        **Runtime · `read_skill_operation_spec`** 读路径（FR-PM08 同窗模式）。
+        **仅 `PUBLISHED`**；未知版本 → **`PROMPT_SKILL_REF_INVALID`**（`billing-schemas` Problem）。
+      required: [skillId, skillSpecVersion, bodyMarkdown]
+      properties:
+        skillId:
+          $ref: "#/components/schemas/SkillId"
+        skillSpecVersion:
+          $ref: "#/components/schemas/SkillSpecVersion"
+        bodyMarkdown:
+          type: string
+        specDigest:
+          $ref: "#/components/schemas/SkillSpecDigest"
+        etag:
+          type: string
+      additionalProperties: false
+    SkillSpecRef:
+      type: object
+      description: |
+        Trading 场景包 / 模板可选绑定（`prompt-management` `config` 同窗）。
+        **引用** 已发布 skill，**不** 内嵌正文。
+      required: [skillId, skillSpecVersion]
+      properties:
+        skillId:
+          $ref: "#/components/schemas/SkillId"
+        skillSpecVersion:
+          $ref: "#/components/schemas/SkillSpecVersion"
+      additionalProperties: false

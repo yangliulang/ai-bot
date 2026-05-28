@@ -1,0 +1,239 @@
+openapi: 3.0.3
+info:
+  title: "ChainUp AI Agent — 运营侧 Tool Management (admin/tools)"
+  version: "2026-05-09"
+  description: |
+    与设计冻结同窗 [`design/api.md`](../../design/api.md) **「运营侧 Tool Management API」**。
+    Schema 同窗 [`tool-management-schemas.yaml`](../components/tool-management-schemas.yaml)；**运行时 `invocationState`** 同窗 **[`runtime-contract.md`](../../requirements/domains/admin/tool-management/runtime-contract.md)** **§1** 与 **[`observability-schemas`](../components/observability-schemas.yaml)**（**观测 API**）。
+    **CC-P0-01（模块三）**、**SC-MCV1-05**（矩阵 **TBD** **不得假开**）。
+  contact:
+    name: "Jesson"
+    email: Jesson@chainup.com
+servers:
+  - url: https://api.example.invalid
+    description: 所内替换
+tags:
+  - name: registry
+  - name: schema
+  - name: policy
+  - name: lifecycle
+  - name: observability
+paths:
+  "/api/v1/admin/tools/registry":
+    get:
+      tags: [registry]
+      summary: "Registry 镜像列表 FR-TM01 · FR-MC301"
+      operationId: listToolRegistry
+      parameters:
+        - name: domain
+          in: query
+          schema:
+            type: string
+        - name: toolRiskLevel
+          in: query
+          schema:
+            $ref: "../components/tool-management-schemas.yaml#/components/schemas/ToolRiskLevel"
+        - name: matrixStatus
+          in: query
+          schema:
+            $ref: "../components/tool-management-schemas.yaml#/components/schemas/MatrixPathStatus"
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/tool-management-schemas.yaml#/components/schemas/ToolRegistryList"
+  "/api/v1/admin/tools/registry/{toolId}":
+    get:
+      tags: [registry]
+      summary: "单条 Registry 镜像 FR-TM01"
+      operationId: getToolRegistryEntry
+      parameters:
+        - $ref: "#/components/parameters/ToolIdPath"
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/tool-management-schemas.yaml#/components/schemas/ToolRegistryEntry"
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/billing-schemas.yaml#/components/schemas/Problem"
+  "/api/v1/admin/tools/{toolId}/schema":
+    get:
+      tags: [schema]
+      summary: "Schema 运营视图 FR-TM02 · FR-MC302"
+      operationId: getToolSchemaView
+      parameters:
+        - $ref: "#/components/parameters/ToolIdPath"
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/tool-management-schemas.yaml#/components/schemas/ToolJsonSchemaView"
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/billing-schemas.yaml#/components/schemas/Problem"
+  "/api/v1/admin/tools/{toolId}/policy":
+    get:
+      tags: [policy]
+      summary: "调用权限策略 FR-TM03 · FR-MC303"
+      operationId: getToolPolicy
+      parameters:
+        - $ref: "#/components/parameters/ToolIdPath"
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/tool-management-schemas.yaml#/components/schemas/ToolPolicy"
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/billing-schemas.yaml#/components/schemas/Problem"
+    put:
+      tags: [policy]
+      summary: "替换策略（全量 PUT）FR-TM03"
+      operationId: putToolPolicy
+      parameters:
+        - $ref: "#/components/parameters/ToolIdPath"
+        - $ref: "#/components/parameters/IfMatchOptional"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "../components/tool-management-schemas.yaml#/components/schemas/ToolPolicy"
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/tool-management-schemas.yaml#/components/schemas/ToolPolicy"
+        "409":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/billing-schemas.yaml#/components/schemas/Problem"
+    patch:
+      tags: [policy]
+      summary: "部分更新策略 FR-TM03"
+      operationId: patchToolPolicy
+      parameters:
+        - $ref: "#/components/parameters/ToolIdPath"
+        - $ref: "#/components/parameters/IfMatchOptional"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "../components/tool-management-schemas.yaml#/components/schemas/ToolPolicyPatch"
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/tool-management-schemas.yaml#/components/schemas/ToolPolicy"
+        "409":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/billing-schemas.yaml#/components/schemas/Problem"
+  "/api/v1/admin/tools/{toolId}/enable":
+    post:
+      tags: [lifecycle]
+      summary: "启用 FR-TM04 · FR-MC304 · 须满足矩阵冻结门槛"
+      operationId: enableTool
+      parameters:
+        - $ref: "#/components/parameters/ToolIdPath"
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/tool-management-schemas.yaml#/components/schemas/ToolEnableResult"
+        "400":
+          description: 矩阵 TBD 或策略不满足等
+          content:
+            application/json:
+              schema:
+                $ref: "../components/billing-schemas.yaml#/components/schemas/Problem"
+        "409":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/billing-schemas.yaml#/components/schemas/Problem"
+  "/api/v1/admin/tools/{toolId}/disable":
+    post:
+      tags: [lifecycle]
+      summary: "停用 FR-TM04 · FR-MC304"
+      operationId: disableTool
+      parameters:
+        - $ref: "#/components/parameters/ToolIdPath"
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/tool-management-schemas.yaml#/components/schemas/ToolEnableResult"
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/billing-schemas.yaml#/components/schemas/Problem"
+  "/api/v1/admin/tools/{toolId}/observability-link":
+    get:
+      tags: [observability]
+      summary: "日志协查入口 FR-TM05 · FR-MC305"
+      operationId: getToolObservabilityLink
+      parameters:
+        - $ref: "#/components/parameters/ToolIdPath"
+        - name: userId
+          in: query
+          schema:
+            $ref: "../components/identity-schemas.yaml#/components/schemas/UserIdMasked"
+        - name: executionId
+          in: query
+          schema:
+            $ref: "../components/identity-schemas.yaml#/components/schemas/ExecutionId"
+        - name: fromTs
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: toTs
+          in: query
+          schema:
+            type: string
+            format: date-time
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/tool-management-schemas.yaml#/components/schemas/ToolObservabilityLink"
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/billing-schemas.yaml#/components/schemas/Problem"
+components:
+  parameters:
+    ToolIdPath:
+      name: toolId
+      in: path
+      required: true
+      schema:
+        type: string
+    IfMatchOptional:
+      name: If-Match
+      in: header
+      required: false
+      schema:
+        type: string

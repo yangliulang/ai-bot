@@ -1,0 +1,40 @@
+feature: 2026-05-26--nlu-llm-strategy
+title: NLU LLM 默认策略
+phase: done
+owner: product-agent
+next: null
+artifacts:
+  brief: brief.md
+  api: api.openapi.yaml
+  test_coverage: test/coverage.md
+blockers: []
+history:
+  - at: "2026-05-26T19:00:00+0800"
+    phase: contract_ready
+    by: product-agent
+    note: 建包定稿 brief/OpenAPI/测试追溯；intentNluUseLlm+有效策略；含页面否；check-test-coverage 通过
+  - at: "2026-05-26T14:00:00+0800"
+    phase: backend_done
+    by: backend-agent
+    note: gateway_defaults.intentNluUseLlm；resolve_effective_intent_nlu_use_llm；effectiveIntentNluUseLlm；TG timeline；pytest test_nlu_llm_strategy
+  - at: "2026-05-26T14:05:00+0800"
+    phase: tested
+    by: test-agent
+    note: P0 TC-01～TC-08 + P1 TC-09 全通过；pytest test_nlu_llm_strategy 9 passed；无页面，待 frontend 空跑
+  - at: "2026-05-26T14:15:00+0800"
+    phase: frontend_done
+    by: frontend-agent
+    note: 无 Admin/Deeplink 页面；integration.md 收口；无代码变更；待 test.e2e N/A
+  - at: "2026-05-26T14:20:00+0800"
+    phase: e2e_verified
+    by: test-agent
+    note: E2E N/A（无页面）；API 回归 9 passed；e2e-report 已填；待 designer N/A 走查
+  - at: "2026-05-26T14:25:00+0800"
+    phase: ui_reviewed
+    by: designer-agent
+    note: 无 UI；ui-review N/A 通过；无 P0；待 product.accept
+  - at: "2026-05-26T14:30:00+0800"
+    phase: done
+    by: product-agent
+    note: product.accept — AC-1～8 对照 test/report、design/ui-review；brief 勾选；/ai-settings UI 留后续 FE 包
+updated_at: "2026-05-26T14:30:00+0800"

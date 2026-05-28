@@ -1,0 +1,416 @@
+{
+  "metadata": {
+    "home": {
+      "title": "ChainUp AI Agent — Telegram 自然语言交易",
+      "description": "Telegram 上的 AI 交易所 Agent。在隔离子账户上查询行情、管理委托，写操作须确认门保护。"
+    },
+    "features": {
+      "title": "功能特性 — ChainUp AI Agent",
+      "description": "探索自然语言交易、安全子账户、确认门与可观测性，专为生产级交易所 Agent 打造。"
+    },
+    "guide": {
+      "title": "快速入门 — ChainUp AI Agent",
+      "description": "分步指南：开通 Agent 子账户、连接 Telegram、用自然语言开始交易。"
+    }
+  },
+  "nav": {
+    "features": "功能",
+    "guide": "指南",
+    "performance": "性能",
+    "bind": "綁定 TG",
+    "estimator": "估算器",
+    "faq": "常见问题",
+    "startTour": "产品导览",
+    "getStarted": "立即开始",
+    "openTelegram": "開啟 Telegram"
+  },
+  "hero": {
+    "eyebrow": "Coobit × Telegram",
+    "tagline": "Agent 負責讀，寫操作你來確認。",
+    "title": "AI 驅動的交易所交易",
+    "subtitle": "在 Telegram 中完成行情查询、账户洞察与引导式下单。资金留在 Agent 子账户；每笔写操作都需你点击确认。",
+    "ctaTelegram": "打开 Telegram",
+    "ctaTour": "开始导览"
+  },
+  "stats": {
+    "title": "平台性能",
+    "subtitle": "執行量、延遲、確認率與活躍 Agent 的即時營運指標。",
+    "items": {
+      "executions": {
+        "label": "24h 执行量",
+        "hint": "滚动窗口"
+      },
+      "reads": {
+        "label": "只读中位延迟",
+        "hint": "P50 响应"
+      },
+      "confirmRate": {
+        "label": "30 天确认率",
+        "hint": "类型 A 通过"
+      },
+      "agents": {
+        "label": "活跃 Agent",
+        "hint": "已绑定子账户"
+      }
+    }
+  },
+  "bindGuide": {
+    "eyebrow": "Telegram 綁定",
+    "title": "四步完成 Telegram 綁定",
+    "subtitle": "從官方 Bot 出發，打開 Agent 綁定 H5（與 deeplink 同源），提交子帳戶 API 密鑰並確認，即可回到 Telegram 對話交易。",
+    "steps": {
+      "0": {
+        "title": "打開 Telegram Bot",
+        "description": "搜尋官方 ChainUp Agent Bot 並發送 /start，Bot 會回覆帶安全簽名的綁定連結。"
+      },
+      "1": {
+        "title": "打開綁定 Deeplink",
+        "description": "點擊 Bot 訊息中的連結，進入 /onboarding/validate 綁定頁，tg_id 等上下文會自動帶入。"
+      },
+      "2": {
+        "title": "校驗並確認綁定",
+        "description": "在 H5 頁填寫子帳戶 UID、API Key 與 Secret，校驗通過後於確認頁完成綁定。"
+      },
+      "3": {
+        "title": "回到 Telegram 對話",
+        "description": "返回 Bot 即可查價、看餘額、下委託；寫操作仍需類型 A 確認。"
+      }
+    },
+    "openBot": "打開 Telegram Bot",
+    "openBindPage": "打開綁定頁",
+    "safetyNote": "僅透過官方 Bot 或交易所下發的連結打開綁定頁，勿向非官方站點貼上 API 密鑰。",
+    "visual": {
+      "botName": "ChainUp Agent",
+      "botStatus": "線上",
+      "userHello": "/start",
+      "botWelcome": "歡迎。點擊下方按鈕，將本會話綁定到你的 Agent 子帳戶。",
+      "bindButton": "打開綁定頁",
+      "deeplinkTag": "Agent 綁定 H5",
+      "deeplinkHint": "Telegram 會將 tg_id、使用者名稱等寫入 onboarding 連結。",
+      "formTitle": "校驗子帳戶 API",
+      "fieldUidLabel": "子帳戶 UID",
+      "fieldUidPlaceholder": "agentSubAccountUid",
+      "fieldKeyLabel": "API Key",
+      "fieldKeyPlaceholder": "••••••••••••",
+      "fieldSecretLabel": "Secret Key",
+      "fieldSecretPlaceholder": "••••••••••••",
+      "confirmBind": "確認綁定",
+      "doneTitle": "綁定完成",
+      "doneHint": "回到 Telegram — 試試「BTC/USDT 現在多少錢？」"
+    }
+  },
+  "estimator": {
+    "title": "Token 用量估算",
+    "subtitle": "根据子账户 USDT 余额与使用强度，估算 Token 计费。",
+    "balanceLabel": "子账户 USDT 余额",
+    "modeLabel": "使用强度",
+    "modes": {
+      "light": {
+        "title": "轻度",
+        "description": "约 12 次/日只读，偶尔写操作"
+      },
+      "active": {
+        "title": "活跃",
+        "description": "约 40 次/日混合查询，定期自动化"
+      }
+    },
+    "days": "{count} 天",
+    "disclaimer": "仅为估算 — 实际计费取决于模型用量、场景复杂度与 API 矩阵。不构成投资建议。"
+  },
+  "chart": {
+    "title": "Agent 活动增长",
+    "subtitle": "Coobit 上只读与写场景的日常执行量。",
+    "period": "近 12 周",
+    "axisStart": "第 1 周",
+    "axisEnd": "第 12 周"
+  },
+  "faq": {
+    "title": "常见问题",
+    "items": {
+      "what": {
+        "question": "ChainUp AI Agent 是什么？",
+        "answer": "面向 Coobit 用户的交易所原生 AI Agent，可在 Telegram 中用自然语言查询行情、查看子账户余额并在 API 矩阵范围内下单。"
+      },
+      "subaccount": {
+        "question": "为什么需要专用 Agent 子账户？",
+        "answer": "交易资金与 Token 计费与主账户隔离。你通过交易所 Deeplink 授权创建；写操作须确认，Agent 不会擅自划转资金。"
+      },
+      "confirm": {
+        "question": "什么是类型 A 确认？",
+        "answer": "每条写路径（下单、撤单、配置变更）在触达交易所前，须在 Telegram 卡片上点击确认。不存在静默写操作。"
+      },
+      "billing": {
+        "question": "Token 如何计费？",
+        "answer": "按量从 Agent 子账户 USDT 扣款。通过交易所账单 Deeplink 查看流水，而非仅在 Telegram 文字中展示。"
+      },
+      "start": {
+        "question": "如何开始？",
+        "answer": "在 Coobit 打开 Agent 设置（me/agent），授权子账户、完成 API 绑定，再跟随 Telegram Deeplink 绑定会话。须满足 VIP 等级要求。"
+      },
+      "safe": {
+        "question": "账户安全吗？",
+        "answer": "采用子账户隔离、写前确认门与审计追溯。加密交易有风险 — 请勿投入超过承受能力的资金。能力以已发布 API 矩阵为上限。"
+      }
+    }
+  },
+  "ctaBand": {
+    "support": "联系我们 — Telegram 在线支持",
+    "telegram": "打开 Telegram",
+    "guideLink": "阅读完整开通指南"
+  },
+  "features": {
+    "sectionTitle": "为真实交易而生，非 Demo",
+    "sectionSubtitle": "生产级 Agent 运行时，遵守交易所 API 矩阵，完整审计追溯。",
+    "items": {
+      "nl": {
+        "title": "自然语言交互",
+        "description": "用日常语言查询行情、余额与订单状态。意图路由映射至已冻结 API 能力。"
+      },
+      "subaccount": {
+        "title": "专用 Agent 子账户",
+        "description": "交易与 Token 计费均在隔离子账户上运行，未经同意不触碰主账户账本。"
+      },
+      "confirm": {
+        "title": "写前确认",
+        "description": "每条写路径在触达交易所前，须在 Telegram 完成类型 A 显式确认。"
+      },
+      "billing": {
+        "title": "透明 Token 计费",
+        "description": "按量计费从子账户 USDT 扣款。通过交易所账单 Deeplink 查看流水。"
+      },
+      "observability": {
+        "title": "完整可观测性",
+        "description": "Execution ID、审计日志与未知态处理 — 绝不对用户静默失败。"
+      },
+      "i18n": {
+        "title": "全球化就绪",
+        "description": "首日即支持多语言，跨地区一致 Agent 体验。"
+      }
+    }
+  },
+  "demo": {
+    "title": "體驗對話",
+    "subtitle": "互動預覽 — 點擊範例或輸入您的問題",
+    "placeholder": "詢問 BTC 價格、帳戶餘額…",
+    "send": "傳送",
+    "prompts": [
+      "BTC/USDT 现在多少钱？",
+      "查看当前委托",
+      "ETH 资金费率如何？"
+    ],
+    "responses": {
+      "price": "BTC/USDT: $96,842.50 (+2.34% 24h)\n24h 成交量: $1.28B\n最高: $97,120 · 最低: $94,800\n\n讀取真實帳戶需先綁定 Telegram。",
+      "balance": "Agent 子帳戶 (Coobit)\nUSDT 可用: 1,250.00\nBTC: 0.0245 (~$2,372)\n保證金模式: 全倉 · VIP 2\n\n以上為演示數據 — 綁定 TG 後可查真實餘額。",
+      "orders": "當前委託 (子帳戶)\n1. 限價買入 BTC/USDT 0.01 @ 95,000\n   成交: 0% · 狀態: 新建\n2. 限價賣出 ETH/USDT 0.5 @ 3,900\n   成交: 0% · 狀態: 新建\n\n演示樣例 — 綁定 Telegram 後可管理真實委託。",
+      "order": "[類型 A 確認]\n限價買入 · BTC/USDT\n數量: 0.01 BTC\n價格: 95,000 USDT\n預估: 950 USDT\n\n點擊確認後路由至 Coobit。\n（網頁預覽，綁定 TG 後可真實下單。）",
+      "confirmed": "委託已接受 · exec_a8f21c\n限價買入 0.01 BTC @ 95,000\n狀態: Coobit 新建\n\n可在交易所查看或詢問成交進度。",
+      "eth": "ETH/USDT: $3,842.12 (-0.87% 24h)\n資金費率: 0.0047% / 8h\n下次結算: 3h 14m",
+      "bindTelegram": "這是官網演示，完整功能請在 Telegram 使用。\n\n1. 打開 Coobit Agent 設定 (me/agent)\n2. 授權子帳戶\n3. 透過 Deeplink 綁定本會話\n\nt.me/chainup_online_ai_bot\n\n綁定後可查價、看餘額、下委託。",
+      "greeting": "你好，我是 ChainUp Agent。\n\n當前為網頁預覽，無法讀取您的帳戶。請先去 Telegram 完成綁定，再開始真實對話。",
+      "help": "我可以報價、查詢子帳戶餘額、列出委託，並在下單前走「類型 A」確認。\n\n完整功能需先綁定 Telegram：\nt.me/chainup_online_ai_bot",
+      "thanks": "不客氣。\n\n準備好後，綁定 Telegram 即可解鎖真實查詢與確認下單：\nt.me/chainup_online_ai_bot"
+    },
+    "scripts": [
+      {
+        "turns": [
+          {
+            "user": "BTC/USDT 现在多少钱？",
+            "agent": "BTC/USDT: $96,842.50 (+2.34% 24h)\n24h 成交量: $1.28B\n最高: $97,120 · 最低: $94,800\n\n需要盘口深度或指定周期吗？"
+          },
+          {
+            "user": "先看一下子账户余额",
+            "agent": "Agent 子账户 (Coobit)\nUSDT 可用: 1,250.00\nBTC: 0.0245 (~$2,372)\n未实现盈亏: +$47.20\n\n只读查询；写操作须您确认。"
+          },
+          {
+            "user": "限价买入 0.01 BTC，价格 95000",
+            "agent": "[类型 A 确认]\n限价买入 · BTC/USDT\n数量: 0.01 BTC\n价格: 95,000 USDT\n预估: 950 USDT\n手续费约: 0.38 USDT\n\n[确认]  [取消]"
+          },
+          {
+            "user": "确认",
+            "agent": "委托已接受 · exec_a8f21c\n限价买入 0.01 BTC @ 95,000\n状态: Coobit 新建\n\n成交或部分成交时我会通知您。"
+          }
+        ]
+      },
+      {
+        "turns": [
+          {
+            "user": "子账户有哪些未成交委托？",
+            "agent": "当前委托 (2 笔)\n\n1. 限价买入 BTC/USDT\n   0.01 @ 95,000 · 新建 · 成交 0%\n2. 限价卖出 ETH/USDT\n   0.5 @ 3,900 · 新建 · 成交 0%\n\n可说「撤销 + 交易对」操作。"
+          },
+          {
+            "user": "ETH 今天走势怎么样？",
+            "agent": "ETH/USDT: $3,842.12 (-0.87% 24h)\n24h 区间: $3,798 – $3,891\n资金费率: 0.0047% / 8h (多头支付)\n\n数据来自 Coobit 只读 API。"
+          },
+          {
+            "user": "撤销 ETH 限价卖单",
+            "agent": "[类型 A 确认]\n撤销委托 #8821044\n限价卖出 ETH/USDT 0.5 @ 3,900\n\n确认后不可撤销此操作。\n\n[确认]  [取消]"
+          }
+        ]
+      },
+      {
+        "turns": [
+          {
+            "user": "给个简短的市场概览",
+            "agent": "24h 涨跌幅前列\nBTC +2.34% · ETH -0.87%\nSOL +4.12% · DOGE +1.03%\n\n子账户名义价值: ~$3,622\n本次均为只读，未触发写路径。"
+          },
+          {
+            "user": "还剩多少 USDT 可以扣 Token 费？",
+            "agent": "计费预估\nUSDT 可用: 1,250.00\n近 7 日单次查询均费: ~$0.42\n30 日预估: ~$38–$52 (按当前用量)\n\n明细 CSV 请走交易所账单 Deeplink。"
+          },
+          {
+            "user": "BTC 跌破 94000 时提醒我",
+            "agent": "Pull 提醒已登记 · alert_c4e91\n条件: BTC/USDT 最新价 < 94,000\n渠道: Telegram (本会话)\n冷却: 两次提醒间隔 15 分钟\n\n可在 Coobit Agent 设置中管理。"
+          }
+        ]
+      }
+    ],
+    "typing": "Agent 思考中…",
+    "guideHint": "輸入问题或點擊示例，然后发送",
+    "guideBadge": "轮到你了",
+    "autoLabel": "自动演示",
+    "interactiveLabel": "online",
+    "autoSubtitle": "自动演示中 — 移入此区域亲自体验"
+  },
+  "howItWorks": {
+    "title": "工作原理",
+    "subtitle": "从开通到首笔交易，四步完成",
+    "steps": {
+      "1": {
+        "title": "开通 Agent 子账户",
+        "description": "通过交易所 Deeplink 授权。须满足 VIP 等级与白名单校验。"
+      },
+      "2": {
+        "title": "连接 Telegram",
+        "description": "通过安全绑定流程，将 Telegram 账户关联至 Agent Bot。"
+      },
+      "3": {
+        "title": "充值与配置",
+        "description": "向子账户转入 USDT，用于交易与 Token 使用费。"
+      },
+      "4": {
+        "title": "自然语言交易",
+        "description": "用日常语言对话。写操作始终经过确认门。"
+      }
+    }
+  },
+  "cta": {
+    "title": "准备好与 Agent 交易了吗？",
+    "subtitle": "打开 Telegram，从交易所账户启动开通流程。",
+    "button": "在 Telegram 中打开",
+    "note": "需 Coobit 账户且满足 VIP 等级要求"
+  },
+  "guide": {
+    "title": "快速入門指南",
+    "subtitle": "啟用並使用 ChainUp AI Agent 所需的一切",
+    "eyebrow": "Coobit × Telegram",
+    "stepsLabel": "四步上手",
+    "stepLabel": "步驟 {step}",
+    "tourHint": "初次使用？在首頁體驗互動式產品導覽。",
+    "ctaTitle": "準備好開始了嗎？",
+    "ctaSubtitle": "開啟 Telegram Bot 完成綁定，或在首頁瀏覽互動式產品導覽。",
+    "sections": {
+      "prerequisites": {
+        "title": "前置條件",
+        "summary": "開通前確認帳戶、等級與用戶端環境已就緒。",
+        "items": [
+          "有效的 Coobit 交易所帳戶",
+          "符合要求的 VIP 等級",
+          "裝置已安裝 Telegram"
+        ]
+      },
+      "onboarding": {
+        "title": "開通流程",
+        "summary": "在交易所授權子帳戶，經 Deeplink 將會話綁定到 Agent。",
+        "items": [
+          "進入交易所 Agent 設定（me/agent）",
+          "閱讀子帳戶條款並授權建立",
+          "完成 API 綁定確認",
+          "開啟 Telegram Deeplink 綁定會話"
+        ]
+      },
+      "firstTrade": {
+        "title": "首次互動",
+        "summary": "從唯讀查詢開始，寫操作始終走類型 A 確認門。",
+        "items": [
+          "唯讀查詢：「ETH 現在多少錢？」",
+          "查餘額：「子帳戶 USDT 餘額」",
+          "寫操作須在類型 A 卡片上確認",
+          "透過交易所帳單 Deeplink 查看計費"
+        ]
+      },
+      "safety": {
+        "title": "安全提醒",
+        "summary": "金鑰不外洩、寫操作必確認、能力有邊界。",
+        "items": [
+          "切勿分享 Telegram 登入或 API 金鑰",
+          "所有寫操作須明確點擊確認",
+          "未知態會保留，不會誤報為失敗",
+          "能力受 API 矩陣凍結範圍約束"
+        ]
+      }
+    }
+  },
+  "tour": {
+    "welcome": {
+      "title": "欢迎使用 ChainUp AI Agent",
+      "description": "快速浏览站点主要区域。"
+    },
+    "hero": {
+      "title": "Hero 与 Telegram 预览",
+      "description": "核心价值与对话演示。"
+    },
+    "stats": {
+      "title": "平台性能",
+      "description": "执行量、延迟、确认率与活跃 Agent。"
+    },
+    "bind": {
+      "title": "Telegram 綁定引導",
+      "description": "從 Bot 到 deeplink 綁定 H5，再回到對話的動畫步驟。"
+    },
+    "estimator": {
+      "title": "Token 估算器",
+      "description": "调节余额与使用强度，估算 30/60/90 天费用。"
+    },
+    "chart": {
+      "title": "活动增长",
+      "description": "近 12 周执行量趋势。"
+    },
+    "demo": {
+      "title": "对话演示",
+      "description": "尝试示例，含类型 A 确认卡。"
+    },
+    "faq": {
+      "title": "常见问题",
+      "description": "子账户、计费与安全说明。"
+    },
+    "cta": {
+      "title": "开始使用",
+      "description": "打开 Telegram 或阅读指南。"
+    },
+    "done": {
+      "title": "导览完成",
+      "description": "查看指南了解详细开通流程。"
+    },
+    "next": "下一步",
+    "prev": "上一步",
+    "done_btn": "完成"
+  },
+  "footer": {
+    "tagline": "Coobit Telegram 自然语言交易所 Agent",
+    "product": "产品",
+    "resources": "资源",
+    "legal": "法律",
+    "features": "功能",
+    "guide": "指南",
+    "faq": "常见问题",
+    "docs": "文档",
+    "privacy": "隐私政策",
+    "terms": "服务条款",
+    "risk": "风险披露",
+    "copyright": "© {year} ChainUp. 保留所有权利。"
+  },
+  "featuresPage": {
+    "title": "功能特性",
+    "subtitle": "交易所原生 AI Agent 的生产级能力"
+  }
+}

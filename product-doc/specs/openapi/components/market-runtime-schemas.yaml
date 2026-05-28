@@ -1,0 +1,150 @@
+openapi: 3.0.3
+info:
+  title: "ChainUp AI Agent — Market Runtime Context Schemas（fragment）"
+  version: "2026-05-25"
+  description: |
+    **Runtime Context · 行情 Facts 与叙事 hints**（**非** HTTP 公网 API）。
+    同窗 [`market-runtime-payload.md`](../../requirements/domains/agent/exchange-agent/market-runtime-payload.md)、
+    [`market-intelligence.md` §4](../../requirements/domains/agent/exchange-agent/market-intelligence.md)、
+    [`common-phrases` §8](../../requirements/prompts/shared/common-phrases.md)、
+    [`runtime-injection.md` §2.4.1](../../requirements/domains/admin/prompt-management/runtime-injection.md)。
+    **注入宿主**：`agentContext` / `RUNTIME_CONTEXT_JSON` **块 5**（**所内命名终裁**）。
+paths: {}
+components:
+  schemas:
+    MarketPhase:
+      type: string
+      description: |
+        **登记 SSOT** — [`market-runtime-payload` §3.2.1](../../requirements/domains/agent/exchange-agent/market-runtime-payload.md)。
+        **MUST** **Runtime 确定性产出**（**`FR-MI06`**）；**禁止** **模型无源自造**。
+      enum:
+        - sideways
+        - trending_up
+        - trending_down
+        - low_volume
+        - volume_spike
+        - stable_liquidity
+        - weak_momentum
+        - strong_momentum
+        - elevated_volatility
+        - volatility_compression
+        - wide_spread
+        - thin_book
+        - breakout
+        - breakdown
+        - unusual_move
+        - funding_crowded_long
+        - funding_crowded_short
+        - funding_neutral
+    PriceSource:
+      type: string
+      description: lastPrice 口径来源（[`market-runtime-payload` §3.3](../../requirements/domains/agent/exchange-agent/market-runtime-payload.md)）。
+      enum:
+        - last_trade
+        - mid_from_book
+    UserVisibleMarketData:
+      type: object
+      description: 轻量 ticker Facts · 典型绑定 `market.read_quote`。
+      properties:
+        symbol:
+          type: string
+        lastPrice:
+          type: string
+          description: Decimal string · 与交易所精度一致。
+        bestBid:
+          type: string
+        bestAsk:
+          type: string
+        change24hPct:
+          type: string
+        high24h:
+          type: string
+        low24h:
+          type: string
+        volume24h:
+          type: string
+        asOf:
+          type: string
+          format: date-time
+        timestamp:
+          type: string
+          format: date-time
+        priceSource:
+          $ref: "#/components/schemas/PriceSource"
+      additionalProperties: false
+    MarketInsightData:
+      type: object
+      description: 深度/analytics Facts · 典型绑定 `market.read_deep_analysis` / 微观结构。
+      properties:
+        trend:
+          type: string
+        volatility:
+          type: string
+        intradaySummary:
+          type: string
+        marketPhase:
+          $ref: "#/components/schemas/MarketPhase"
+        primaryMarketPhase:
+          $ref: "#/components/schemas/MarketPhase"
+        secondaryMarketPhases:
+          type: array
+          maxItems: 2
+          items:
+            $ref: "#/components/schemas/MarketPhase"
+        fundingRate:
+          type: string
+        fundingRateAnnualized:
+          type: string
+        nextFundingTime:
+          type: string
+          format: date-time
+        asOf:
+          type: string
+          format: date-time
+      additionalProperties: true
+    MarketNarrativeHints:
+      type: object
+      description: |
+        **草案 · 默认可不注入** — [`market-runtime-payload` §3.4](../../requirements/domains/agent/exchange-agent/market-runtime-payload.md)。
+        **锚句 SSOT** — [`common-phrases` §8.2](../../requirements/prompts/shared/common-phrases.md)；**非** Phrase Library。
+      properties:
+        primaryMarketPhase:
+          $ref: "#/components/schemas/MarketPhase"
+        marketPhase:
+          allOf:
+            - $ref: "#/components/schemas/MarketPhase"
+          deprecated: true
+          description: "**迁移** → `primaryMarketPhase`（兼容旧键 · 实现 MR 对签）"
+        secondaryMarketPhases:
+          type: array
+          maxItems: 2
+          items:
+            $ref: "#/components/schemas/MarketPhase"
+        recommendedNarratives:
+          type: array
+          maxItems: 3
+          items:
+            type: string
+            maxLength: 256
+          description: 须可追溯 §8.2 锚表（`FR-MI08`）。
+        narrativeAsOf:
+          type: string
+          format: date-time
+        requiredFactsPresent:
+          type: array
+          items:
+            type: string
+          description: 示意 · 如 `lastPrice`、`fundingRate` — Eval 对账用。
+      additionalProperties: false
+    AgentRuntimeMarketContext:
+      type: object
+      description: |
+        **块 5 · Runtime Context** 之行情子对象（**示意聚合**；**所内可扁平挂 `agentContext`**）。
+      properties:
+        userVisibleMarketData:
+          $ref: "#/components/schemas/UserVisibleMarketData"
+        marketInsightData:
+          $ref: "#/components/schemas/MarketInsightData"
+        marketNarrativeHints:
+          $ref: "#/components/schemas/MarketNarrativeHints"
+      additionalProperties: true

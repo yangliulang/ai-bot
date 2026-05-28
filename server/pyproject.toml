@@ -1,0 +1,52 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "chainup-agent"
+version = "0.1.0"
+description = "ChainUp AI Agent (Coobit) — Python runtime & HTTP API service"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+  "fastapi>=0.115.0,<1",
+  "uvicorn[standard]>=0.32.0,<1",
+  "pydantic>=2.9.0,<3",
+  "pydantic-settings>=2.6.0,<3",
+  "httpx>=0.27.0,<1",
+  "python-multipart>=0.0.12,<1",
+  "sqlalchemy[asyncio]>=2.0.36,<3",
+  "alembic>=1.14.0,<2",
+  "aiosqlite>=0.20.0,<1",
+  "asyncpg>=0.30.0,<1",
+  "bcrypt>=4,<5",
+  "cryptography>=44,<47",
+  "PyJWT>=2.9.0,<3",
+]
+
+[project.scripts]
+chainup-agent-api = "chainup_agent.__main__:run"
+chainup-agent-seed-admin = "chainup_agent.cli.seed_admin_console_user:main"
+chainup-agent-ngrok-public-url = "chainup_agent.cli.print_ngrok_https_base:main"
+
+[dependency-groups]
+dev = [
+  "pytest>=8.3.0,<9",
+  "pytest-asyncio>=0.24.0,<1",
+  "ruff>=0.8.0,<1",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["chainup_agent"]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+src = ["chainup_agent", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]

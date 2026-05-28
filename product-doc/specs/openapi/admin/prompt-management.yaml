@@ -1,0 +1,415 @@
+openapi: 3.0.3
+info:
+  title: "ChainUp AI Agent — 运营侧 Prompt Management (admin/prompt-packs + internal/effective)"
+  version: "2026-05-09"
+  description: |
+    与设计冻结同窗 [`design/api.md`](../../design/api.md) **「运营侧 Prompt Management API」**。
+    Schema 同窗 [`prompt-management-schemas.yaml`](../components/prompt-management-schemas.yaml)。
+    含 **`/api/v1/internal/prompts/effective`**（FR-PM08），与 admin 路径 **可**同事务所审（**`CC-P0-01` 模块二**；**`CC-P1-04`** **`functions` §1.4 · §1.2 六款会签**）。
+  contact:
+    name: "Jesson"
+    email: Jesson@chainup.com
+servers:
+  - url: https://api.example.invalid
+    description: 所内替换
+tags:
+  - name: prompt-packs
+  - name: skill-specs
+  - name: internal
+paths:
+  "/api/v1/admin/prompt-packs":
+    get:
+      tags: [prompt-packs]
+      summary: "包列表 FR-PM02～04"
+      operationId: listPromptPacks
+      parameters:
+        - name: promptPackType
+          in: query
+          schema:
+            type: string
+        - name: scenarioId
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/prompt-management-schemas.yaml#/components/schemas/PromptPackList"
+    post:
+      tags: [prompt-packs]
+      summary: "创建草稿包"
+      operationId: createPromptPack
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "../components/prompt-management-schemas.yaml#/components/schemas/PromptPackCreateRequest"
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/prompt-management-schemas.yaml#/components/schemas/PromptPackDetail"
+  "/api/v1/admin/prompt-packs/{promptPackId}":
+    get:
+      tags: [prompt-packs]
+      summary: "包详情"
+      operationId: getPromptPack
+      parameters:
+        - $ref: "#/components/parameters/PromptPackIdPath"
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/prompt-management-schemas.yaml#/components/schemas/PromptPackDetail"
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/billing-schemas.yaml#/components/schemas/Problem"
+    patch:
+      tags: [prompt-packs]
+      summary: "更新草稿 PM-C03 · If-Match"
+      operationId: patchPromptPack
+      parameters:
+        - $ref: "#/components/parameters/PromptPackIdPath"
+        - $ref: "#/components/parameters/IfMatchOptional"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "../components/prompt-management-schemas.yaml#/components/schemas/PromptPackPatch"
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/prompt-management-schemas.yaml#/components/schemas/PromptPackDetail"
+        "409":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/billing-schemas.yaml#/components/schemas/Problem"
+  "/api/v1/admin/prompt-packs/{promptPackId}/versions":
+    get:
+      tags: [prompt-packs]
+      summary: "版本履历"
+      operationId: getPromptPackVersions
+      parameters:
+        - $ref: "#/components/parameters/PromptPackIdPath"
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/prompt-management-schemas.yaml#/components/schemas/PromptVersionHistory"
+  "/api/v1/admin/prompt-packs/{promptPackId}/publish":
+    post:
+      tags: [prompt-packs]
+      summary: "发布 FR-PM07 · LOCKED 新版本"
+      operationId: publishPromptPack
+      parameters:
+        - $ref: "#/components/parameters/PromptPackIdPath"
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/prompt-management-schemas.yaml#/components/schemas/PromptPublishResult"
+  "/api/v1/admin/prompt-packs/{promptPackId}/rollback":
+    post:
+      tags: [prompt-packs]
+      summary: "回滚生效指针"
+      operationId: rollbackPromptPack
+      parameters:
+        - $ref: "#/components/parameters/PromptPackIdPath"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "../components/prompt-management-schemas.yaml#/components/schemas/PromptRollbackRequest"
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/prompt-management-schemas.yaml#/components/schemas/PromptPublishResult"
+  "/api/v1/admin/prompt-packs/{promptPackId}/few-shots":
+    get:
+      tags: [prompt-packs]
+      summary: "Few-shot 列表 FR-PM05"
+      operationId: listPromptPackFewShots
+      parameters:
+        - $ref: "#/components/parameters/PromptPackIdPath"
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/prompt-management-schemas.yaml#/components/schemas/FewShotList"
+    post:
+      tags: [prompt-packs]
+      summary: "新增 Few-shot FR-PM05"
+      operationId: createPromptPackFewShot
+      parameters:
+        - $ref: "#/components/parameters/PromptPackIdPath"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "../components/prompt-management-schemas.yaml#/components/schemas/FewShotUpsert"
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/prompt-management-schemas.yaml#/components/schemas/FewShotExample"
+  "/api/v1/admin/prompt-packs/{promptPackId}/few-shots/{fewShotId}":
+    patch:
+      tags: [prompt-packs]
+      summary: "更新 Few-shot FR-PM05"
+      operationId: patchPromptPackFewShot
+      parameters:
+        - $ref: "#/components/parameters/PromptPackIdPath"
+        - $ref: "#/components/parameters/FewShotIdPath"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "../components/prompt-management-schemas.yaml#/components/schemas/FewShotUpsert"
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/prompt-management-schemas.yaml#/components/schemas/FewShotExample"
+    delete:
+      tags: [prompt-packs]
+      summary: "删除 Few-shot FR-PM05"
+      operationId: deletePromptPackFewShot
+      parameters:
+        - $ref: "#/components/parameters/PromptPackIdPath"
+        - $ref: "#/components/parameters/FewShotIdPath"
+      responses:
+        "204":
+          description: 已删除
+  "/api/v1/admin/prompt-packs/sandbox/runs":
+    post:
+      tags: [prompt-packs]
+      summary: "沙箱运行 FR-PM06 · 隔离生计费"
+      operationId: createPromptSandboxRun
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "../components/prompt-management-schemas.yaml#/components/schemas/PromptSandboxRunRequest"
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/prompt-management-schemas.yaml#/components/schemas/PromptSandboxRunResult"
+        "202":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/billing-schemas.yaml#/components/schemas/AsyncTaskAccepted"
+  "/api/v1/admin/skill-specs":
+    get:
+      tags: [skill-specs]
+      summary: "技能操作规范列表（FR-T11 · Publish 登记）"
+      operationId: listSkillOperationSpecs
+      parameters:
+        - name: lifecycle
+          in: query
+          schema:
+            $ref: "../components/skill-operation-spec-schemas.yaml#/components/schemas/SkillSpecLifecycle"
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/skill-operation-spec-schemas.yaml#/components/schemas/SkillOperationSpecList"
+  "/api/v1/admin/skill-specs/{skillId}":
+    get:
+      tags: [skill-specs]
+      summary: "技能规范摘要 + 当前生效版本指针"
+      operationId: getSkillOperationSpec
+      parameters:
+        - $ref: "#/components/parameters/SkillIdPath"
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/skill-operation-spec-schemas.yaml#/components/schemas/SkillOperationSpecSummary"
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/billing-schemas.yaml#/components/schemas/Problem"
+  "/api/v1/admin/skill-specs/{skillId}/versions":
+    get:
+      tags: [skill-specs]
+      summary: "版本履历"
+      operationId: getSkillOperationSpecVersions
+      parameters:
+        - $ref: "#/components/parameters/SkillIdPath"
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/skill-operation-spec-schemas.yaml#/components/schemas/SkillSpecVersionHistory"
+  "/api/v1/admin/skill-specs/{skillId}/versions/{skillSpecVersion}":
+    get:
+      tags: [skill-specs]
+      summary: "指定版本正文（Markdown 全文）"
+      operationId: getSkillOperationSpecVersionBody
+      parameters:
+        - $ref: "#/components/parameters/SkillIdPath"
+        - $ref: "#/components/parameters/SkillSpecVersionPath"
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/skill-operation-spec-schemas.yaml#/components/schemas/SkillOperationSpecBody"
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/billing-schemas.yaml#/components/schemas/Problem"
+  "/api/v1/admin/skill-specs/{skillId}/publish":
+    post:
+      tags: [skill-specs]
+      summary: "发布技能规范 · 单调 skillSpecVersion"
+      operationId: publishSkillOperationSpec
+      parameters:
+        - $ref: "#/components/parameters/SkillIdPath"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "../components/skill-operation-spec-schemas.yaml#/components/schemas/SkillSpecPublishRequest"
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/skill-operation-spec-schemas.yaml#/components/schemas/SkillSpecPublishResult"
+        "400":
+          description: "PROMPT_SKILL_REF_INVALID / 校验失败（契约未 contract-complete）"
+          content:
+            application/json:
+              schema:
+                $ref: "../components/billing-schemas.yaml#/components/schemas/Problem"
+  "/api/v1/internal/skills/effective":
+    get:
+      tags: [internal]
+      summary: "运行时 read_skill_operation_spec · 仅 PUBLISHED"
+      operationId: getEffectiveSkillOperationSpec
+      parameters:
+        - $ref: "#/components/parameters/SkillIdQuery"
+        - name: skillSpecVersion
+          in: query
+          required: true
+          schema:
+            $ref: "../components/skill-operation-spec-schemas.yaml#/components/schemas/SkillSpecVersion"
+        - name: If-None-Match
+          in: header
+          schema:
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/skill-operation-spec-schemas.yaml#/components/schemas/EffectiveSkillSpecResponse"
+        "304":
+          description: ETag 未变
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/billing-schemas.yaml#/components/schemas/Problem"
+  "/api/v1/internal/prompts/effective":
+    get:
+      tags: [internal]
+      summary: "运行时生效读 FR-PM08 · 仅 PUBLISHED"
+      operationId: getEffectivePrompt
+      parameters:
+        - name: scenarioId
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: promptPackVersion
+          in: query
+          schema:
+            type: string
+        - name: If-None-Match
+          in: header
+          schema:
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/prompt-management-schemas.yaml#/components/schemas/EffectivePromptResponse"
+        "304":
+          description: ETag 未变
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/billing-schemas.yaml#/components/schemas/Problem"
+components:
+  parameters:
+    PromptPackIdPath:
+      name: promptPackId
+      in: path
+      required: true
+      schema:
+        type: string
+    FewShotIdPath:
+      name: fewShotId
+      in: path
+      required: true
+      schema:
+        type: string
+    IfMatchOptional:
+      name: If-Match
+      in: header
+      required: false
+      schema:
+        type: string
+    SkillIdPath:
+      name: skillId
+      in: path
+      required: true
+      schema:
+        $ref: "../components/skill-operation-spec-schemas.yaml#/components/schemas/SkillId"
+    SkillSpecVersionPath:
+      name: skillSpecVersion
+      in: path
+      required: true
+      schema:
+        $ref: "../components/skill-operation-spec-schemas.yaml#/components/schemas/SkillSpecVersion"
+    SkillIdQuery:
+      name: skillId
+      in: query
+      required: true
+      schema:
+        $ref: "../components/skill-operation-spec-schemas.yaml#/components/schemas/SkillId"

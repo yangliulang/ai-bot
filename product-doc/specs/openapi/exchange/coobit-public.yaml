@@ -1,0 +1,97 @@
+openapi: 3.0.3
+info:
+  title: "Coobit — 公开行情层"
+  version: "2026-05-09"
+  description: |
+    与矩阵「币币 · 行情」**现货网关** PATH 同窗；**须 Key / 免 Key** **以所内为准**。
+    [`design/api.md`](../../design/api.md) **子账户矩阵**；**CC-P0-02 · B**：**`paths`** **键** **同窗**（**2026-05-12**）。
+    同窗 [`exchange-schemas.yaml`](../components/exchange-schemas.yaml)。
+  contact:
+    name: "Jesson"
+    email: Jesson@chainup.com
+servers:
+  - url: https://api.example.invalid
+    description: 现货网关占位；与 paths 组成完整 URL
+externalDocs:
+  description: 产业锚/扩展阅读
+  url: "https://exchangedocsv2.gitbook.io/open-api-doc-v2/spot.md"
+tags:
+  - name: spot-public
+paths:
+  "/sapi/v2/ping":
+    get:
+      tags: [spot-public]
+      summary: "连通探活"
+      operationId: coobitPublicGetPing
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/exchange-schemas.yaml#/components/schemas/CoobitJsonValue"
+  "/sapi/v2/time":
+    get:
+      tags: [spot-public]
+      summary: "服务器时间"
+      operationId: coobitPublicGetTime
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/exchange-schemas.yaml#/components/schemas/CoobitJsonValue"
+  "/sapi/v2/symbols":
+    get:
+      tags: [spot-public]
+      summary: "交易对元数据"
+      operationId: coobitPublicGetSymbols
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/exchange-schemas.yaml#/components/schemas/CoobitJsonValue"
+  "/sapi/v2/depth":
+    get:
+      tags: [spot-public]
+      summary: "深度"
+      operationId: coobitPublicGetDepth
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/exchange-schemas.yaml#/components/schemas/CoobitJsonValue"
+  "/sapi/v2/ticker":
+    get:
+      tags: [spot-public]
+      summary: "Ticker"
+      operationId: coobitPublicGetTicker
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/exchange-schemas.yaml#/components/schemas/CoobitJsonValue"
+  "/sapi/v2/trades":
+    get:
+      tags: [spot-public]
+      summary: "近期成交"
+      operationId: coobitPublicGetTrades
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/exchange-schemas.yaml#/components/schemas/CoobitJsonValue"
+  "/sapi/v2/klines":
+    get:
+      tags: [spot-public]
+      summary: "K 线"
+      operationId: coobitPublicGetKlines
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/exchange-schemas.yaml#/components/schemas/CoobitJsonValue"

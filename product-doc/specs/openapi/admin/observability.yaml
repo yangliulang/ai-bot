@@ -1,0 +1,211 @@
+openapi: 3.0.3
+info:
+  title: "ChainUp AI Agent — 运营侧 Observability (admin/observability)"
+  version: "2026-05-14"
+  description: |
+    PATH 与 design/api.md「运营侧 Logs & Observability API」一致。
+    响应 schema 同窗 [`observability/overview.md`](../../requirements/observability/overview.md) **§2**、**§2.4**（**`transitionTrigger`**）与 **[`../components/observability-schemas.yaml`](../components/observability-schemas.yaml)**。
+    **`ExecutionId` / `ScenarioId` / `UserIdMasked`** **query & path** **同窗** [`../components/identity-schemas.yaml`](../components/identity-schemas.yaml)。
+    **`GET .../observability/executions`**：**`listObservabilityExecutions`**（**`ObservabilityExecutionsPage`** / **`ObservabilityExecutionSummary`**）— **控制台** **`runtime.executions`**。
+    **联合搜索** 所内可挂载为 **`/search`** **或** **`/events`**（等价入口在实现 MR 二选或双登记）。
+  contact:
+    name: "Jesson"
+    email: Jesson@chainup.com
+servers:
+  - url: https://api.example.invalid
+    description: 所内替换
+tags:
+  - name: executions
+  - name: search
+  - name: audit
+paths:
+  "/api/v1/admin/observability/executions":
+    get:
+      tags: [executions]
+      summary: "执行记录分页列表 · 控制台 runtime.executions（邻接 FR-MC801～802 协查）"
+      operationId: listObservabilityExecutions
+      description: |
+        **列表行** **不** **内含** **完整时间线**；**主态边** **`transitionTrigger`** **见** **`GET .../{executionId}/timeline`**。
+      parameters:
+        - name: userId
+          in: query
+          schema:
+            $ref: "../components/identity-schemas.yaml#/components/schemas/UserIdMasked"
+        - name: scenarioId
+          in: query
+          schema:
+            $ref: "../components/identity-schemas.yaml#/components/schemas/ScenarioId"
+        - name: executionId
+          in: query
+          description: 可选 **精确** **`executionId`** **或** **所内约定之前缀/子串** — **终裁** **实现 MR**（**须** **避免** **无索引** **全表扫**）。
+          schema:
+            $ref: "../components/identity-schemas.yaml#/components/schemas/ExecutionId"
+        - name: intentContains
+          in: query
+          schema:
+            type: string
+          description: 意图摘要 **子串** 筛选（可选）。
+        - name: status
+          in: query
+          description: 运行态筛选（可选；枚举与 Demo / 产品冻结一致）。
+          schema:
+            type: string
+        - name: timeFrom
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: timeTo
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 200
+            default: 50
+        - name: cursor
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: 执行摘要分页
+          content:
+            application/json:
+              schema:
+                $ref: "../components/observability-schemas.yaml#/components/schemas/ObservabilityExecutionsPage"
+  "/api/v1/admin/observability/executions/{executionId}/timeline":
+    get:
+      tags: [executions]
+      summary: "按 executionId 时间线 FR-MC801 · overview §2 列集"
+      operationId: getObservabilityExecutionTimeline
+      parameters:
+        - $ref: "#/components/parameters/ExecutionIdPath"
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/observability-schemas.yaml#/components/schemas/ObservabilityTimelineResponse"
+  "/api/v1/admin/observability/executions/{executionId}/tool-calls":
+    get:
+      tags: [executions]
+      summary: "工具调用明细 FR-MC803 · invocationState · SC-OBS05"
+      operationId: getObservabilityExecutionToolCalls
+      parameters:
+        - $ref: "#/components/parameters/ExecutionIdPath"
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/observability-schemas.yaml#/components/schemas/ToolCallsPage"
+  "/api/v1/admin/observability/executions/{executionId}/llm":
+    get:
+      tags: [executions]
+      summary: "LLM 计量明细 FR-MC804（禁止默认 messages 全文）"
+      operationId: getObservabilityExecutionLlm
+      parameters:
+        - $ref: "#/components/parameters/ExecutionIdPath"
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/observability-schemas.yaml#/components/schemas/LlmUsageSummary"
+  "/api/v1/admin/observability/search":
+    get:
+      tags: [search]
+      summary: "联合搜索 FR-MC802（同窗可另挂 GET /events）"
+      operationId: searchObservabilityEvents
+      parameters:
+        - name: userId
+          in: query
+          schema:
+            $ref: "../components/identity-schemas.yaml#/components/schemas/UserIdMasked"
+        - name: executionId
+          in: query
+          schema:
+            $ref: "../components/identity-schemas.yaml#/components/schemas/ExecutionId"
+        - name: billingTraceId
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: toolId
+          in: query
+          schema:
+            type: string
+        - name: scenarioId
+          in: query
+          schema:
+            $ref: "../components/identity-schemas.yaml#/components/schemas/ScenarioId"
+        - name: timeFrom
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: timeTo
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 200
+            default: 50
+        - name: cursor
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/observability-schemas.yaml#/components/schemas/SearchPage"
+  "/api/v1/admin/observability/audit-exports":
+    post:
+      tags: [audit]
+      summary: "审计日志导出任务 FR-MC806～807 · D-18"
+      operationId: createObservabilityAuditExport
+      responses:
+        "202":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/billing-schemas.yaml#/components/schemas/AsyncTaskAccepted"
+  "/api/v1/admin/observability/audit-exports/{taskId}":
+    get:
+      tags: [audit]
+      summary: "审计导出任务状态 / 短时下载 URL"
+      operationId: getObservabilityAuditExportTask
+      parameters:
+        - name: taskId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: 完成态可含水印 URL；**无** Prompt 全文默认导出
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+components:
+  parameters:
+    ExecutionIdPath:
+      name: executionId
+      in: path
+      required: true
+      schema:
+        $ref: "../components/identity-schemas.yaml#/components/schemas/ExecutionId"

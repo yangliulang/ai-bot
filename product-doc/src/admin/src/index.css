@@ -1,0 +1,853 @@
+/* 产品化：与 antd token 协同的轻动效与阅读节奏 */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: #f5f7fa;
+  color: rgba(0, 0, 0, 0.88);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+/* 主内容区：居中宽屏，避免大屏表格「散」掉 */
+.admin-layout-content {
+  scroll-behavior: smooth;
+}
+
+.admin-page-root {
+  max-width: 1600px;
+  margin: 0 auto;
+  animation: admin-page-enter 0.35s ease-out;
+}
+
+/* 页眉与主区：与所内后台一致的区块分隔 */
+.admin-page-hero {
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.admin-page-body {
+  min-height: 120px;
+}
+
+/* 侧栏：分组标题 + 智能体二级菜单可读性 */
+.admin-pro-sider .ant-menu-item-group-title {
+  padding: 8px 16px 4px !important;
+  font-size: 11px;
+  letter-spacing: 0.03em;
+  color: rgba(255, 255, 255, 0.42) !important;
+}
+
+.admin-pro-sider .ant-menu-submenu-title {
+  padding-inline: 16px !important;
+}
+
+.admin-pro-sider .ant-menu-sub.ant-menu-inline {
+  background: rgba(0, 0, 0, 0.15) !important;
+}
+
+@keyframes admin-page-enter {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .admin-page-root {
+    animation: none;
+  }
+  .admin-stat-card {
+    transition: none !important;
+  }
+}
+
+/* 指标卡：轻抬升，强调可扫读 */
+.admin-stat-card {
+  transition: box-shadow 0.2s ease, transform 0.2s ease, border-color 0.2s ease;
+  border-color: rgba(0, 0, 0, 0.06) !important;
+}
+
+.admin-stat-card:hover {
+  box-shadow: 0 6px 16px rgba(24, 144, 255, 0.1);
+  transform: translateY(-2px);
+  border-color: rgba(24, 144, 255, 0.25) !important;
+}
+
+.admin-stat-title {
+  font-size: 13px;
+  color: rgba(0, 0, 0, 0.45);
+}
+
+/* 数据刷新条轻微内阴影 */
+.admin-data-freshness-bar {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+/* 操作区卡片：列表页「操作 / 数据列表」层级 */
+.admin-panel-card .ant-card-head {
+  min-height: 48px;
+  font-weight: 600;
+}
+
+/* 列表查询条：表单控件统一通栏 */
+.admin-filter-surface .ant-form-item {
+  margin-bottom: 0;
+}
+
+.admin-filter-surface .ant-form-item-label > label {
+  color: var(--ant-color-text-secondary, rgba(0, 0, 0, 0.55));
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.admin-filter-query-grid {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 12px 16px;
+  align-items: end;
+}
+
+.admin-filter-query-grid > * {
+  min-width: 0;
+}
+
+.admin-filter-span-5 {
+  grid-column: span 5;
+}
+
+.admin-filter-span-7 {
+  grid-column: span 7;
+}
+
+.admin-runtime-execution-filter-grid {
+  align-items: start;
+}
+
+/* 执行记录：压缩筛选头与栅格间距，把纵向空间留给表格 */
+.admin-runtime-execution-query-surface.admin-filter-surface .admin-filter-surface__head {
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+}
+
+.admin-runtime-execution-filter-grid.admin-filter-query-grid {
+  gap: 10px 14px;
+}
+
+/* 运行场景 · 场景目录：筛选头与执行列表一致 */
+.admin-scenario-query-surface.admin-filter-surface .admin-filter-surface__head {
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+}
+
+/* 人工确认规则 */
+.admin-confirmation-rules-query-surface.admin-filter-surface .admin-filter-surface__head {
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+}
+
+.admin-confirmation-rules-table-host {
+  min-width: 0;
+}
+
+.admin-runtime-execution-table-host {
+  min-width: 0;
+}
+
+.admin-runtime-execution-table-row-interactive > td {
+  transition: background-color 0.15s ease;
+}
+
+.admin-runtime-execution-table-row-interactive:hover > td.ant-table-cell {
+  background: rgba(0, 0, 0, 0.024) !important;
+}
+
+.admin-runtime-execution-table-host .ant-table-tbody > tr > td.ant-table-cell {
+  padding-top: 16px !important;
+  padding-bottom: 16px !important;
+}
+
+.admin-runtime-execution-table-host .ant-table-thead > tr > th.ant-table-cell {
+  padding-top: 14px !important;
+  padding-bottom: 14px !important;
+}
+
+.admin-table-panel .ant-table-pagination {
+  padding: 12px 16px 16px !important;
+  margin: 0 !important;
+}
+
+.admin-prompt-packs-table.ant-table-wrapper .ant-table-tbody > tr > td.ant-table-cell,
+.admin-prompt-packs-table .ant-table-tbody > tr > td.ant-table-cell {
+  padding-top: 15px !important;
+  padding-bottom: 15px !important;
+}
+
+.admin-prompt-packs-table.ant-table-wrapper .ant-table-thead > tr > th.ant-table-cell,
+.admin-prompt-packs-table .ant-table-thead > tr > th.ant-table-cell {
+  padding-top: 13px !important;
+  padding-bottom: 13px !important;
+}
+
+/* 提示词治理 · 收紧筛选外壳高度 */
+.admin-prompt-strategy-query-surface.admin-filter-surface .admin-filter-surface__head {
+  margin-bottom: 8px;
+  padding-bottom: 6px;
+}
+
+.admin-prompt-strategy-filter-grid.admin-filter-query-grid {
+  gap: 8px 12px;
+}
+
+.admin-filter-span-12 {
+  grid-column: span 12;
+}
+
+.admin-filter-span-6 {
+  grid-column: span 6;
+}
+
+.admin-filter-span-4 {
+  grid-column: span 4;
+}
+
+.admin-filter-span-8 {
+  grid-column: span 8;
+}
+
+.admin-filter-span-3 {
+  grid-column: span 3;
+}
+
+@media (max-width: 991px) {
+  .admin-filter-query-grid > * {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (min-width: 992px) and (max-width: 1199px) {
+  .admin-instances-query-gridFields .admin-filter-span-3 {
+    grid-column: span 6;
+  }
+
+  .admin-filter-span-6 {
+    grid-column: span 12;
+  }
+  .admin-filter-span-4 {
+    grid-column: span 6;
+  }
+  .admin-filter-span-8 {
+    grid-column: span 12;
+  }
+  .admin-filter-span-3 {
+    grid-column: span 6;
+  }
+
+  .admin-runtime-execution-filter-grid .admin-filter-span-7,
+  .admin-runtime-execution-filter-grid .admin-filter-span-5 {
+    grid-column: 1 / -1;
+  }
+}
+
+/* 实例管理 · 筛选表单：紧凑标签 + 控件通栏 */
+.admin-instances-filter-form.ant-form-vertical .ant-form-item {
+  margin-bottom: 0;
+  width: 100%;
+}
+
+.admin-instances-filter-form.ant-form-vertical .ant-form-item-label {
+  padding-bottom: 4px !important;
+}
+
+.admin-instances-filter-form--compact.ant-form-vertical .ant-form-item-label > label {
+  display: inline-flex !important;
+  align-items: center !important;
+  min-height: 0 !important;
+  height: auto !important;
+  line-height: 1.35 !important;
+  font-size: 12px !important;
+  font-weight: 500;
+  color: var(--ant-color-text-secondary, rgba(0, 0, 0, 0.55));
+}
+
+.admin-instances-filter-form.ant-form-vertical .ant-form-item-control-input {
+  min-width: 0;
+}
+
+.admin-instances-filter-form .ant-input-affix-wrapper,
+.admin-instances-filter-form .ant-select {
+  width: 100%;
+  max-width: 100%;
+}
+
+.admin-filter-query-grid.admin-instances-filter-grid-tight {
+  row-gap: 10px;
+  column-gap: 14px;
+}
+
+/* 实例查询：首列带辅助说明时，各列顶对齐 */
+.admin-filter-query-grid.admin-instances-query-gridFields {
+  align-items: start;
+}
+
+/* 顶栏壳层：浅色分割与浅色 hover，适配深色 Header */
+.admin-shell-header {
+  flex-shrink: 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.admin-shell-header.ant-layout-header .ant-typography {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+.admin-shell-header-left {
+  min-height: 48px;
+}
+
+.admin-shell-header-product.ant-typography {
+  align-self: center;
+  display: inline-flex;
+  align-items: center;
+  line-height: 1.35;
+}
+
+/* 顶栏及以下：占满可视高度并允许中部单独滚动（避免双层全局滚动打架） */
+.admin-workspace-shell {
+  flex: 1;
+  min-height: 0;
+}
+
+.admin-workspace-shell > .ant-layout-content {
+  min-width: 0;
+}
+
+.admin-workspace-main {
+  padding: 22px clamp(18px, 2.5vw, 32px) 40px;
+}
+
+/* 侧边栏：上部品牌区，中部菜单滚动，底部折叠由 antd 管理 */
+.admin-pro-sider.ant-layout-sider > .ant-layout-sider-children {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  height: 100%;
+}
+
+.admin-sider-brand {
+  padding: 12px 14px 10px;
+  flex-shrink: 0;
+}
+
+.admin-pro-sider .ant-layout-sider-children > .ant-menu.ant-menu-root {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+}
+
+.admin-pro-sider.ant-layout-sider .ant-layout-sider-trigger {
+  background: rgba(0, 0, 0, 0.2);
+  color: rgba(255, 255, 255, 0.82);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.admin-pro-sider.ant-layout-sider .ant-layout-sider-trigger:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.ant-layout-header .admin-header-icon-btn.ant-btn-text,
+.ant-layout-header .admin-header-text-btn.ant-btn-text {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.ant-layout-header .admin-header-icon-btn.ant-btn-text:hover,
+.ant-layout-header .admin-header-text-btn.ant-btn-text:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.08) !important;
+}
+
+/* 兼容少量遗留 class */
+.page-title {
+  margin: 0 0 8px;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.page-desc {
+  margin: 0 0 20px;
+  color: rgba(0, 0, 0, 0.45);
+  font-size: 14px;
+}
+
+.field-label {
+  font-size: 12px;
+  color: rgba(0, 0, 0, 0.45);
+  margin-bottom: 4px;
+}
+
+.grid-2 {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 12px;
+}
+
+/* 技能与工具 · 登记运营页 */
+.admin-tool-registry-page .admin-tool-registry-stats .ant-card {
+  border-radius: 10px;
+}
+.admin-tool-registry-page .admin-tool-registry-table .ant-table-thead > tr > th {
+  background: rgba(0, 0, 0, 0.02);
+  font-weight: 600;
+  font-size: 12px;
+}
+.admin-tool-registry-page .admin-tool-registry-table .ant-table-cell {
+  font-size: 13px;
+}
+.admin-tool-registry-page .admin-tool-registry-table code,
+.admin-tool-registry-page .admin-tool-registry-table .ant-typography code {
+  font-size: 12px;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  word-break: break-all;
+}
+.admin-tool-registry-page .admin-tool-registry-tabs .ant-tabs-nav {
+  margin-bottom: 0;
+}
+.admin-tool-registry-page .admin-tool-registry-tabs .ant-tabs-tab {
+  padding: 10px 14px;
+}
+.admin-tool-registry-page tr.admin-tool-registry-row--tbd > td {
+  background: rgba(250, 173, 20, 0.07) !important;
+}
+.admin-tool-registry-page .admin-tool-registry-stat-card .ant-card-body {
+  padding: 14px 16px !important;
+}
+.admin-tool-registry-page .admin-skill-registry-cell--identity {
+  min-width: 0;
+}
+.admin-tool-registry-page .admin-skill-registry-skill-id {
+  display: block;
+  font-size: 12px;
+  line-height: 1.4;
+  margin-bottom: 2px;
+}
+.admin-tool-registry-page .admin-skill-registry-summary {
+  display: block;
+  font-size: 14px;
+  line-height: 1.45;
+  margin-bottom: 2px;
+}
+.admin-tool-registry-page .admin-skill-registry-spec-brief {
+  display: block;
+  font-size: 12px;
+  line-height: 1.4;
+  max-width: 200px;
+}
+.admin-skill-operation-collapse .ant-collapse-header {
+  font-weight: 600;
+}
+.admin-tool-registry-page .admin-skill-registry-flow,
+.admin-tool-registry-page .admin-skill-registry-matrix {
+  display: block;
+  font-size: 13px;
+  line-height: 1.5;
+  max-width: 280px;
+}
+.admin-tool-registry-page .admin-skill-registry-cell--spec {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  min-width: 0;
+}
+.admin-tool-registry-page .admin-skill-registry-spec-note {
+  display: block;
+  font-size: 12px;
+  line-height: 1.4;
+  max-width: 220px;
+}
+.admin-tool-registry-page .admin-skill-registry-spec-btn {
+  padding: 0;
+  height: auto;
+}
+.admin-skill-spec-drawer-meta .ant-descriptions-item-label {
+  width: 88px;
+}
+.admin-tool-registry-page .admin-skill-spec-md-preview,
+.admin-skill-spec-md-preview {
+  font-size: 13px;
+  line-height: 1.55;
+  max-height: calc(100vh - 320px);
+  overflow: auto;
+  padding-right: 8px;
+}
+.admin-tool-registry-page .admin-skill-spec-md-preview h2,
+.admin-skill-spec-md-preview h2 {
+  font-size: 15px;
+  margin-top: 1.25em;
+}
+.admin-tool-registry-page .admin-skill-spec-md-preview h3,
+.admin-skill-spec-md-preview h3 {
+  font-size: 14px;
+}
+.admin-skill-operation-drawer .ant-drawer-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+.admin-skill-drawer-title__name {
+  display: block;
+  font-size: 16px;
+  line-height: 1.4;
+  margin-bottom: 4px;
+}
+.admin-skill-drawer-title__hint {
+  display: block;
+  font-size: 12px;
+  font-weight: 400;
+  margin-top: 2px;
+}
+.admin-skill-drawer-root {
+  min-width: 0;
+}
+.admin-skill-drawer-tags {
+  margin-bottom: 8px;
+}
+.admin-skill-drawer-tabs .ant-tabs-nav {
+  margin-bottom: 12px;
+}
+.admin-skill-drawer-tab-pane {
+  min-height: 200px;
+}
+.admin-skill-overview {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.admin-skill-overview-meta {
+  margin-bottom: 0;
+}
+.admin-skill-overview-code {
+  font-size: 12px;
+}
+.admin-skill-overview-biz {
+  margin-top: 0;
+}
+.admin-skill-overview-quick .ant-card-body {
+  padding-top: 10px !important;
+}
+.admin-skill-overview-footnote {
+  display: block;
+  margin-top: 8px;
+  font-size: 12px;
+}
+.admin-skill-overview-note {
+  margin-bottom: 0 !important;
+  font-size: 13px;
+}
+.admin-skill-drawer-metrics {
+  padding: 10px 12px;
+  background: rgba(0, 0, 0, 0.02);
+  border-radius: 8px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+}
+.admin-skill-drawer-metric__label {
+  display: block;
+  font-size: 11px;
+  margin-bottom: 2px;
+}
+.admin-skill-drawer-metric__value {
+  font-size: 15px;
+}
+.admin-skill-drawer-goto-spec {
+  padding-left: 0;
+  margin-top: 8px;
+}
+.admin-skill-drawer-loading {
+  display: flex;
+  justify-content: center;
+  padding: 48px 0;
+}
+.admin-skill-spec-segmented {
+  margin-bottom: 14px;
+}
+.admin-skill-spec-segment-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+}
+.admin-skill-spec-segment-count {
+  display: inline-block;
+  min-width: 18px;
+  padding: 0 5px;
+  font-size: 11px;
+  line-height: 18px;
+  text-align: center;
+  border-radius: 9px;
+  background: rgba(0, 0, 0, 0.06);
+  color: rgba(0, 0, 0, 0.55);
+}
+.admin-skill-spec-section-body {
+  min-height: 120px;
+}
+.admin-skill-drawer-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.admin-skill-drawer-footer__id {
+  font-size: 12px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  max-width: 55%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.admin-skill-drawer-overview-card .ant-card-body {
+  padding: 12px 14px !important;
+}
+.admin-skill-drawer-label {
+  display: block;
+  font-size: 12px;
+  margin-bottom: 6px;
+}
+.admin-skill-drawer-prose {
+  margin-bottom: 0 !important;
+  font-size: 13px;
+  line-height: 1.55;
+  color: rgba(0, 0, 0, 0.78);
+}
+.admin-skill-drawer-biz-alert {
+  margin-top: 12px;
+}
+.admin-skill-drawer-raw-collapse {
+  margin-top: 8px;
+}
+.admin-skill-operation-panels--drawer {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.admin-skill-op-card {
+  scroll-margin-top: 72px;
+}
+.admin-skill-op-card .ant-card-head {
+  min-height: 40px;
+  padding: 0 14px;
+  background: rgba(0, 0, 0, 0.02);
+}
+.admin-skill-op-card .ant-card-body {
+  padding: 12px 14px !important;
+}
+.admin-skill-op-card-title {
+  font-size: 13px;
+  font-weight: 600;
+}
+.admin-skill-op-card-count {
+  font-weight: 400;
+  margin-left: 8px;
+  font-size: 12px;
+}
+.admin-skill-op-rules-block {
+  margin-bottom: 16px;
+  padding: 12px 14px;
+  background: rgba(22, 119, 255, 0.04);
+  border: 1px solid rgba(22, 119, 255, 0.12);
+  border-radius: 8px;
+}
+.admin-skill-op-rules-heading {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 10px;
+  color: rgba(0, 0, 0, 0.55);
+}
+.admin-skill-op-rules-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.admin-skill-op-rule-item {
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+.admin-skill-op-rule-item:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+.admin-skill-op-rule-item:first-child {
+  padding-top: 0;
+}
+.admin-skill-op-rule-title {
+  display: block;
+  font-size: 13px;
+  margin-bottom: 6px;
+}
+.admin-skill-op-rule-hint {
+  display: block;
+  font-size: 12px;
+  line-height: 1.5;
+}
+.admin-skill-op-rule-lines {
+  margin: 0;
+  padding-left: 18px;
+}
+.admin-skill-op-rule-lines li {
+  margin-bottom: 4px;
+}
+.admin-skill-op-rule-line {
+  font-size: 13px;
+  line-height: 1.55;
+  color: rgba(0, 0, 0, 0.75);
+}
+.admin-skill-op-fields-heading {
+  display: block;
+  font-size: 12px;
+  margin-bottom: 8px;
+}
+.admin-skill-op-cell {
+  font-size: 13px;
+}
+.admin-skill-operation-panels .admin-skill-op-table .ant-table-cell {
+  font-size: 12px;
+  padding: 6px 10px !important;
+}
+.admin-skill-op-confirm-list {
+  margin: 0;
+  padding-left: 0;
+  list-style: none;
+  font-size: 13px;
+}
+.admin-skill-op-confirm-list li {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 10px;
+  margin-bottom: 6px;
+  background: rgba(0, 0, 0, 0.02);
+  border-radius: 6px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+}
+.admin-skill-op-confirm-desc {
+  font-size: 12px;
+  line-height: 1.45;
+}
+.admin-skill-op-api-list {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 13px;
+  line-height: 1.55;
+}
+.admin-skill-op-api-pre {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+  background: rgba(0, 0, 0, 0.04);
+  padding: 12px;
+  border-radius: 6px;
+  max-height: 280px;
+  overflow: auto;
+}
+.admin-skill-spec-raw-md {
+  font-size: 11px;
+  line-height: 1.45;
+  max-height: 360px;
+  overflow: auto;
+  background: rgba(0, 0, 0, 0.04);
+  padding: 12px;
+  border-radius: 6px;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.admin-skill-registry-drawer-table tr.admin-skill-registry-row--clickable {
+  cursor: pointer;
+}
+.admin-skill-registry-drawer-table tr.admin-skill-registry-row--clickable:hover > td {
+  background: rgba(0, 0, 0, 0.02);
+}
+.admin-skill-registry-drawer-table tr.admin-skill-registry-row--active > td {
+  background: rgba(24, 144, 255, 0.08) !important;
+}
+.admin-skill-registry-drawer-table tr.admin-skill-registry-row--active > td:first-child {
+  box-shadow: inset 3px 0 0 #1677ff;
+}
+.admin-tool-registry-page tr.admin-tool-registry-row--tbd:hover > td {
+  background: rgba(250, 173, 20, 0.11) !important;
+}
+
+/* 计费 · 商业运营 · 订阅套餐卡片 */
+.billing-tier-card {
+  height: 100%;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.billing-tier-card--recommended {
+  border-color: rgba(22, 119, 255, 0.45);
+  box-shadow: 0 0 0 1px rgba(22, 119, 255, 0.12);
+}
+
+.billing-tier-card--inactive {
+  opacity: 0.72;
+}
+
+.billing-tier-card__price {
+  font-size: 28px;
+  font-weight: 600;
+  line-height: 1.2;
+  color: rgba(0, 0, 0, 0.88);
+}
+
+.billing-tier-card__price-unit {
+  font-size: 14px;
+  font-weight: 400;
+  color: rgba(0, 0, 0, 0.45);
+  margin-left: 4px;
+}
+
+.billing-tier-quota-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  margin-top: 10px;
+}
+
+.billing-tier-quota-chip {
+  font-size: 12px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.04);
+  color: rgba(0, 0, 0, 0.65);
+}
+
+.billing-tier-card__actions {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.billing-ops-tabs .ant-tabs-nav {
+  margin-bottom: 16px;
+}

@@ -1,0 +1,25 @@
+---
+alwaysApply: true
+---
+
+<!-- SPECKIT START -->
+与本仓库协作时请先阅读：
+
+- **全局 `specs` 层级**：[`specs/README.md`](specs/README.md)
+- **本仓库路径约定**：[`.specify/memory/workspace-layout.md`](.specify/memory/workspace-layout.md)
+- **人类可读需求叙事（非契约 SSOT）**：[`product/README.md`](../../product/README.md)
+- **路线图同步（需求 MR）**：**新增或实质修改** `specs/requirements/` 需求口径时，**须** **同窗** 更新 [`product/roadmap.md`](../../product/roadmap.md)（**TL;DR** · **「规格体系快照」L1～L7** · **横切主题** · **任选择要补丁**）（细则与豁免见 [`product/roadmap/README.md`](../../product/roadmap/README.md) **维护约定**；MR 勾选见 [`standards/review-and-change-standard.md`](../../specs/requirements/standards/review-and-change-standard.md) **§2 · Roadmap**）
+
+需要执行 Speckit / 聚合规格相关工作时：
+
+- **FEATURE_DIR**：`specs/requirements/`（见 [`.specify/feature.json`](.specify/feature.json)）
+- **聚合规格**：`specs/requirements/spec.md`；**产品与范围 SSOT**：`specs/requirements/product.md`；**小团队（≈2 人）日常管控**（可选）：`specs/requirements/LITE-MODE.md`
+- **关单余量 / 闭环路径 / MR 执行清单**（**不**替代 `contract-closure` DoD）：[`specs/requirements/closure-remaining.md`](../../specs/requirements/closure-remaining.md) **[§0 速链](../../specs/requirements/closure-remaining.md#closure-remaining-quicklinks)** · **[§7.5](../../specs/requirements/closure-remaining.md#cc-remaining-open-close-path)** · **[§7.6](../../specs/requirements/closure-remaining.md#cc-closure-exec-checklist)**；**与** [`specs/requirements/contract-closure.md`](../../specs/requirements/contract-closure.md) **同窗副读**
+- **域需求**：`specs/requirements/domains/agent/` **与** `domains/admin/`、**`domains/web/`**（主站/H5 **开通 · Agent 账单** UX；**总入口** [`domains/README.md`](../../specs/requirements/domains/README.md)）；**Telegram** 正文 **`domains/agent/telegram/overview.md`**
+- **后台 IA（视图层，非 Domain FR）**：`specs/requirements/admin-console/`（[`README`](../../specs/requirements/admin-console/README.md)、[Sitemap](../../specs/requirements/admin-console/sitemap.md)、[Runtime→UI](../../specs/requirements/admin-console/runtime-to-ui-mapping.md)）
+- **PRS**（模型调用前拼装 · **≠** `Runtime/` 执行态）：[`specs/requirements/prompt-runtime/README.md`](../../specs/requirements/prompt-runtime/README.md)（**[§4 改什么去哪](../../specs/requirements/prompt-runtime/README.md#prs-where-to-edit)** · L1 `prompts/` · MNRA · L0 `skill-specs/`）
+- **主题索引**（链向 `product/`、`domains/`、`design/`，**不**另造验收 SSOT）：`specs/requirements/business/`、`metrics/`、**`evals/`**（[`README.md`](../../specs/requirements/evals/README.md)）、`tools/`、**`Runtime/`**（主链 **`specs/requirements/Runtime/overview.md`**）、**`risk/`**（[`README.md`](../../specs/requirements/risk/README.md)）、`observability/`、**`integrations/`**（[`README.md`](../../specs/requirements/integrations/README.md)）；需求总索引 [`requirements/README.md`](../../specs/requirements/README.md)
+- **书写规范**：`specs/requirements/standards/`（[`README.md`](specs/requirements/standards/README.md)）；**凡改动该目录下任一 `.md`，须在 [`Log.md`](specs/requirements/standards/Log.md) 顶部追加履历**。
+
+若工具仍按「`10-domains/<域>/spec.md`」旧路径解析，请以 **本篇路径**为准并迁移工具配置。
+<!-- SPECKIT END -->

@@ -1,0 +1,167 @@
+openapi: 3.0.3
+info:
+  title: "2026-05-27--admin-ai-settings-gateway-ui — Admin gateway policy UI"
+  description: |
+    Admin 控制台 **网关策略** UI 所依赖的 API（**无新 path**）。
+    - **`intentNluUseLlm`**、**`telegramLlmNarrate`** 后端行为见 **`2026-05-26--nlu-llm-strategy`**、**`2026-05-26--telegram-llm-narrate`**（**done**）。
+    - 全量 Admin AI Settings 同窗 **`product-doc/specs/openapi/admin/ai-settings.yaml`**。
+    - **200** 为 FastAPI **直出** camelCase JSON（非 `{ code: 0 }` 信封）；**4xx** 为 **`AppError`**：`code` + `message` + 可选 `details`。
+  version: "0.1.0"
+
+servers:
+  - url: http://127.0.0.1:8080
+    description: 本地 Agent API
+
+paths:
+  /api/v1/admin/ai/defaults:
+    get:
+      summary: 读取网关默认 profile（AC-2）
+      operationId: getAiGatewayDefaultsForGatewayUi
+      tags: [admin-ai]
+      responses:
+        "200":
+          description: 合并后的 gateway defaults（含本包 UI 字段）
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AiGatewayDefaultsGatewayUi"
+              example:
+                defaultProviderId: demo
+                defaultModelId: gpt-4.1-mini
+                intentNluUseLlm: false
+                telegramLlmNarrate:
+                  readMarketTicker: false
+                  readMarketDepth: false
+                  readMarketTrades: false
+                  readAccountBalance: false
+                  wealthHoldingsRead: false
+                  spotFlashConfirm: false
+                  spotLimitConfirm: false
+                  futuresMarketConfirm: false
+                  futuresLimitConfirm: false
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+    patch:
+      summary: 更新网关策略字段（AC-3、AC-4）
+      operationId: patchAiGatewayDefaultsForGatewayUi
+      tags: [admin-ai]
+      parameters:
+        - name: If-Match
+          in: header
+          required: false
+          schema:
+            type: string
+          description: 文档 row_version（可选；冲突 **409** `AGENT_AI_SETTINGS_VERSION_CONFLICT`）
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AiGatewayDefaultsGatewayUiPatch"
+            examples:
+              intentNluOn:
+                summary: 仅开启 NLU LLM（AC-3）
+                value:
+                  intentNluUseLlm: true
+              narrateTicker:
+                summary: 仅开启 ticker narrate（AC-4）
+                value:
+                  telegramLlmNarrate:
+                    readMarketTicker: true
+      responses:
+        "200":
+          description: 更新后 defaults（深度合并）
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AiGatewayDefaultsGatewayUi"
+        "409":
+          $ref: "#/components/responses/VersionConflict"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+components:
+  responses:
+    Unauthorized:
+      description: 未授权
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/AppError"
+    VersionConflict:
+      description: If-Match / rowVersion 冲突
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/AppError"
+          example:
+            code: AGENT_AI_SETTINGS_VERSION_CONFLICT
+            message: 资源已被他人更新，请刷新后重试
+    ValidationError:
+      description: 校验失败（如 catalog 模型不存在）
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/AppError"
+          example:
+            code: AGENT_AI_GATEWAY_MODEL_NOT_IN_CATALOG
+            message: 策略字段引用的模型未在目录中登记
+
+  schemas:
+    AppError:
+      type: object
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        details:
+          type: object
+          additionalProperties: true
+
+    TelegramLlmNarrateFlags:
+      type: object
+      description: Telegram 各场景 LLM narrate / Type-A preamble（9 字段）
+      properties:
+        readMarketTicker: { type: boolean, default: false }
+        readMarketDepth: { type: boolean, default: false }
+        readMarketTrades: { type: boolean, default: false }
+        readAccountBalance: { type: boolean, default: false }
+        wealthHoldingsRead: { type: boolean, default: false }
+        spotFlashConfirm: { type: boolean, default: false }
+        spotLimitConfirm: { type: boolean, default: false }
+        futuresMarketConfirm: { type: boolean, default: false }
+        futuresLimitConfirm: { type: boolean, default: false }
+      additionalProperties: false
+
+    AiGatewayDefaultsGatewayUi:
+      type: object
+      description: 本包 UI 消费的 defaults 子集；其它字段与存量 AiSettings 一致
+      properties:
+        intentNluUseLlm:
+          type: boolean
+          default: false
+          description: 为 true 时优先尝试 LLM intent NLU（env 可强制覆盖）
+        telegramLlmNarrate:
+          $ref: "#/components/schemas/TelegramLlmNarrateFlags"
+        defaultProviderId: { type: string }
+        defaultModelId: { type: string }
+        scenarioChatModel: { type: string }
+        scenarioTradingModel: { type: string }
+        scenarioRiskModel: { type: string }
+        orchestrationExecutionBudget:
+          type: object
+          additionalProperties: true
+      additionalProperties: true
+
+    AiGatewayDefaultsGatewayUiPatch:
+      type: object
+      properties:
+        intentNluUseLlm:
+          type: boolean
+        telegramLlmNarrate:
+          $ref: "#/components/schemas/TelegramLlmNarrateFlags"
+      additionalProperties: true

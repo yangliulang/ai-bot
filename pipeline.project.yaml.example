@@ -1,0 +1,42 @@
+# 复制为 pipeline.project.yaml 并按仓库调整
+
+project:
+  name: chainup-exchange-ai-bot
+  prd:
+    primary: product-doc/product/roadmap.md
+  onboarding:
+    commander: handoff/pipeline/COMMANDER.md
+
+features:
+  root: handoff/features
+
+roadmap:
+  glob: handoff/roadmap/phase-*.md
+  default_phase_file: handoff/roadmap/phase-1.md
+
+apps:
+  backend:
+    path: server
+    stack: fastapi
+    dev:
+      command: "cd server && uv run chainup-agent-api"
+      base_url: http://127.0.0.1:8080
+      cors_origin: http://127.0.0.1:5173
+  frontend:
+    path: admin
+    stack: vite-vue
+    dev:
+      command: "cd admin && npm run dev"
+      base_url: http://127.0.0.1:5173
+
+conventions:
+  api_response:
+    style: fastapi_http_status
+
+# Hook 提醒（status 变更后是否需指挥官确认再下一步）
+pipeline:
+  hooks:
+    enabled: true
+    remind_on_write: true
+    stop_followup: false
+    require_new_chat: true

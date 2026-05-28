@@ -1,0 +1,66 @@
+openapi: 3.0.3
+info:
+  title: "Coobit — 自动化（条件单等）"
+  version: "2026-05-09"
+  description: |
+    **合约网关**；首版 **条件单** **PATH** 为 [`design/api.md`](../../design/api.md) 矩阵 **P0** 下限；
+    **`GET /fapi/v1/order`、`openOrders`** **与撤单、条件单创建** **同窗** 自动化行。
+    **现货侧** 计划/条件委托 **书面延期 CC-P0-02**。
+    **CC-P0-02 · B**：**`paths`** **与** **矩阵** **合约条件单** **行** **同窗**（**2026-05-12**）。
+    同窗 [`exchange-schemas.yaml`](../components/exchange-schemas.yaml)。
+  contact:
+    name: "Jesson"
+    email: Jesson@chainup.com
+servers:
+  - url: https://futuresapi.example.invalid
+    description: 合约网关占位；所内冻结
+externalDocs:
+  description: 产业锚/扩展阅读
+  url: "https://exchangedocsv2.gitbook.io/open-api-doc-v2/futures.md"
+tags:
+  - name: automation
+paths:
+  "/fapi/v1/conditionOrder":
+    post:
+      tags: [automation]
+      summary: "条件单/计划委托创建 · P0"
+      operationId: coobitAutomationPostConditionOrder
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/exchange-schemas.yaml#/components/schemas/CoobitJsonValue"
+  "/fapi/v1/order":
+    get:
+      tags: [automation]
+      summary: "委托查询（自动化/对账复用）"
+      operationId: coobitAutomationGetOrder
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/exchange-schemas.yaml#/components/schemas/CoobitJsonValue"
+  "/fapi/v1/openOrders":
+    get:
+      tags: [automation]
+      summary: "开放委托（自动化/对账复用）"
+      operationId: coobitAutomationGetOpenOrders
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/exchange-schemas.yaml#/components/schemas/CoobitJsonValue"
+  "/fapi/v1/cancel":
+    post:
+      tags: [automation]
+      summary: "撤单（与条件单创建配合）"
+      operationId: coobitAutomationPostCancel
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/exchange-schemas.yaml#/components/schemas/CoobitJsonValue"

@@ -1,0 +1,48 @@
+---
+description: 单体仓 /be · /fe · /pm · /qa 各司其职——默认只改本栈目录；跨栈时请用户找对应 Owner
+alwaysApply: true
+---
+
+# 角色编辑范围（ChainUp AI Bot 单体仓）
+
+在满足以下任一条件时，据此约束：**用户显式使用 `/be` `/fe` `/pm` `/qa`**、话术别名、或本轮任务主旨明显落在某一栈：
+
+- **总则**：优先改「本栈」目录与文档；其余栈 **不自作主张改代码/条文**。用户 **明确要求跨栈一次性改完** 时从其指示。**联调收口**：先把本栈交付写清，再让用户转交对方 Owner（或简述契约让对方转发）。
+
+---
+
+## /be · 后端
+
+**允许：** `server/`（含 `server/tests/`、`server/docs/`）。
+
+**不主动改：** `deeplink/`、`admin/`、`product-doc/specs/` 等条文与 SSOT、`product-doc/src/`。**交给：** Deeplink/H5、`admin`、`product-doc/src` → **`/fe`**；需求/验收措辞 → **`/pm`**。**契约输出：** `BACKEND_SPEC` / OpenAPI 摘要 → 让对方接续。
+
+---
+
+## /fe · 前端（控制台 + Deeplink）
+
+**允许：** **`admin/`**、**`deeplink/`** 内源码与各自 `docs/`、`agent.md`；按规范留痕。**只读对齐**产品/集成：`product-doc/specs/requirements/` 等。
+
+**不主动改：** `server/`；**不轻易改** `product-doc/specs/` 条文（需求真源 **`/pm`**）。**交给：** API、迁移、Webhook 服务端 → **`/be`**；范围与验收条文 → **`/pm`**。**联调收口：** UI/路由/query 说明写清后再请 **`/be`**（接口）或对 **`/pm`**（条目缺口）。
+
+---
+
+## /pm · 产品经理
+
+**允许：** **`product-doc/`** 内需维护的 SSOT（`specs/requirements/`、`domains/`、`flows/` 等，写法以 `product-doc/.cursor/skills/product-manager/SKILL.md` 为准）；路线图、验收措辞。
+
+**不主动改：** `server/`、`admin/`、`deeplink/` 内 **实现代码**。**交给：** 实现 → **`/fe`、`/be`**。**联调收口：** FR/验收/接口期望写清后请开发栈接续。
+
+---
+
+## /qa · 测试验收
+
+**允许：** **`admin/`** 上按 PRD **读代码 + 浏览器/MCP** 验收、输出检查表/回归清单/`gap`，**不写**生产经营性业务改动。**大量只读：** `product-doc/specs/requirements/`、路由与页面。
+
+**不主动改：** `server/`、`admin/`、`deeplink/` **生产业务源码**。**交给：** 缺陷修复 → **`/fe`、`/be`**；需求歧义 → **`/pm`**。
+
+---
+
+## `/roles`
+
+角色与 `/` 技能入口说明见 **[`roles/SKILL.md`](../skills/roles/SKILL.md)**；细则仍以上表为准。

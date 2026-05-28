@@ -1,0 +1,416 @@
+{
+  "metadata": {
+    "home": {
+      "title": "ChainUp AI Agent — Telegram自然言語取引",
+      "description": "Telegram上のAI取引所Agent。隔離サブアカウントで相場照会・注文管理、書き込み前確認ゲート付き。"
+    },
+    "features": {
+      "title": "機能 — ChainUp AI Agent",
+      "description": "自然言語取引、安全なサブアカウント、確認ゲート、本番向け可観測性。"
+    },
+    "guide": {
+      "title": "はじめに — ChainUp AI Agent",
+      "description": "Agentサブアカウント有効化、Telegram接続、自然言語取引のガイド。"
+    }
+  },
+  "nav": {
+    "features": "機能",
+    "guide": "ガイド",
+    "performance": "パフォーマンス",
+    "bind": "TG 連携",
+    "estimator": "見積もり",
+    "faq": "FAQ",
+    "startTour": "製品ツアー",
+    "getStarted": "始める",
+    "openTelegram": "Telegramで開く"
+  },
+  "hero": {
+    "eyebrow": "Coobit × Telegram",
+    "tagline": "Agentが読む。書き込みはあなたが確認。",
+    "title": "AI駆動の取引所取引",
+    "subtitle": "Telegramから相場照会、アカウント分析、ガイド付き注文。資金はAgentサブアカウントに保持。すべての書き込みはタップ確認が必要。",
+    "ctaTelegram": "Telegramで開く",
+    "ctaTour": "ツアーを開始"
+  },
+  "stats": {
+    "title": "プラットフォーム性能",
+    "subtitle": "実行数、レイテンシ、確認率、アクティブ Agent の運用指標。",
+    "items": {
+      "executions": {
+        "label": "24h実行数",
+        "hint": "ローリング"
+      },
+      "reads": {
+        "label": "読取中央値",
+        "hint": "P50"
+      },
+      "confirmRate": {
+        "label": "30日確認率",
+        "hint": "タイプA"
+      },
+      "agents": {
+        "label": "アクティブAgent",
+        "hint": "绑定済み"
+      }
+    }
+  },
+  "bindGuide": {
+    "eyebrow": "Telegram 連携",
+    "title": "4 ステップで Telegram をバインド",
+    "subtitle": "公式 Bot から Agent バインド H5（deeplink と同じ）を開き、サブ口座 API を保存して Telegram に戻ります。",
+    "steps": {
+      "0": {
+        "title": "Telegram Bot を開く",
+        "description": "公式 ChainUp Agent Bot を検索し /start を送信。Bot が安全なバインドリンクを返します。"
+      },
+      "1": {
+        "title": "バインド Deeplink を開く",
+        "description": "Bot メッセージのリンクをタップ。/onboarding/validate が開き、tg_id 等が自動入力されます。"
+      },
+      "2": {
+        "title": "検証してバインド確認",
+        "description": "H5 でサブ口座 UID・API Key・Secret を入力し、確認画面で保存します。"
+      },
+      "3": {
+        "title": "Telegram で会話",
+        "description": "Bot に戻り相場・残高・注文を依頼。書き込みは Type A 確認が必要です。"
+      }
+    },
+    "openBot": "Telegram Bot を開く",
+    "openBindPage": "バインドページを開く",
+    "safetyNote": "公式 Bot または取引所のリンクのみ使用。非公式サイトに API 秘密情報を貼らないでください。",
+    "visual": {
+      "botName": "ChainUp Agent",
+      "botStatus": "オンライン",
+      "userHello": "/start",
+      "botWelcome": "ようこそ。下のボタンでこのチャットを Agent サブ口座にバインドします。",
+      "bindButton": "バインドページを開く",
+      "deeplinkTag": "Agent バインド H5",
+      "deeplinkHint": "Telegram が tg_id とユーザー名を onboarding URL に渡します。",
+      "formTitle": "サブ口座 API を検証",
+      "fieldUidLabel": "サブ口座 UID",
+      "fieldUidPlaceholder": "agentSubAccountUid",
+      "fieldKeyLabel": "API Key",
+      "fieldKeyPlaceholder": "••••••••••••",
+      "fieldSecretLabel": "Secret Key",
+      "fieldSecretPlaceholder": "••••••••••••",
+      "confirmBind": "バインドを確認",
+      "doneTitle": "バインド完了",
+      "doneHint": "Telegram に戻る — 「BTC/USDT の価格は？」と試してください"
+    }
+  },
+  "estimator": {
+    "title": "Token使用量見積もり",
+    "subtitle": "サブアカウントUSDT残高と利用プロファイルからToken課金を試算。",
+    "balanceLabel": "サブアカウントUSDT残高",
+    "modeLabel": "利用プロファイル",
+    "modes": {
+      "light": {
+        "title": "ライト",
+        "description": "約12回/日の読取、時々書き込み"
+      },
+      "active": {
+        "title": "アクティブ",
+        "description": "約40回/日、定期自動化"
+      }
+    },
+    "days": "{count}日",
+    "disclaimer": "試算のみ — 実際の課金はモデル使用量・シナリオ・APIマトリックスに依存。投資助言ではありません。"
+  },
+  "chart": {
+    "title": "Agent活動の成長",
+    "subtitle": "Coobit上の読取・書き込みシナリオの日次実行量。",
+    "period": "過去12週",
+    "axisStart": "第1週",
+    "axisEnd": "第12週"
+  },
+  "faq": {
+    "title": "よくある質問",
+    "items": {
+      "what": {
+        "question": "ChainUp AI Agentとは？",
+        "answer": "Coobitユーザー向け取引所ネイティブAI Agent。Telegramで自然言語により相場・残高照会、APIマトリックス内での注文が可能。"
+      },
+      "subaccount": {
+        "question": "専用サブアカウントが必要な理由は？",
+        "answer": "取引資金とToken課金はメイン台帳から隔離。取引所Deeplinkで承認。書き込みは確認必須。"
+      },
+      "confirm": {
+        "question": "タイプA確認とは？",
+        "answer": "すべての書き込みパスは取引所到達前にTelegramカードでタップ確認が必要。静默書き込みなし。"
+      },
+      "billing": {
+        "question": "Token課金は？",
+        "answer": "従量制でサブアカウントUSDTから控除。取引所請求Deeplinkで明細確認。"
+      },
+      "start": {
+        "question": "始め方は？",
+        "answer": "CoobitでAgent設定(me/agent)を開き、サブアカウント承認、API绑定、Telegram Deeplinkでチャット绑定。VIP要件あり。"
+      },
+      "safe": {
+        "question": "安全ですか？",
+        "answer": "サブアカウント隔离、書き込み前確認、監査ログ。暗号資産取引にはリスクあり — 失ってもよい範囲で。能力は公開APIマトリックス上限。"
+      }
+    }
+  },
+  "ctaBand": {
+    "support": "お問い合わせ — Telegramサポート",
+    "telegram": "Telegramで開く",
+    "guideLink": "完全オンボーディングガイドを読む"
+  },
+  "features": {
+    "sectionTitle": "本番取引のために構築",
+    "sectionSubtitle": "取引所APIマトリックス準拠、完全監査トレース。",
+    "items": {
+      "nl": {
+        "title": "自然言語",
+        "description": "日常語で相場・残高・注文状態を照会。"
+      },
+      "subaccount": {
+        "title": "専用サブアカウント",
+        "description": "取引とToken課金は隔離アカウントで実行。"
+      },
+      "confirm": {
+        "title": "書き込み前確認",
+        "description": "タイプA明示確認後にのみ取引所へ。"
+      },
+      "billing": {
+        "title": "透明な課金",
+        "description": "サブアカウントUSDTから従量控除。"
+      },
+      "observability": {
+        "title": "可観測性",
+        "description": "Execution ID、監査、未知状態処理。"
+      },
+      "i18n": {
+        "title": "グローバル対応",
+        "description": "初日から多言語サポート。"
+      }
+    }
+  },
+  "demo": {
+    "title": "会話を試す",
+    "subtitle": "プレビュー — プロンプトをタップ",
+    "placeholder": "BTC価格、残高…",
+    "send": "送信",
+    "prompts": [
+      "What's the BTC/USDT price?",
+      "Show my open orders",
+      "How's ETH funding today?"
+    ],
+    "responses": {
+      "price": "BTC/USDT: $96,842.50 (+2.34% 24h)\n24h出来高: $1.28B\n高値: $97,120 · 安値: $94,800\n\n実口座の読取には Telegram 連携が必要です。",
+      "balance": "Agent サブ口座 (Coobit)\nUSDT 利用可能: 1,250.00\nBTC: 0.0245 (~$2,372)\n証拠金: クロス · VIP 2\n\nデモデータ — 連携後に実残高を表示します。",
+      "orders": "未約定注文 (サブ口座)\n1. 指値買い BTC/USDT 0.01 @ 95,000\n   約定: 0% · 状態: New\n2. 指値売り ETH/USDT 0.5 @ 3,900\n   約定: 0% · 状態: New\n\nサンプル — Telegram 連携後に実注文を管理できます。",
+      "order": "[タイプ A 確認]\n指値買い · BTC/USDT\n数量: 0.01 BTC\n価格: 95,000 USDT\n見積: 950 USDT\n\n確認で Coobit に送信。\n（プレビューのみ — 連携後に実行可能。）",
+      "confirmed": "注文受理 · exec_a8f21c\n指値買い 0.01 BTC @ 95,000\n状態: Coobit New\n\n約定状況はいつでも確認できます。",
+      "eth": "ETH/USDT: $3,842.12 (-0.87% 24h)\n資金調達率: 0.0047% / 8h\n次回決済: 3h 14m",
+      "bindTelegram": "ここは Web プレビューです。本番は Telegram でご利用ください。\n\n1. Coobit Agent 設定 (me/agent) を開く\n2. サブ口座を承認\n3. Deeplink でこのチャットを連携\n\nt.me/chainup_online_ai_bot\n\n連携後、相場・残高・注文を自然言語で操作できます。",
+      "greeting": "ChainUp Agent です。\n\nプレビューでは口座にアクセスできません。Telegram で連携を完了してから本番チャットを開始してください。",
+      "help": "相場照会、サブ口座残高、注文一覧、タイプ A 確認付きの注文下書きに対応します。\n\nまず Telegram 連携が必要です:\nt.me/chainup_online_ai_bot",
+      "thanks": "どういたしまして。\n\n準備ができたら Telegram を連携して、実データと確認付き注文を有効化してください:\nt.me/chainup_online_ai_bot"
+    },
+    "typing": "Agent思考中…",
+    "guideHint": "質問を入力するか提案をタップして送信",
+    "guideBadge": "あなたの番",
+    "autoLabel": "自動デモ",
+    "interactiveLabel": "online",
+    "autoSubtitle": "自動デモ中 — ホバーして試す",
+    "scripts": [
+      {
+        "turns": [
+          {
+            "user": "What's the BTC/USDT price right now?",
+            "agent": "BTC/USDT: $96,842.50 (+2.34% 24h)\nVol 24h: $1.28B\nHigh: $97,120 · Low: $94,800\n\nWant depth or a specific timeframe?"
+          },
+          {
+            "user": "Show my sub-account balance first",
+            "agent": "Agent Sub-account (Coobit)\nUSDT Available: 1,250.00\nBTC: 0.0245 (~$2,372)\nUnrealized PnL: +$47.20\n\nAll balances are read-only until you confirm a write."
+          },
+          {
+            "user": "Place a limit buy 0.01 BTC at 95000",
+            "agent": "[Type A Confirm Required]\nLimit Buy · BTC/USDT\nSize: 0.01 BTC\nPrice: 95,000 USDT\nEst. cost: 950 USDT\nFee est.: 0.38 USDT\n\n[Confirm]  [Cancel]"
+          },
+          {
+            "user": "Confirm",
+            "agent": "Order accepted · exec_a8f21c\nLimit Buy 0.01 BTC @ 95,000\nStatus: New on Coobit\n\nI'll notify you on fill or partial fill."
+          }
+        ]
+      },
+      {
+        "turns": [
+          {
+            "user": "Any open orders on my sub-account?",
+            "agent": "Open orders (2)\n\n1. Limit Buy BTC/USDT\n   0.01 @ 95,000 · New · 0% filled\n2. Limit Sell ETH/USDT\n   0.5 @ 3,900 · New · 0% filled\n\nSay cancel + symbol to amend."
+          },
+          {
+            "user": "What's ETH doing today?",
+            "agent": "ETH/USDT: $3,842.12 (-0.87% 24h)\n24h range: $3,798 – $3,891\nFunding: 0.0047% / 8h (longs pay)\n\nSpot and perp data from Coobit read API."
+          },
+          {
+            "user": "Cancel the ETH limit sell",
+            "agent": "[Type A Confirm Required]\nCancel order #8821044\nLimit Sell ETH/USDT 0.5 @ 3,900\n\nThis cannot be undone after confirm.\n\n[Confirm]  [Cancel]"
+          }
+        ]
+      },
+      {
+        "turns": [
+          {
+            "user": "Give me a quick market overview",
+            "agent": "Top movers (24h)\nBTC +2.34% · ETH -0.87%\nSOL +4.12% · DOGE +1.03%\n\nSub-account notional: ~$3,622\nAll reads · no writes triggered."
+          },
+          {
+            "user": "How much USDT do I have left for fees?",
+            "agent": "Billing estimate\nUSDT available: 1,250.00\nAvg token cost (7d): ~$0.42 / query\nProjected 30d: ~$38–$52 at current usage\n\nDetailed CSV via exchange billing deeplink."
+          },
+          {
+            "user": "Set an alert when BTC drops below 94000",
+            "agent": "Pull alert registered · alert_c4e91\nCondition: BTC/USDT last < 94,000\nChannel: Telegram (this chat)\nCooldown: 15 min between pings\n\nManage alerts in Agent settings on Coobit."
+          }
+        ]
+      }
+    ]
+  },
+  "howItWorks": {
+    "title": "仕組み",
+    "subtitle": "4ステップ",
+    "steps": {
+      "1": {
+        "title": "サブアカウント",
+        "description": "Deeplink承認"
+      },
+      "2": {
+        "title": "Telegram",
+        "description": "安全绑定"
+      },
+      "3": {
+        "title": "入金",
+        "description": "USDT振替"
+      },
+      "4": {
+        "title": "取引",
+        "description": "自然言語"
+      }
+    }
+  },
+  "cta": {
+    "title": "準備完了？",
+    "subtitle": "Telegramを開く",
+    "button": "Telegram",
+    "note": "Coobit + VIP"
+  },
+  "guide": {
+    "title": "はじめに",
+    "subtitle": "ChainUp AI Agent を有効化して使うために必要なすべて",
+    "eyebrow": "Coobit × Telegram",
+    "stepsLabel": "4ステップ",
+    "stepLabel": "ステップ {step}",
+    "tourHint": "初めての方はホームでインタラクティブツアーを",
+    "ctaTitle": "始める準備はできましたか？",
+    "ctaSubtitle": "Telegram Bot を開いてバインドするか、ホームで製品ツアーをご覧ください。",
+    "sections": {
+      "prerequisites": {
+        "title": "前提条件",
+        "summary": "口座・VIP・Telegram 環境を事前に確認します。",
+        "items": [
+          "有効な Coobit 取引所口座",
+          "要件を満たす VIP ティア",
+          "端末に Telegram をインストール"
+        ]
+      },
+      "onboarding": {
+        "title": "開通手順",
+        "summary": "取引所でサブアカウントを承認し、Deeplink でチャットをバインドします。",
+        "items": [
+          "取引所 Agent 設定（me/agent）へ移動",
+          "サブアカウント条項を確認し作成を承認",
+          "API バインド確認を完了",
+          "Telegram Deeplink でセッションをバインド"
+        ]
+      },
+      "firstTrade": {
+        "title": "初回インタラクション",
+        "summary": "読み取り専用クエリから始め、書き込みはタイプ A 確認が必須です。",
+        "items": [
+          "読み取り専用：「ETH の価格は？」",
+          "残高確認：「サブアカウント USDT 残高」",
+          "書き込みはタイプ A カードで確認",
+          "取引所請求 Deeplink で課金を確認"
+        ]
+      },
+      "safety": {
+        "title": "安全上の注意",
+        "summary": "認証情報を守り、書き込みは必ず確認、能力は API 上限内。",
+        "items": [
+          "Telegram ログインや API キーを共有しない",
+          "すべての書き込みは明示的なタップ確認が必要",
+          "未知状態は保持され、失敗と誤報しない",
+          "能力は凍結 API マトリクスの範囲内"
+        ]
+      }
+    }
+  },
+  "tour": {
+    "welcome": {
+      "title": "ようこそ",
+      "description": "サイトツアー"
+    },
+    "hero": {
+      "title": "Hero",
+      "description": "価値提案とTelegramプレビュー"
+    },
+    "stats": {
+      "title": "性能",
+      "description": "主要指標"
+    },
+    "bind": {
+      "title": "Telegram 連携ガイド",
+      "description": "Bot から deeplink バインド H5、チャットへ戻るまでの手順。"
+    },
+    "estimator": {
+      "title": "見積もり",
+      "description": "Token試算"
+    },
+    "chart": {
+      "title": "成長",
+      "description": "12週トレンド"
+    },
+    "demo": {
+      "title": "デモ",
+      "description": "会話プレビュー"
+    },
+    "faq": {
+      "title": "FAQ",
+      "description": "よくある質問"
+    },
+    "cta": {
+      "title": "開始",
+      "description": "Telegramへ"
+    },
+    "done": {
+      "title": "完了",
+      "description": "ガイドを参照"
+    },
+    "next": "次へ",
+    "prev": "戻る",
+    "done_btn": "完了"
+  },
+  "footer": {
+    "tagline": "Coobit Telegram Agent",
+    "product": "製品",
+    "resources": "リソース",
+    "legal": "法務",
+    "features": "機能",
+    "guide": "ガイド",
+    "faq": "FAQ",
+    "docs": "ドキュメント",
+    "privacy": "プライバシー",
+    "terms": "利用規約",
+    "risk": "リスク開示",
+    "copyright": "© {year} ChainUp."
+  },
+  "featuresPage": {
+    "title": "機能",
+    "subtitle": "本番級能力"
+  }
+}

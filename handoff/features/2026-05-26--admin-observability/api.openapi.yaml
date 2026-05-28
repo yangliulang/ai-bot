@@ -1,0 +1,212 @@
+openapi: 3.0.3
+info:
+  title: "2026-05-26--admin-observability — Admin Observability tool-calls / llm"
+  description: |
+    ChainUp 单体仓增量契约（FR-MC803 / FR-MC804）。
+    响应为 FastAPI 直出 JSON（camelCase），**非** `{ code, message, data }` 信封。
+    真源对齐：`product-doc/specs/openapi/admin/observability.yaml`、`server/docs/API_ADMIN_OBSERVABILITY_EXECUTIONS.md`。
+  version: "0.1.0"
+
+servers:
+  - url: http://127.0.0.1:8080
+    description: 本地 Agent API（Admin 经 Vite proxy `/api`）
+
+security:
+  - bearerAuth: []
+
+paths:
+  /api/v1/admin/observability/executions/{executionId}/tool-calls:
+    get:
+      summary: 按 executionId 查询工具调用明细（FR-MC803）
+      operationId: getObservabilityExecutionToolCalls
+      parameters:
+        - $ref: "#/components/parameters/ExecutionIdPath"
+      responses:
+        "200":
+          description: 工具调用列表
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ToolCallsPageResponse"
+              example:
+                items:
+                  - toolId: "POST /sapi/v2/order"
+                    toolCallSeq: 1
+                    invocationState: SUCCESS
+                    phase: exchange_private
+                    eventName: trading.exchange_private
+                    stepKind: submit_order
+                    summary:
+                      methodPathSummary: "POST /sapi/v2/order"
+                      httpStatus: 200
+        "404":
+          description: 执行记录不存在
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AppError"
+              example:
+                code: AGENT_ADMIN_EXECUTION_NOT_FOUND
+                message: Execution not found
+
+  /api/v1/admin/observability/executions/{executionId}/llm:
+    get:
+      summary: 按 executionId 查询 LLM 计量明细（FR-MC804，无 messages 全文）
+      operationId: getObservabilityExecutionLlm
+      parameters:
+        - $ref: "#/components/parameters/ExecutionIdPath"
+      responses:
+        "200":
+          description: LLM 汇总与分次调用
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LlmUsageSummaryResponse"
+              example:
+                modelId: gpt-4.1-mini
+                inputTokens: 120
+                outputTokens: 80
+                totalTokens: 200
+                calls:
+                  - eventName: llm.chat.faq
+                    toolCallSeq: 2
+                    ts: "2026-05-26T10:00:00.000000Z"
+                    gatewayModelId: gpt-4.1-mini
+                    outcome: success
+        "404":
+          description: 执行记录不存在
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AppError"
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    ExecutionIdPath:
+      name: executionId
+      in: path
+      required: true
+      schema:
+        type: string
+        minLength: 1
+
+  schemas:
+    AppError:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        details:
+          type: object
+          additionalProperties: true
+
+    ToolCallDetailItem:
+      type: object
+      required: [toolId, toolCallSeq, invocationState]
+      properties:
+        toolId:
+          type: string
+        toolCallSeq:
+          type: integer
+        invocationState:
+          type: string
+          description: 如 SUCCESS / FAILED / UNKNOWN
+        phase:
+          type: string
+          nullable: true
+        durationMs:
+          type: integer
+          nullable: true
+        eventName:
+          type: string
+          nullable: true
+        stepKind:
+          type: string
+          nullable: true
+        ts:
+          type: string
+          format: date-time
+          nullable: true
+        summary:
+          type: object
+          additionalProperties: true
+
+    ToolCallsPageResponse:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/ToolCallDetailItem"
+
+    LlmCallItem:
+      type: object
+      required: [eventName, toolCallSeq, ts]
+      properties:
+        eventName:
+          type: string
+        toolCallSeq:
+          type: integer
+        ts:
+          type: string
+          format: date-time
+        modelId:
+          type: string
+          nullable: true
+        gatewayModelId:
+          type: string
+          nullable: true
+        gatewayProviderId:
+          type: string
+          nullable: true
+        outcome:
+          type: string
+          nullable: true
+        stepKind:
+          type: string
+          nullable: true
+        scenarioId:
+          type: string
+          nullable: true
+        promptPackVersion:
+          type: string
+          nullable: true
+        inputTokens:
+          type: integer
+          nullable: true
+        outputTokens:
+          type: integer
+          nullable: true
+        totalTokens:
+          type: integer
+          nullable: true
+
+    LlmUsageSummaryResponse:
+      type: object
+      properties:
+        modelId:
+          type: string
+          nullable: true
+        inputTokens:
+          type: integer
+          nullable: true
+        outputTokens:
+          type: integer
+          nullable: true
+        totalTokens:
+          type: integer
+          nullable: true
+        calls:
+          type: array
+          items:
+            $ref: "#/components/schemas/LlmCallItem"

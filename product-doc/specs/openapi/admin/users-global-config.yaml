@@ -1,0 +1,74 @@
+openapi: 3.0.3
+info:
+  title: "ChainUp AI Agent — 用户协查摘要 + 全局配置写"
+  version: "2026-05-09"
+  description: |
+    与设计冻结同窗 [`design/api.md`](../../design/api.md) **「运营侧用户协查摘要 API」** 与 **全局 bundle 写** 示意 PATH。
+    Schema 同窗 [`users-global-config-schemas.yaml`](../components/users-global-config-schemas.yaml)；
+    **`agentState`** 与 **模块六 / I02** 归因同窗 [`access-control/overview.md`](../../requirements/domains/admin/access-control/overview.md)。
+  contact:
+    name: "Jesson"
+    email: Jesson@chainup.com
+servers:
+  - url: https://api.example.invalid
+    description: 所内替换；与 paths 组成完整 URL
+tags:
+  - name: users
+  - name: config
+paths:
+  "/api/v1/admin/users/{userId}/agent-summary":
+    get:
+      tags: [users]
+      summary: "单用户 Agent 协查摘要 FR-M07 · 附录 A §8.2"
+      operationId: getAdminUserAgentSummary
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/users-global-config-schemas.yaml#/components/schemas/AdminAgentUserSummary"
+        "404":
+          description: 未知 user · ADMIN_USER_NOT_FOUND
+          content:
+            application/json:
+              schema:
+                $ref: "../components/billing-schemas.yaml#/components/schemas/Problem"
+  "/api/v1/admin/trading-agent-config/bundle":
+    patch:
+      tags: [config]
+      summary: "全局 bundle 原子写 · If-Match / configVersion"
+      operationId: patchAdminTradingAgentConfigBundle
+      parameters:
+        - $ref: "#/components/parameters/IfMatchConfig"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "../components/users-global-config-schemas.yaml#/components/schemas/GlobalConfigBundlePatchRequest"
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/users-global-config-schemas.yaml#/components/schemas/GlobalConfigBundlePatchResponse"
+        "409":
+          description: ADMIN_OPS_CONCURRENT
+          content:
+            application/json:
+              schema:
+                $ref: "../components/billing-schemas.yaml#/components/schemas/Problem"
+components:
+  parameters:
+    IfMatchConfig:
+      name: If-Match
+      in: header
+      required: false
+      schema:
+        type: string

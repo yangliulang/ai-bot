@@ -1,0 +1,47 @@
+---
+project:
+  name: chainup-exchange-ai-bot
+  prd:
+    primary: product-doc/product/roadmap.md
+  onboarding:
+    commander: handoff/pipeline/COMMANDER.md
+    mode: continuing
+product:
+  inventory: handoff/product/inventory.md
+  backlog: handoff/product/backlog.yaml
+features:
+  root: handoff/features
+roadmap:
+  glob: handoff/roadmap/phase-*.md
+  default_phase_file: handoff/roadmap/phase-4.md
+  active_phase: 4
+  phase_capacity: 0
+apps:
+  backend:
+    path: server
+    stack: fastapi
+    dev:
+      command: cd server && uv run chainup-agent-api
+      base_url: http://127.0.0.1:8080
+      cors_origin: http://127.0.0.1:5173
+  frontend:
+    path: admin
+    stack: vite-vue
+    dev:
+      command: cd admin && npm run dev
+      base_url: http://127.0.0.1:5173
+conventions:
+  api_response:
+    style: fastapi_http_status
+  extra_frontends:
+  - path: deeplink
+    base_url: http://127.0.0.1:5174
+    note: Agent 开通 H5；功能包 frontend/integration.md 写明是否涉及
+  - path: official-website
+    note: 官网；按需列入功能包范围
+pipeline:
+  hooks:
+    enabled: true
+    remind_on_write: true
+    stop_followup: false
+    require_new_chat: false

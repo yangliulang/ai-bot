@@ -1,0 +1,28 @@
+---
+description: 后端 API 开发规范（@BACKEND_PATH@）
+globs: @BACKEND_GLOB@
+alwaysApply: false
+---
+
+# API 开发规范（FastAPI）
+
+> 由 `./scripts/sync-project-rules.sh` 根据 `pipeline.project.yaml` 生成，勿手改路径。
+
+工程 SSOT：`@BACKEND_PATH@/docs/BACKEND_SPEC.md`、`@BACKEND_PATH@/docs/API_INTEGRATION_GUIDE.md`。  
+流水线功能包：`handoff/features/*/api.openapi.yaml`、`backend/notes.md`。
+
+## 实现
+
+- Python ≥3.11 · FastAPI · 路由前缀 `/api/v1/...`（与路线图一致）
+- 错误：`AppError` + HTTP 状态码；与功能包 OpenAPI 及 `product-doc/specs` 对齐
+- 启动：`cd @BACKEND_PATH@ && uv run chainup-agent-api`（默认 **8080**）
+
+## 联调
+
+- Admin/Deeplink 经 Vite proxy 访问 `/api` → `http://127.0.0.1:8080`
+- 机器可读契约：`http://127.0.0.1:8080/openapi.json`
+
+## 功能开发时
+
+- 实现与功能包 `api.openapi.yaml` 一致；差异写入 `backend/notes.md`
+- 流转门禁见 `backend-agent.mdc`

@@ -1,0 +1,1 @@
+"""Exchange / Coobit OpenAPI adapters."""

@@ -1,0 +1,98 @@
+openapi: 3.0.3
+info:
+  title: "内部 — 商业轨 · 权益核销 / 余额 / 加购包入账"
+  version: "2026-05-26"
+  description: |
+    与 **`design/api.md`「内部 · 商业轨」** 专节 PATH 对齐；**Phase 2** **规格骨架** — **不**计入 **CC-P0-03（Token 轨）** DoD。
+    **`$ref`** [`../components/billing-schemas.yaml`](../components/billing-schemas.yaml)（`InternalEntitlement*`、`InternalPackGrant*` 等）。
+    须 **mTLS/内网**，与 `internal/billing-token` 同窗运维基线。
+    **SSOT**：[`commerce-model.md`](../../requirements/domains/admin/billing-management/commerce-model.md)
+  contact:
+    name: "Jesson"
+    email: Jesson@chainup.com
+servers:
+  - url: https://api.example.invalid
+    description: 所内替换
+tags:
+  - name: commerce_phase2
+    description: Phase 2 商业轨 · FR-B18、SC-B20；关单路径见 contract-closure 轨 B MR
+paths:
+  "/api/v1/internal/billing/entitlements/debit":
+    post:
+      tags: [commerce_phase2]
+      summary: "核销订阅/包额度 · SC-B20 幂等"
+      operationId: postInternalBillingEntitlementsDebit
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "../components/billing-schemas.yaml#/components/schemas/InternalEntitlementDebitRequest"
+      responses:
+        "200":
+          description: OK；重复 idempotency 须返回等价结果（同窗 SC-B20 纪律）。
+          content:
+            application/json:
+              schema:
+                $ref: "../components/billing-schemas.yaml#/components/schemas/InternalEntitlementDebitResult"
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/billing-schemas.yaml#/components/schemas/Problem"
+        "409":
+          description: 幂等冲突/并发写入（示意）
+          content:
+            application/json:
+              schema:
+                $ref: "../components/billing-schemas.yaml#/components/schemas/Problem"
+  "/api/v1/internal/billing/entitlements/balance":
+    get:
+      tags: [commerce_phase2]
+      summary: "服务侧权益余额（与 consume-and-bill S2 同窗）"
+      operationId: getInternalBillingEntitlementsBalance
+      parameters:
+        - name: userId
+          in: query
+          required: true
+          schema:
+            $ref: "../components/identity-schemas.yaml#/components/schemas/UserIdMasked"
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/billing-schemas.yaml#/components/schemas/InternalEntitlementsBalanceResponse"
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/billing-schemas.yaml#/components/schemas/Problem"
+        "404":
+          description: 用户无商业桶记录（可按 200 + 空 buckets 终裁 MR）
+          content:
+            application/json:
+              schema:
+                $ref: "../components/billing-schemas.yaml#/components/schemas/Problem"
+  "/api/v1/internal/commerce/pack-grants/apply":
+    post:
+      tags: [commerce_phase2]
+      summary: "加购包入账（支付成功后台作业 · FR-B18）"
+      operationId: postInternalCommercePackGrantsApply
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "../components/billing-schemas.yaml#/components/schemas/InternalPackGrantApplyRequest"
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/billing-schemas.yaml#/components/schemas/InternalPackGrantApplyResult"
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/billing-schemas.yaml#/components/schemas/Problem"

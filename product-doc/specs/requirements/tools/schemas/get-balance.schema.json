@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$comment": "示意：B 类只读 · 余额族。登记名以 trade-assistance §8.3 + design/api 矩阵 operationId 为准。",
+  "title": "GetBalanceInput",
+  "description": "子账户范围只读查询入参形状示例；与 OpenAPI 冲突时删改本文件。",
+  "type": "object",
+  "properties": {
+    "asset": {
+      "type": "string",
+      "description": "可选；缺省表示账户级聚合或所内惯例。"
+    },
+    "accountTag": {
+      "type": "string",
+      "description": "子账户 / scope 标签；与 FR-T01/T02 对签。"
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,1785 @@
+/* Coolbit 主站适配：顶栏 + 左侧图标导航 + 白底主内容（参考账户管理 / 子账户）
+ * 断点：**≤1024** H5 底栏（触控单手）；**≤576** 内容收紧；**≤480** 极窄屏；**pointer: coarse** 扩大触点。
+ */
+
+.coolbit-app {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: #f5f5f5;
+}
+
+/* —— 独立落地页（无顶栏 / 侧栏 / H5 底栏 · Telegram Deeplink 等）—— */
+.coolbit-standalone-root {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  box-sizing: border-box;
+  padding: max(20px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px))
+    max(32px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
+  background: #f5f5f5;
+}
+
+.coolbit-standalone-root__inner {
+  width: 100%;
+  flex: 0 0 auto;
+}
+
+.coolbit-standalone-root a[href],
+.coolbit-standalone-root button,
+.coolbit-standalone-root .ant-btn {
+  touch-action: manipulation;
+}
+
+.coolbit-onboarding-panel__close-placeholder {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  margin: -6px -8px 0 0;
+}
+
+/* 触控优先：减少双击缩放延迟，交互默认可用手势滚动 */
+.coolbit-app a[href],
+.coolbit-app button,
+.coolbit-app .ant-btn,
+.coolbit-app .coolbit-h5-tabbar__item {
+  touch-action: manipulation;
+}
+
+/* —— 顶栏 —— */
+.coolbit-topnav {
+  flex-shrink: 0;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px 0 16px;
+  background: #ffffff;
+  border-bottom: 1px solid #ebebeb;
+  gap: 16px;
+}
+
+.coolbit-topnav__brand {
+  font-weight: 700;
+  font-size: 18px;
+  letter-spacing: -0.02em;
+  color: #000000;
+  text-decoration: none;
+  flex-shrink: 0;
+}
+
+.coolbit-topnav__brand:hover {
+  color: #000000;
+}
+
+.coolbit-topnav__menus {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px 20px;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 1024px) {
+  .coolbit-topnav__menus {
+    display: none;
+  }
+}
+
+.coolbit-topnav__menu-item {
+  font-size: 14px;
+  color: #333333;
+  padding: 6px 4px;
+  cursor: default;
+  white-space: nowrap;
+}
+
+.coolbit-topnav__menu-item:hover {
+  color: #000000;
+}
+
+.coolbit-topnav__tools {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+  color: #666666;
+}
+
+.coolbit-topnav__tool {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: none;
+  padding: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.coolbit-topnav__tool:hover {
+  background: #f5f5f5;
+  color: #000000;
+}
+
+.coolbit-topnav__tool:focus-visible {
+  outline: 2px solid #000000;
+  outline-offset: 2px;
+}
+
+/* —— 主体：侧栏 + 主区 —— */
+.coolbit-body {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+  min-width: 0;
+}
+
+.coolbit-sidebar {
+  width: 208px;
+  flex-shrink: 0;
+  background: #fafafa;
+  border-right: 1px solid #ebebeb;
+  padding: 12px 10px 24px;
+}
+
+.coolbit-sidenav__link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 4px 4px;
+  padding: 11px 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #333333;
+  text-decoration: none;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+  position: relative;
+}
+
+.coolbit-sidenav__link:hover {
+  background: #f0f0f0;
+  color: #000000;
+}
+
+.coolbit-sidenav__link--active {
+  font-weight: 600;
+  color: #000000;
+  background: #ffffff;
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.06),
+    inset 0 0 0 1px rgba(0, 0, 0, 0.04);
+}
+
+.coolbit-sidenav__link--active::before {
+  content: "";
+  position: absolute;
+  left: 4px;
+  top: 9px;
+  bottom: 9px;
+  width: 3px;
+  border-radius: 2px;
+  background: #000000;
+}
+
+.coolbit-sidenav__link--disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.coolbit-sidenav__icon {
+  font-size: 17px;
+  flex-shrink: 0;
+}
+
+.coolbit-sidenav__group {
+  margin: 4px 4px;
+}
+
+.coolbit-sidenav__group-trigger {
+  width: 100%;
+}
+
+.coolbit-sidenav__group-chevron {
+  margin-left: auto;
+  font-size: 11px;
+  color: #888888;
+  flex-shrink: 0;
+}
+
+.coolbit-sidenav__nest {
+  padding: 2px 0 8px;
+}
+
+.coolbit-sidenav__nest-placeholder {
+  display: block;
+  padding: 8px 12px 8px 36px;
+  font-size: 13px;
+  color: #888888;
+  opacity: 0.65;
+  cursor: default;
+  user-select: none;
+}
+
+.coolbit-sidenav__nest-link {
+  display: block;
+  padding: 8px 12px 8px 36px;
+  margin: 2px 4px;
+  font-size: 13px;
+  color: #333333;
+  text-decoration: none;
+  border-radius: 8px;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+  position: relative;
+}
+
+.coolbit-sidenav__nest-link:hover {
+  background: #f0f0f0;
+  color: #000000;
+}
+
+.coolbit-sidenav__nest-link--active {
+  font-weight: 600;
+  color: #000000;
+  background: #ffffff;
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.06),
+    inset 0 0 0 1px rgba(0, 0, 0, 0.04);
+}
+
+.coolbit-sidenav__nest-link--active::before {
+  content: "";
+  position: absolute;
+  left: 8px;
+  top: 8px;
+  bottom: 8px;
+  width: 3px;
+  border-radius: 2px;
+  background: #000000;
+}
+
+.coolbit-main {
+  flex: 1;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+  background: #ffffff;
+  padding: 24px 28px 40px;
+  padding-left: max(28px, env(safe-area-inset-left, 0px));
+  padding-right: max(28px, env(safe-area-inset-right, 0px));
+  padding-bottom: max(40px, env(safe-area-inset-bottom, 0px));
+  min-width: 0;
+}
+
+.coolbit-main__inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  min-width: 0;
+}
+
+.coolbit-main__narrow {
+  max-width: 560px;
+  margin: 0 auto;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.coolbit-page-title {
+  font-size: clamp(1.125rem, 4.2vw, 1.375rem);
+  font-weight: 600;
+  color: #1a1a1a;
+  margin: 0 0 16px;
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+}
+
+/* —— Agent 账单页（轨 B） —— */
+.coolbit-billing-page {
+  max-width: 1120px;
+}
+
+.coolbit-billing-page__header {
+  margin-bottom: 20px;
+}
+
+.coolbit-billing-page__title {
+  margin-bottom: 8px !important;
+}
+
+.coolbit-billing-page__intro {
+  margin-bottom: 0 !important;
+  font-size: 14px;
+  color: #666;
+  max-width: 40rem;
+  line-height: 1.55;
+}
+
+.coolbit-billing-page__telegram {
+  margin-bottom: 16px;
+}
+
+.coolbit-billing-hero {
+  border-radius: 14px;
+  padding: 20px 22px;
+  margin-bottom: 16px;
+  background: linear-gradient(145deg, #fafafa 0%, #f3f4f6 48%, #eef2ff 100%);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.06);
+}
+
+.coolbit-billing-hero__inner {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px 24px;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.coolbit-billing-hero__main {
+  flex: 1 1 280px;
+  min-width: 0;
+}
+
+.coolbit-billing-hero__badges {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.coolbit-billing-rail-pill {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: #4338ca;
+  background: rgba(99, 102, 241, 0.12);
+  padding: 2px 8px;
+  border-radius: 6px;
+}
+
+.coolbit-billing-hero__tier {
+  margin: 0 0 8px !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.02em;
+}
+
+.coolbit-billing-hero__meta {
+  margin-bottom: 8px;
+}
+
+.coolbit-billing-hero__intro {
+  margin-bottom: 0 !important;
+  font-size: 13px;
+  max-width: 36rem;
+}
+
+.coolbit-billing-hero__info-icon {
+  margin-left: 6px;
+  color: #8c8c8c;
+  cursor: help;
+}
+
+.coolbit-billing-hero__actions {
+  flex: 0 0 auto;
+  width: 100%;
+  max-width: 220px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.coolbit-billing-exhausted-alert {
+  margin-bottom: 16px;
+  border-radius: 10px;
+}
+
+.coolbit-billing-quota__grid-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #595959;
+  margin-bottom: 10px;
+  letter-spacing: 0.01em;
+}
+
+.coolbit-billing-quota__grid {
+  margin-bottom: 8px;
+}
+
+.coolbit-billing-quota-card {
+  border-radius: 12px;
+  padding: 14px 16px;
+  background: #fff;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.06);
+  height: 100%;
+}
+
+.coolbit-billing-quota-card--analyze {
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.06), inset 3px 0 0 #7c3aed;
+}
+
+.coolbit-billing-quota-card--trade {
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.06), inset 3px 0 0 #d97706;
+}
+
+.coolbit-billing-quota-card--pack {
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.06), inset 3px 0 0 #059669;
+}
+
+.coolbit-billing-quota-card--exhausted {
+  background: #fffafa;
+}
+
+.coolbit-billing-quota-card__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.coolbit-billing-quota-card__title {
+  font-size: 14px;
+  line-height: 1.35;
+}
+
+.coolbit-billing-quota-card__progress {
+  margin-bottom: 8px;
+}
+
+.coolbit-billing-quota-card__stats {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 8px;
+}
+
+.coolbit-billing-quota-card__remain {
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.coolbit-billing-quota-card__remain-label {
+  font-size: 12px;
+  font-weight: 400;
+  color: #8c8c8c;
+}
+
+.coolbit-billing-quota-card__used {
+  font-size: 12px;
+}
+
+.coolbit-billing-quota__footnote {
+  margin: 12px 0 24px !important;
+  font-size: 12px !important;
+}
+
+.coolbit-billing-records {
+  margin-top: 4px;
+}
+
+.coolbit-billing-records__head {
+  margin-bottom: 12px;
+}
+
+.coolbit-billing-records__title {
+  margin: 0 0 4px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.coolbit-billing-records__subtitle {
+  margin: 0 !important;
+  font-size: 13px;
+}
+
+.coolbit-billing-tabs.ant-tabs {
+  overflow: visible;
+}
+
+.coolbit-billing-tabs > .ant-tabs-nav {
+  margin-bottom: 0 !important;
+}
+
+.coolbit-billing-tabs > .ant-tabs-nav::before {
+  border-bottom-color: #ebebeb;
+}
+
+.coolbit-billing-tabs .ant-tabs-tab {
+  padding: 10px 4px;
+  font-weight: 500;
+}
+
+.coolbit-billing-tabs .ant-tabs-content-holder {
+  background: #fff;
+  border-radius: 0 0 12px 12px;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.06);
+  border-top: none;
+}
+
+.coolbit-billing-tab-panel {
+  padding: 16px 16px 20px;
+}
+
+.coolbit-billing-tab-panel--legacy {
+  padding: 8px 12px 16px;
+  background: #fafafa;
+}
+
+.coolbit-billing-tab-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.coolbit-billing-tab-hint {
+  margin: 0 0 14px !important;
+  font-size: 13px !important;
+  line-height: 1.5;
+}
+
+.coolbit-billing-card--block {
+  border-radius: 12px;
+  padding: 16px;
+  background: #fff;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.06);
+}
+
+.coolbit-billing-card--block__title {
+  font-weight: 600;
+  font-size: 15px;
+  margin-bottom: 8px;
+}
+
+.coolbit-billing-legacy-block {
+  border-radius: 10px;
+  padding: 12px;
+  background: #fff;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.05);
+}
+
+.coolbit-billing-legacy-collapse {
+  background: transparent;
+}
+
+.coolbit-billing-legacy-collapse .ant-collapse-item {
+  border: none !important;
+}
+
+.coolbit-billing-legacy-collapse__label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+  color: #595959;
+}
+
+.coolbit-billing-card.ant-card {
+  border-radius: 12px;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.06);
+  background: #ffffff;
+}
+
+.coolbit-billing-card .ant-card-head {
+  border-bottom-color: #f0f0f0;
+}
+
+.coolbit-billing-card .ant-card-head-title {
+  font-weight: 600;
+  font-size: 15px;
+}
+
+/* 账单流水：移动端「预加载 + 加载更多」 */
+.coolbit-billing-ledger-mobile-more {
+  margin-top: 14px;
+  padding-bottom: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.coolbit-billing-ledger-mobile-more__meta {
+  text-align: center;
+  font-size: 13px;
+  line-height: 1.45;
+  padding: 0 4px;
+}
+
+.coolbit-billing-ledger-mobile-more__btn.ant-btn {
+  font-weight: 600;
+}
+
+/* 账单表格分页：桌面端；窄屏流水已改用加载更多 */
+.coolbit-billing-table-shell .ant-pagination {
+  margin-bottom: 0 !important;
+}
+
+@media (max-width: 576px) {
+  .coolbit-billing-table-shell .ant-table-pagination {
+    justify-content: center !important;
+  }
+
+  .coolbit-billing-table-shell .ant-pagination-simple-pager input {
+    min-width: 2.25em;
+  }
+}
+
+/* —— 订阅 / 加密货币支付 —— */
+.coolbit-sidenav__nest-trigger {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 8px 12px 8px 28px;
+  border: none;
+  background: transparent;
+  color: #595959;
+  font-size: 13px;
+  cursor: pointer;
+  text-align: left;
+  border-radius: 8px;
+}
+
+.coolbit-sidenav__nest-trigger:hover {
+  background: rgba(0, 0, 0, 0.04);
+  color: #1a1a1a;
+}
+
+.coolbit-sidenav__nest-trigger-chevron {
+  margin-left: auto;
+  font-size: 10px;
+  opacity: 0.55;
+}
+
+.coolbit-sidenav__nest--deep {
+  padding-left: 12px;
+}
+
+.coolbit-sidenav__nest--deep .coolbit-sidenav__nest-link {
+  padding-left: 40px;
+  font-size: 12px;
+}
+
+.coolbit-subscription-hero.ant-card {
+  border-radius: 12px;
+  background: linear-gradient(135deg, #f8fafc 0%, #eef2ff 100%);
+  box-shadow: inset 0 0 0 1px rgba(99, 102, 241, 0.12);
+  margin-bottom: 20px;
+}
+
+.coolbit-subscription-hero__inner {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.coolbit-subscription-hero__actions {
+  min-width: 160px;
+}
+
+.coolbit-subscription-quota-card.ant-card {
+  border-radius: 10px;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.06);
+}
+
+.coolbit-subscription-quota-card__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.coolbit-plan-card.ant-card {
+  border-radius: 12px;
+  height: 100%;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.06);
+  position: relative;
+}
+
+.coolbit-plan-card--featured {
+  box-shadow:
+    inset 0 0 0 2px #1677ff,
+    0 8px 24px rgba(22, 119, 255, 0.12);
+}
+
+.coolbit-plan-card__badge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+}
+
+.coolbit-plan-card__price {
+  margin: 12px 0 16px;
+}
+
+.coolbit-plan-card__list {
+  margin: 0 0 20px;
+  padding-left: 0;
+  list-style: none;
+  color: #595959;
+  font-size: 13px;
+}
+
+.coolbit-plan-card__list li {
+  margin-bottom: 8px;
+}
+
+.coolbit-plan-card__list .anticon {
+  color: #52c41a;
+  margin-right: 6px;
+}
+
+.coolbit-crypto-checkout__qr {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 160px;
+  border-radius: 12px;
+  background: #f8fafc;
+  border: 1px dashed #cbd5e1;
+}
+
+@media (max-width: 768px) {
+  .coolbit-subscription-hero__actions {
+    width: 100%;
+  }
+}
+
+/* —— 首页卡片 —— */
+.coolbit-home-layout {
+  max-width: 520px;
+  margin: 0 auto;
+}
+
+.coolbit-home-hero {
+  margin-bottom: 8px;
+}
+
+.coolbit-home-hero--centered {
+  text-align: center;
+  margin-bottom: 22px;
+}
+
+.coolbit-home-hero-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  margin: 0 auto 16px;
+  border-radius: 16px;
+  background: linear-gradient(145deg, #f7f7f7 0%, #ebebeb 100%);
+  color: #1a1a1a;
+  font-size: 24px;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.06);
+}
+
+.coolbit-home-title {
+  margin-bottom: 12px !important;
+}
+
+.coolbit-home-lead {
+  margin-bottom: 0 !important;
+  margin-left: auto;
+  margin-right: auto;
+  max-width: 26rem;
+  font-size: 14px !important;
+  line-height: 1.65 !important;
+  color: #666666 !important;
+}
+
+.coolbit-home-steps-hint {
+  margin: 0 0 18px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid #f0f0f0;
+  font-size: 13px;
+  color: #666666;
+  line-height: 1.55;
+  text-align: center;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 6px 4px;
+}
+
+.coolbit-home-steps-hint__emph {
+  font-weight: 600;
+  color: #333333;
+}
+
+.coolbit-home-steps-hint__sep {
+  margin: 0 4px;
+  color: #cccccc;
+  font-weight: 400;
+  flex-shrink: 0;
+}
+
+.coolbit-home-primary-btn.ant-btn.ant-btn-primary {
+  min-height: 48px;
+  font-size: 15px;
+}
+
+.coolbit-home-badge {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: #666666;
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: #f5f5f5;
+  border: 1px solid #ebebeb;
+  margin-bottom: 14px;
+}
+
+.coolbit-home-card {
+  border-radius: 12px !important;
+  border: 1px solid #f0f0f0 !important;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04) !important;
+  background: #ffffff !important;
+}
+
+.coolbit-home-card .ant-card-body {
+  padding: 24px !important;
+}
+
+.coolbit-link-muted {
+  font-size: 13px;
+  color: #666666 !important;
+  text-decoration: none;
+}
+
+.coolbit-link-muted:hover {
+  color: #000000 !important;
+}
+
+/* 开通页首屏：轻量入口图标 */
+.coolbit-onboarding-hero {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 18px;
+}
+
+.coolbit-onboarding-hero__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: linear-gradient(145deg, #f5f5f5 0%, #ebebeb 100%);
+  color: #1a1a1a;
+  font-size: 22px;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.06);
+}
+
+.coolbit-onboarding-bind-hint {
+  margin: 0 0 18px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: #fafafa;
+  border: 1px solid #f0f0f0;
+  font-size: 12px;
+  color: #666666;
+  line-height: 1.55;
+  text-align: center;
+}
+
+.coolbit-onboarding-bind-hint strong {
+  color: #333333;
+  font-weight: 600;
+}
+
+.coolbit-onboarding-mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 13px;
+  letter-spacing: 0.02em;
+}
+
+.coolbit-onboarding-panel--standalone {
+  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.06);
+}
+
+@media (max-width: 480px) {
+  .coolbit-onboarding-panel--standalone {
+    padding: 20px 18px 22px;
+    border-radius: 10px;
+  }
+
+  .coolbit-onboarding-panel--standalone .coolbit-onboarding-panel__title {
+    font-size: 17px;
+  }
+}
+
+.coolbit-onboarding-result {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.coolbit-onboarding-result__title {
+  margin: 0 0 8px !important;
+  font-size: 17px !important;
+  font-weight: 600 !important;
+}
+
+.coolbit-onboarding-result__lead {
+  display: block;
+  font-size: 13px;
+  line-height: 1.55;
+  margin: 0;
+}
+
+.coolbit-onboarding-result__summary {
+  margin-bottom: 18px;
+}
+
+.coolbit-onboarding-result__next {
+  display: block;
+  margin-top: 8px !important;
+  font-size: 13px;
+  line-height: 1.65;
+}
+
+.coolbit-onboarding-result__secondary {
+  text-align: center;
+  margin-top: 8px;
+}
+
+.coolbit-onboarding-submit-btn.ant-btn.ant-btn-primary {
+  min-height: 48px;
+  font-weight: 600;
+}
+
+.coolbit-onboarding-submit-wrap.ant-form-item {
+  margin-bottom: 0;
+}
+
+.coolbit-onboarding-alert {
+  margin-bottom: 16px;
+}
+
+.coolbit-onboarding-divider.ant-divider {
+  margin: 18px 0;
+}
+
+.coolbit-onboarding-tg-card__meta-note {
+  font-size: 12px;
+  margin-left: 4px;
+}
+
+.coolbit-consent-row--form-item.ant-form-item {
+  margin-top: 16px;
+  margin-bottom: 16px;
+}
+
+.coolbit-consent-row--form-item .ant-form-item-control-input {
+  min-height: 0;
+}
+
+.coolbit-success-steps--compact .coolbit-success-step-title {
+  display: block;
+  margin-bottom: 0;
+}
+
+.coolbit-success-steps--compact {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  align-items: stretch;
+}
+
+.coolbit-onboarding-flow-strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  margin: 0 0 20px;
+  padding: 12px 14px;
+  list-style: none;
+  border-radius: 10px;
+  background: #fafafa;
+  border: 1px solid #f0f0f0;
+}
+
+.coolbit-onboarding-flow-strip li {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 4px 0;
+}
+
+.coolbit-onboarding-flow-strip__n {
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  background: #1a1a1a;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.coolbit-onboarding-flow-strip__t {
+  font-size: 12px;
+  font-weight: 500;
+  color: #444444;
+  white-space: nowrap;
+}
+
+.coolbit-onboarding-flow-strip__sep {
+  margin: 0 10px 0 14px;
+  color: #d9d9d9;
+  font-size: 15px;
+  line-height: 1;
+  font-weight: 400;
+  user-select: none;
+}
+
+@media (max-width: 380px) {
+  .coolbit-onboarding-flow-strip__sep {
+    margin: 0 6px;
+  }
+
+  .coolbit-onboarding-flow-strip__t {
+    white-space: normal;
+    max-width: 88px;
+    line-height: 1.35;
+  }
+}
+
+.coolbit-onboarding-block {
+  margin-bottom: 0;
+}
+
+.coolbit-onboarding-tg-card {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  padding: 16px;
+  border-radius: 12px;
+  border: 1px solid #ebebeb;
+  background: linear-gradient(180deg, #fafafa 0%, #ffffff 100%);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.8);
+}
+
+.coolbit-onboarding-tg-card__icon {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #1a1a1a;
+  font-size: 18px;
+  border: 1px solid #f0f0f0;
+}
+
+.coolbit-onboarding-tg-card__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.coolbit-onboarding-tg-card__label {
+  font-size: 12px;
+  font-weight: 500;
+  color: #888888;
+  margin-bottom: 4px;
+  letter-spacing: 0.02em;
+}
+
+.coolbit-onboarding-tg-card__value {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1a1a1a;
+  line-height: 1.3;
+  word-break: break-all;
+}
+
+.coolbit-onboarding-tg-card__value--muted {
+  font-size: 14px;
+  font-weight: 500;
+  color: #999999;
+}
+
+.coolbit-onboarding-tg-card__meta {
+  margin-top: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.coolbit-onboarding-scope-tag.ant-tag {
+  margin: 0;
+  font-size: 11px;
+  line-height: 18px;
+  padding: 0 8px;
+  border-radius: 999px;
+  border-color: #ebebeb;
+  color: #666666;
+  background: #ffffff;
+}
+
+.coolbit-onboarding-lead {
+  margin: 0 0 14px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: #555555;
+}
+
+.coolbit-onboarding-footnote {
+  margin: 12px 0 0;
+  font-size: 12px;
+  line-height: 1.55;
+  color: #888888;
+}
+
+.coolbit-onboarding-footnote--center {
+  text-align: center;
+  margin-top: 14px;
+}
+
+.coolbit-onboarding-consent-text {
+  font-size: 13px;
+  color: #333333;
+  line-height: 1.55;
+}
+
+/* —— AI 助手开通：能力与权限分区 —— */
+.coolbit-onboarding-section-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin: 0 0 10px;
+}
+
+.coolbit-bullet-list {
+  margin: 0 0 20px;
+  padding-left: 1.2em;
+  color: #333333;
+  font-size: 14px;
+  line-height: 1.75;
+}
+
+.coolbit-bullet-list li {
+  margin-bottom: 4px;
+}
+
+.coolbit-bullet-list--tight {
+  margin-bottom: 0;
+  font-size: 13px;
+  line-height: 1.65;
+}
+
+.coolbit-bullet-list--tight li {
+  margin-bottom: 2px;
+}
+
+.coolbit-onboarding-precheck.ant-collapse {
+  margin: 0 0 14px;
+  border-radius: 10px;
+  border: 1px solid #f0f0f0 !important;
+  background: #fafafa;
+  overflow: hidden;
+}
+
+.coolbit-onboarding-precheck .ant-collapse-item {
+  border: none !important;
+}
+
+.coolbit-onboarding-precheck .ant-collapse-header {
+  padding: 10px 12px !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  color: #333333 !important;
+}
+
+.coolbit-onboarding-precheck .ant-collapse-content-box {
+  padding: 0 12px 12px !important;
+}
+
+.coolbit-onboarding-precheck .ant-collapse-expand-icon {
+  padding-inline-end: 8px !important;
+}
+
+.coolbit-onboarding-field-group {
+  margin-bottom: 4px;
+}
+
+.coolbit-onboarding-field-group__title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin: 0 0 10px;
+  line-height: 1.35;
+}
+
+.coolbit-onboarding-field-group + .coolbit-onboarding-field-group {
+  margin-top: 8px;
+  padding-top: 14px;
+  border-top: 1px dashed #ebebeb;
+}
+
+.coolbit-onboarding-field-group__hint {
+  margin: -4px 0 12px;
+  font-size: 12px;
+  color: #888888;
+  line-height: 1.55;
+}
+
+.coolbit-perm-split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+@media (max-width: 520px) {
+  .coolbit-perm-split {
+    grid-template-columns: 1fr;
+  }
+}
+
+.coolbit-perm-card {
+  padding: 14px;
+  border-radius: 10px;
+  border: 1px solid #f0f0f0;
+  background: #fafafa;
+  font-size: 13px;
+  line-height: 1.65;
+  color: #333333;
+}
+
+.coolbit-perm-card__label {
+  font-weight: 600;
+  margin-bottom: 8px;
+  font-size: 13px;
+  color: #1a1a1a;
+}
+
+.coolbit-risk-hint {
+  font-size: 12px;
+  color: #666666;
+  line-height: 1.6;
+  margin-top: 10px;
+}
+
+/* —— 开通面板（弹窗式卡片，置于白底主区内） —— */
+.coolbit-onboarding-panel {
+  position: relative;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.08);
+  border: 1px solid #f0f0f0;
+  max-width: 100%;
+  padding: 24px 26px 28px;
+  overflow: hidden;
+}
+
+.coolbit-onboarding-panel::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #000000 0%, #444444 50%, #000000 100%);
+}
+
+.coolbit-onboarding-panel--tone-success::before {
+  background: linear-gradient(90deg, #1b5e20 0%, #43a047 50%, #1b5e20 100%);
+}
+
+.coolbit-onboarding-panel--wide {
+  max-width: 560px;
+}
+
+.coolbit-onboarding-panel__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.coolbit-onboarding-panel__title-wrap {
+  flex: 1;
+  min-width: 0;
+}
+
+.coolbit-onboarding-panel__title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.coolbit-onboarding-panel__subtitle {
+  margin: 8px 0 0;
+  font-size: 13px;
+  font-weight: 400;
+  color: #666666;
+  line-height: 1.55;
+}
+
+.coolbit-onboarding-panel__close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  font-size: 22px;
+  line-height: 1;
+  color: #999999;
+  text-decoration: none;
+  border-radius: 8px;
+  margin: -6px -8px 0 0;
+  transition:
+    color 0.15s ease,
+    background 0.15s ease;
+}
+
+.coolbit-onboarding-panel__close:hover {
+  color: #333333;
+  background: #f5f5f5;
+}
+
+.coolbit-lead {
+  margin: 0 0 18px;
+  font-size: 14px;
+  line-height: 1.65;
+  color: #666666;
+}
+
+.coolbit-description-wrap {
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.06);
+}
+
+.coolbit-description-wrap .ant-descriptions-bordered .ant-descriptions-item-label {
+  background: #fafafa !important;
+  font-weight: 500;
+  color: #666666 !important;
+}
+
+.coolbit-scope-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.coolbit-scope-tags .ant-tag {
+  margin: 0;
+}
+
+.coolbit-consent-row {
+  margin-top: 20px;
+  margin-bottom: 16px;
+  padding: 14px 16px;
+  border-radius: 10px;
+  background: #fafafa;
+  border: 1px solid #f0f0f0;
+}
+
+.coolbit-consent-row .ant-checkbox-wrapper {
+  align-items: flex-start;
+}
+
+.coolbit-consent-row .ant-checkbox {
+  margin-top: 3px;
+}
+
+.coolbit-success-icon-wrap {
+  width: 72px;
+  height: 72px;
+  margin: 0 auto 16px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(145deg, #e8f5e9 0%, #c8e6c9 100%);
+}
+
+.coolbit-success-icon-wrap .anticon {
+  font-size: 36px !important;
+  color: #2e7d32 !important;
+}
+
+.coolbit-success-steps {
+  text-align: left;
+  padding: 14px 16px;
+  border-radius: 10px;
+  background: #fafafa;
+  border: 1px solid #f0f0f0;
+  margin-bottom: 18px;
+}
+
+.coolbit-success-steps .ant-typography {
+  margin-bottom: 0;
+}
+
+.coolbit-success-steps .coolbit-success-step-title {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: #333333;
+  margin-bottom: 6px;
+}
+
+.coolbit-field-hint {
+  font-size: 12px;
+  color: #c9a227;
+  margin-top: 6px;
+}
+
+.coolbit-field-hint--muted {
+  color: #888888;
+}
+
+.coolbit-footer-note {
+  flex-shrink: 0;
+  text-align: center;
+  padding: 10px max(16px, env(safe-area-inset-right, 0px)) 10px max(16px, env(safe-area-inset-left, 0px));
+  padding-bottom: max(10px, env(safe-area-inset-bottom, 0px));
+  font-size: 12px;
+  color: #999999;
+  border-top: 1px solid #ebebeb;
+  background: #fafafa;
+}
+
+.coolbit-status-ok {
+  color: #2e7d32;
+  font-weight: 600;
+}
+
+/* —— H5 底部导航（≤1024px：平板/手机单手操作，对齐交易所 App） —— */
+.coolbit-h5-tabbar {
+  display: none;
+}
+
+.coolbit-h5-placeholder {
+  min-height: 42vh;
+  padding-top: 8px;
+}
+
+/* —— 响应式（全局） —— */
+@media (max-width: 1024px) {
+  .coolbit-h5-tabbar {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 200;
+    justify-content: space-around;
+    align-items: flex-end;
+    box-sizing: border-box;
+    min-height: 52px;
+    padding: 8px 2px max(10px, env(safe-area-inset-bottom, 0px));
+    background: #ffffff;
+    border-top: 1px solid #ebebeb;
+    box-shadow: 0 -2px 16px rgba(0, 0, 0, 0.06);
+  }
+
+  .coolbit-h5-tabbar__item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 4px;
+    min-width: 0;
+    padding: 0 2px 2px;
+    text-decoration: none;
+    color: #888888;
+    font-size: 11px;
+    line-height: 1.2;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .coolbit-h5-tabbar__item:active {
+    opacity: 0.85;
+  }
+
+  .coolbit-h5-tabbar__item--active {
+    color: #000000;
+    font-weight: 600;
+  }
+
+  .coolbit-h5-tabbar__item--active .coolbit-h5-tabbar__icon {
+    color: #000000;
+  }
+
+  .coolbit-h5-tabbar__icon {
+    font-size: 22px;
+    color: #888888;
+    flex-shrink: 0;
+  }
+
+  .coolbit-h5-tabbar__label {
+    white-space: nowrap;
+  }
+
+  .coolbit-h5-tabbar__trade {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 46px;
+    height: 46px;
+    margin-bottom: 2px;
+    margin-top: -24px;
+    border-radius: 50%;
+    background: #000000;
+    color: #ffffff !important;
+    font-size: 22px;
+    flex-shrink: 0;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  }
+
+  .coolbit-h5-tabbar__item--active .coolbit-h5-tabbar__trade {
+    background: #000000;
+    color: #ffffff !important;
+  }
+
+  .coolbit-sidebar {
+    display: none !important;
+  }
+
+  .coolbit-footer-note {
+    display: none !important;
+  }
+
+  .coolbit-main {
+    padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .coolbit-topnav {
+    padding-left: max(12px, env(safe-area-inset-left, 0px));
+    padding-right: max(12px, env(safe-area-inset-right, 0px));
+    gap: 10px;
+  }
+
+  .coolbit-topnav__brand {
+    font-size: 17px;
+  }
+
+  .coolbit-topnav__tools {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 0;
+  }
+}
+
+/* 触摸/手写笔等粗指针设备：加大触点（不靠鼠标悬停精细点击） */
+@media (pointer: coarse) {
+  .coolbit-topnav__tool {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  .coolbit-onboarding-panel__close {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  .coolbit-h5-tabbar__item {
+    min-height: 48px;
+    padding-top: 4px;
+    padding-bottom: 6px;
+  }
+
+  .coolbit-h5-tabbar__trade {
+    width: 50px;
+    height: 50px;
+    font-size: 24px;
+  }
+
+  .coolbit-consent-row {
+    padding: 16px 14px;
+  }
+
+  .coolbit-consent-row .ant-checkbox {
+    transform: scale(1.12);
+    transform-origin: left center;
+  }
+
+  .coolbit-home-primary-btn.ant-btn.ant-btn-primary {
+    min-height: 52px;
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+
+  .coolbit-billing-ledger-mobile-more__btn.ant-btn {
+    min-height: 48px;
+  }
+
+  .coolbit-billing-hero {
+    padding: 16px;
+  }
+
+  .coolbit-billing-hero__actions {
+    max-width: none;
+    width: 100%;
+    flex-direction: row;
+  }
+
+  .coolbit-billing-hero__actions a {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .coolbit-billing-hero__actions .ant-btn {
+    width: 100%;
+  }
+
+  .coolbit-billing-tabs .ant-tabs-tab {
+    font-size: 13px;
+    padding: 8px 2px;
+  }
+
+  .coolbit-billing-tab-panel {
+    padding: 12px 10px 16px;
+  }
+
+  .coolbit-billing-quota-card__remain {
+    font-size: 18px;
+  }
+
+  .coolbit-billing-card .ant-btn:not(.ant-btn-icon-only) {
+    min-height: 46px;
+  }
+
+  .coolbit-billing-table-shell .ant-pagination-item,
+  .coolbit-billing-table-shell .ant-pagination-prev .ant-pagination-item-link,
+  .coolbit-billing-table-shell .ant-pagination-next .ant-pagination-item-link {
+    min-width: 44px !important;
+    min-height: 44px !important;
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 576px) {
+  .coolbit-main {
+    padding: 18px 16px calc(72px + env(safe-area-inset-bottom, 0px));
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+  }
+
+  .coolbit-home-layout {
+    max-width: none;
+    width: 100%;
+  }
+
+  .coolbit-home-card .ant-card-body {
+    padding: 18px 16px !important;
+  }
+
+  .coolbit-onboarding-panel {
+    padding: 18px 14px 22px;
+  }
+
+  .coolbit-onboarding-panel__title {
+    font-size: 17px;
+  }
+
+  .coolbit-onboarding-bind-hint {
+    font-size: 11px;
+    padding: 8px 10px;
+  }
+
+  .coolbit-consent-row {
+    padding: 12px 12px;
+  }
+
+  .coolbit-description-wrap .ant-descriptions-item-label {
+    width: 96px !important;
+    min-width: 88px !important;
+    font-size: 12px !important;
+    padding: 10px 10px !important;
+  }
+
+  .coolbit-description-wrap .ant-descriptions-item-content {
+    font-size: 12px !important;
+    padding: 10px 10px !important;
+    word-break: break-word;
+  }
+
+  .coolbit-billing-card .ant-card-head-wrapper {
+    flex-wrap: wrap;
+    row-gap: 10px;
+  }
+
+  .coolbit-billing-card .ant-card-extra {
+    margin-inline-start: 0 !important;
+    width: 100%;
+  }
+
+  .coolbit-billing-card .ant-card-extra .ant-btn {
+    width: 100%;
+  }
+
+  .coolbit-success-steps {
+    padding: 12px 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .coolbit-topnav__tool:nth-child(n + 5) {
+    display: none;
+  }
+
+  .coolbit-home-steps-hint__sep {
+    display: none;
+  }
+
+  .coolbit-home-steps-hint {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .coolbit-home-hero-icon {
+    width: 48px;
+    height: 48px;
+    font-size: 22px;
+  }
+}
+
+@media (max-width: 380px) {
+  .coolbit-topnav__brand {
+    font-size: 16px;
+  }
+}

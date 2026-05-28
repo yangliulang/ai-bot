@@ -1,0 +1,43 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Secrets / local env (never commit)
+.env
+.env.*
+!.env.example
+
+# 本地飞书 Webhook（参见 scripts/product-daily-brief/README.md）
+scripts/product-daily-brief/feishu.env
+
+# Dependencies & build artifacts
+node_modules/
+dist/
+build/
+out/
+.next/
+coverage/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+
+# IDE / editor (personal); keep committed team rules under .cursor/ as needed
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs & temp
+*.log
+.tmp/
+.temp/
+
+# Coobit openapi-ai 分支快照（本地参考，不纳入版本库）
+openapi-ai-feature_spot_api_v1_20260424/

@@ -1,0 +1,49 @@
+feature: 2026-05-27--runtime-write-path-pipeline
+title: 写路径管线（read_skill + 事件序）
+phase: done
+owner: product-agent
+next: null
+artifacts:
+  brief: brief.md
+  api: api.openapi.yaml
+  test_coverage: test/coverage.md
+  test_report: test/report.md
+  test_e2e_report: test/e2e-report.md
+  backend_notes: backend/notes.md
+  frontend_integration: frontend/integration.md
+  ui_review: design/ui-review.md
+blockers: []
+history:
+  - at: "2026-05-27T10:00:00+0800"
+    phase: planned
+    by: product-agent
+    note: 从模板创建功能包
+  - at: "2026-05-27T11:00:00+0800"
+    phase: contract_ready
+    by: product-agent
+    note: 定稿 brief/OpenAPI/测试追溯（P-04/P-05 MR-RT-B4）；check-test-coverage.sh；含页面否
+  - at: "2026-05-27T14:00:00+0800"
+    phase: backend_done
+    by: backend-agent
+    note: GET runtime/effective；write_path_pipeline 五段序；TG limit/amend + HTTP limit-order；runtime-bundle 种子；pytest 4 passed
+  - at: "2026-05-27T17:35:00+0800"
+    phase: tested
+    by: test-agent
+    note: test_write_path_pipeline.py 7 passed；TC-01～08 P0 + TC-09 P1；test/report.md
+  - at: "2026-05-27T18:00:00+0800"
+    phase: frontend_done
+    by: frontend-agent
+    note: 含页面否；frontend/integration.md 空跑；无 admin/deeplink 变更
+  - at: "2026-05-27T18:10:00+0800"
+    phase: e2e_verified
+    by: test-agent
+    note: E2E N/A；pytest 7 passed 回归；test/e2e-report.md
+  - at: "2026-05-27T18:20:00+0800"
+    phase: ui_reviewed
+    by: designer-agent
+    note: 无新增 UI；走查 N/A；无 P0；design/ui-review.md
+  - at: "2026-05-27T18:30:00+0800"
+    phase: done
+    by: product-agent
+    note: product.accept — AC-1～8 对照 test/report TC-01～08、design/ui-review；brief 勾选；含页面否全链路收口
+updated_at: "2026-05-27T18:30:00+0800"

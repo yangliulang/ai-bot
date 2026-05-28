@@ -1,0 +1,147 @@
+openapi: 3.0.3
+info:
+  title: "用户侧 — me/billing"
+  version: "2026-05-09"
+  description: |
+    与 design/api「用户侧 Billing API」及 SC-B13（pageSize≤200）同窗。
+    Schemas：`../components/billing-schemas.yaml`（**D-5** `traceKey` 与 **`billingTraceId`** 同窗）。
+  contact:
+    name: "Jesson"
+    email: Jesson@chainup.com
+servers:
+  - url: https://api.example.invalid
+    description: 所内替换
+tags:
+  - name: contract
+    description: B 阶设计冻结；CC-P0-03
+paths:
+  "/api/v1/me/billing/charges":
+    get:
+      tags: [contract]
+      summary: "扣费流水列表（FR-B12 · SC-B13）"
+      operationId: listMyBillingCharges
+      parameters:
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 200
+            default: 20
+        - name: billingTraceId
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: timeFrom
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: timeTo
+          in: query
+          schema:
+            type: string
+            format: date-time
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/billing-schemas.yaml#/components/schemas/BillingChargesPage"
+        "400":
+          description: pageSize 越界等（SC-B13）
+          content:
+            application/json:
+              schema:
+                $ref: "../components/billing-schemas.yaml#/components/schemas/Problem"
+  "/api/v1/me/billing/charges/{billingTraceId}":
+    get:
+      tags: [contract]
+      summary: "单条流水详情（须归属当前用户）"
+      operationId: getMyBillingCharge
+      parameters:
+        - name: billingTraceId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/billing-schemas.yaml#/components/schemas/BillingChargeRow"
+        "404":
+          description: 无或无权限
+  "/api/v1/me/billing/statements":
+    get:
+      tags: [contract]
+      summary: "个人月度账单列表（FR-B16）"
+      operationId: listMyBillingStatements
+      parameters:
+        - name: year
+          in: query
+          schema:
+            type: integer
+        - name: month
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 12
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 200
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: "../components/billing-schemas.yaml#/components/schemas/BillingStatementSummaryRow"
+  "/api/v1/me/billing/statements/{periodId}/export":
+    get:
+      tags: [contract]
+      summary: "单月账单导出（FR-B16；大结果可 202 + D-18）"
+      operationId: exportMyBillingStatement
+      parameters:
+        - name: periodId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: 同步小结果
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        "202":
+          description: 异步任务
+          content:
+            application/json:
+              schema:
+                $ref: "../components/billing-schemas.yaml#/components/schemas/AsyncTaskAccepted"
+  "/api/v1/me/billing/charges/export":
+    post:
+      tags: [contract]
+      summary: "个人流水 CSV 导出（FR-B15；可 202）"
+      operationId: exportMyBillingCharges
+      responses:
+        "202":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/billing-schemas.yaml#/components/schemas/AsyncTaskAccepted"

@@ -1,0 +1,65 @@
+openapi: 3.0.3
+info:
+  title: "Coobit — 用户私有成交/订单 WebSocket"
+  version: "2026-05-09"
+  description: |
+    **listenKey** 生命周期 HTTP 与 [GitBook · WebSocket](https://exchangedocsv2.gitbook.io/open-api-doc-v2/websocket.md)、
+    [`design/api.md`](../../design/api.md) **「WebSocket / 推送」**、**「REST ↔ WebSocket 对账」** 同窗。
+    **现货网关** requestPath 命名 **所内可与公档二选**；以下为 **常见** `userDataStream` 形态 **占位**。
+    **WS 连接 URL、协议版本、订阅主题** **不**在本文件以 **paths** 表达 — **见 `externalDocs` 与实现 MR**。
+  contact:
+    name: "Jesson"
+    email: Jesson@chainup.com
+servers:
+  - url: https://api.example.invalid
+    description: 现货网关；listenKey 通常与私有推送同窗
+externalDocs:
+  description: 产业锚/扩展阅读
+  url: "https://exchangedocsv2.gitbook.io/open-api-doc-v2/websocket.md"
+tags:
+  - name: listen-key
+  - name: stream-docs
+paths:
+  "/sapi/v1/userDataStream":
+    post:
+      tags: [listen-key]
+      summary: "申请 listenKey（USER_STREAM）"
+      operationId: coobitPostUserDataStream
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/stream-schemas.yaml#/components/schemas/ListenKeyCreated"
+    put:
+      tags: [listen-key]
+      summary: "延长 listenKey 有效期"
+      operationId: coobitPutUserDataStream
+      parameters:
+        - name: listenKey
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/stream-schemas.yaml#/components/schemas/ListenKeyOk"
+    delete:
+      tags: [listen-key]
+      summary: "关闭 listenKey"
+      operationId: coobitDeleteUserDataStream
+      parameters:
+        - name: listenKey
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/stream-schemas.yaml#/components/schemas/ListenKeyOk"

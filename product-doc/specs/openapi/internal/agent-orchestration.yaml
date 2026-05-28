@@ -1,0 +1,39 @@
+openapi: 3.0.3
+info:
+  title: "内部 — Agent 编排 Trade Resolver（L0 缺参 · INV-008）"
+  version: "2026-05-26"
+  description: |
+    **编排 BFF / Runtime** 将 Parser 槽位 **结构化为** `AgentTradeResolverOutput`，供类型 A / Gateway 前闸对签。
+    **须** mTLS/内网；**非** 终端用户直连。
+    Schemas：`../components/orchestration-runtime-schemas.yaml`、`../components/skill-operation-spec-schemas.yaml`、`../components/identity-schemas.yaml`。
+    TS 同窗：`src/admin/src/productionRuntime/internalTradeResolverAdapter.ts`
+  contact:
+    name: "Jesson"
+    email: Jesson@chainup.com
+servers:
+  - url: https://api.example.invalid
+    description: 所内替换
+tags:
+  - name: orchestration
+    description: 内部编排契约（B 阶段设计冻结示意）
+paths:
+  "/api/v1/internal/agent/orchestration/trade-resolver":
+    post:
+      tags: [orchestration]
+      summary: "现货闪兑或限价 · L0 缺参聚合（同窗 tradeWriteResolverGate）"
+      operationId: postInternalAgentOrchestrationTradeResolver
+      description: |
+        **Then**：`response.output.missing` 驱动态澄清；**载货类型 A** 前 **须** 调 `assertNoExecutableWriteTypeAWhenMissing`（本仓 TS）。
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "../components/orchestration-runtime-schemas.yaml#/components/schemas/InternalTradeResolverRequest"
+      responses:
+        "200":
+          description: Resolver 结构化输出
+          content:
+            application/json:
+              schema:
+                $ref: "../components/orchestration-runtime-schemas.yaml#/components/schemas/InternalTradeResolverResponse"

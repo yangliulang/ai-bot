@@ -1,0 +1,406 @@
+openapi: 3.0.3
+info:
+  title: "ChainUp AI Agent — Billing 同窗 Schemas（fragment）"
+  version: "2026-05-26"
+  description: |
+    供 `admin/billing-admin.yaml`、`internal/billing-token.yaml`、`internal/billing-entitlements.yaml`、`user/billing-me.yaml`、`user/commerce-me.yaml` 以 `$ref` 引用。
+    字段下限对齐 `design/api.md` 与 `billing-management/overview.md`、`functions.md`（`billingTraceId`/`executionId`/幂等、**Agent 主链 `SC-B20`**、**轨 A 对读 `SC-B08`/`SC-B13`/`SC-B15`**）。
+    **`ExecutionId`** **同窗** [`identity-schemas.yaml`](./identity-schemas.yaml)（与 **`standards/naming-standard.md`** §1 一致）。
+    实现 MR 可扩展属性，**不得**分叉与 `me`/`admin`/`internal` **同窗语义**。
+paths: {}
+components:
+  schemas:
+    ExecutionId:
+      $ref: "./identity-schemas.yaml#/components/schemas/ExecutionId"
+    IdempotencyKey:
+      type: string
+      description: |
+        结算幂等键；须与 `executionId` 绑定拼装策略同窗 runtime（FR-B05）。
+    BillingTraceId:
+      type: string
+      format: uuid
+      description: |
+        落账后追溯键；`ledgerEntryType=CHARGE|REFUND` 流水与 `me`/`admin` 查询同窗；join `observability.traceKey` 见 billing overview D-5。
+    RefundIdempotencyKey:
+      type: string
+      description: 退款幂等（SC-B15）；同一 `billingTraceId` 成功退款至多一次。
+    LedgerEntryType:
+      type: string
+      enum: [CHARGE, REFUND]
+      description: |
+        Token 账务轨 A 流水类型；与 `billing-management/rules.md` §ledger 同窗。
+        **不含** Phase 2 商业轨核销（另见 **`CommercialSettlementType`** / `commercialLedger*`）。
+    CommercialSettlementType:
+      type: string
+      enum: [ENTITLEMENT_DEBIT, PACK_GRANT]
+      description: |
+        商业轨清算类型示意；与子账 `ledger` 扩展占位（如 `ENTITLEMENT_DEBIT`）同窗 **`commerce-model`**。
+    CapabilitySkuId:
+      type: string
+      description: Capability SKU 标识；与 **`BILLING_CAPABILITY_MAP`** / **`COMMERCE_SKU_CATALOG_REF`** 同窗。
+    PackGrantId:
+      type: string
+      description: 加购包发放实例锚；核销时可与 `capabilitySkuId` 组合定位桶。
+    EntitlementDebitStatus:
+      type: string
+      enum: [SUCCESS, INSUFFICIENT, FAILED]
+      description: 权益额度扣减结果；**`INSUFFICIENT`** **须** **阻断** **S2** **主路径**（见 **`consume-and-bill`**）。
+    ChargeStatus:
+      type: string
+      enum: [PENDING, SUCCESS, FAILED]
+      description: 扣费落账状态示意；终裁枚举见实现 MR。
+    UsdtDecimal:
+      type: string
+      description: USDT 金额（十进制字符串，避免 float）；最小单位与 `effectiveMinChargeUsdt` 同窗。
+      example: "0.0123"
+    SubaccountLedgerAnchor:
+      type: object
+      description: 子账户 / 账本锚点（禁止默认从母账户扣 Token 费）。
+      properties:
+        agentSubAccountId:
+          type: string
+        agentTradingApiKeyId:
+          type: string
+          description: 公开 id，可落审计；禁止 Secret。
+      additionalProperties: true
+    InternalChargeRequest:
+      type: object
+      required: [executionId, idempotencyKey]
+      properties:
+        executionId:
+          $ref: "#/components/schemas/ExecutionId"
+        idempotencyKey:
+          $ref: "#/components/schemas/IdempotencyKey"
+        revenueAccountRef:
+          type: string
+          description: |
+            与全局配置 `BILLING_AGENT_REVENUE_ACCOUNT_REF`（PRD 附录 A **D-12** / **CC-P0-04**）一致的收入专户引用快照；
+            范式见 [`billing-management/overview.md`](../../requirements/domains/admin/billing-management/overview.md) **§10.6.1**。
+            用于入账对账断言；真源仍在 keys/config，非 Client 随意传入。
+        anchor:
+          $ref: "#/components/schemas/SubaccountLedgerAnchor"
+        amountUsdt:
+          $ref: "#/components/schemas/UsdtDecimal"
+        metering:
+          type: object
+          description: 计量字段（token、阶梯等）；OpenAPI 终裁见实现。
+          additionalProperties: true
+      additionalProperties: false
+    InternalChargeResult:
+      type: object
+      required: [billingTraceId, ledgerEntryType, status]
+      properties:
+        billingTraceId:
+          $ref: "#/components/schemas/BillingTraceId"
+        traceKey:
+          type: string
+          format: uuid
+          description: D-5 · 与 billingTraceId 同值时返回；供运营协查 UI 与 observability join（FR-B06）。
+        ledgerEntryType:
+          $ref: "#/components/schemas/LedgerEntryType"
+        status:
+          $ref: "#/components/schemas/ChargeStatus"
+      additionalProperties: true
+    InternalRefundApplyRequest:
+      type: object
+      required: [billingTraceId, refundIdempotencyKey]
+      properties:
+        billingTraceId:
+          $ref: "#/components/schemas/BillingTraceId"
+        refundIdempotencyKey:
+          $ref: "#/components/schemas/RefundIdempotencyKey"
+        approvedTicketRef:
+          type: string
+          description: FR-MC505 审批工单引用。
+      additionalProperties: false
+    InternalEntitlementDebitRequest:
+      type: object
+      required: [executionId, idempotencyKey, capabilitySkuId]
+      description: |
+        **轨 B** ‑ `POST /internal/billing/entitlements/debit`；**`SC-B20`** 幂等与 `executionId` 绑定策略同窗 runtime。
+      properties:
+        executionId:
+          $ref: "#/components/schemas/ExecutionId"
+        idempotencyKey:
+          $ref: "#/components/schemas/IdempotencyKey"
+        capabilitySkuId:
+          $ref: "#/components/schemas/CapabilitySkuId"
+        packGrantId:
+          $ref: "#/components/schemas/PackGrantId"
+          description: 若从加购桶扣减，须携带以实现桶级幂等/trace。
+      additionalProperties: false
+    InternalEntitlementDebitResult:
+      type: object
+      required: [billingTraceId, commercialSettlementType, status]
+      properties:
+        billingTraceId:
+          $ref: "#/components/schemas/BillingTraceId"
+        traceKey:
+          type: string
+          format: uuid
+          description: D-5 · 可与 `billingTraceId` 同值； observability join。
+        commercialSettlementType:
+          type: string
+          enum: [ENTITLEMENT_DEBIT]
+        status:
+          $ref: "#/components/schemas/EntitlementDebitStatus"
+        consumedUnits:
+          type: integer
+          minimum: 0
+          description: 本笔扣减量（计费单位由 SKU 映射定义）。
+      additionalProperties: true
+    InternalEntitlementsBalanceResponse:
+      type: object
+      required: [userId, buckets]
+      properties:
+        userId:
+          $ref: "./identity-schemas.yaml#/components/schemas/UserIdMasked"
+        buckets:
+          type: array
+          items:
+            type: object
+            required: [capabilitySkuId]
+            properties:
+              capabilitySkuId:
+                $ref: "#/components/schemas/CapabilitySkuId"
+              remaining:
+                type: integer
+                minimum: 0
+              periodEndsAt:
+                type: string
+                format: date-time
+                nullable: true
+                description: 订阅账期锚；一次性包可为 null。
+            additionalProperties: true
+      additionalProperties: true
+    InternalPackGrantApplyRequest:
+      type: object
+      required: [userId, packSkuId, quantity, purchaseRef, idempotencyKey]
+      description: |
+        **FR-B18** 支付成功后后台作业入账；路由前缀 **`/internal/commerce`** 与 **`/internal/billing`** 分列见 **`design/api`**。
+      properties:
+        userId:
+          $ref: "./identity-schemas.yaml#/components/schemas/UserIdMasked"
+        packSkuId:
+          type: string
+        quantity:
+          type: integer
+          minimum: 1
+        purchaseRef:
+          type: string
+          description: PSP/订单锚；审计与对账。
+        idempotencyKey:
+          $ref: "#/components/schemas/IdempotencyKey"
+      additionalProperties: false
+    InternalPackGrantApplyResult:
+      type: object
+      required: [commercialSettlementType, status]
+      properties:
+        billingTraceId:
+          $ref: "#/components/schemas/BillingTraceId"
+        commercialSettlementType:
+          type: string
+          enum: [PACK_GRANT]
+        status:
+          $ref: "#/components/schemas/ChargeStatus"
+          description: 入账作业状态；可与 Token 轨 **`ChargeStatus`** 同窗取值。
+        packGrantIds:
+          type: array
+          items:
+            $ref: "#/components/schemas/PackGrantId"
+        grantedUnitsTotal:
+          type: integer
+          minimum: 0
+      additionalProperties: true
+    MeCommerceEntitlementsSummary:
+      type: object
+      description: FR-B17 用户对客摘要示意；密钥与 PSP 链路不在此返回。
+      required: [buckets]
+      properties:
+        subscriptionTierDisplay:
+          type: string
+          nullable: true
+        buckets:
+          type: array
+          items:
+            type: object
+            required: [capabilitySkuId]
+            properties:
+              capabilitySkuId:
+                $ref: "#/components/schemas/CapabilitySkuId"
+              displayLabel:
+                type: string
+              remaining:
+                type: integer
+                minimum: 0
+              resetsAt:
+                type: string
+                format: date-time
+                nullable: true
+            additionalProperties: true
+      additionalProperties: true
+    AdminCommerceCapabilityCatalog:
+      type: object
+      description: FR-MC509 · SKU / Capability 映射矩阵子集；终裁在所内 MR。
+      properties:
+        catalogVersion:
+          type: string
+        items:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+      additionalProperties: true
+    AdminCommerceUserOverview:
+      type: object
+      description: FR-MC510 · 按用户协查；可与 `executionId` join 的运营视图。
+      properties:
+        userId:
+          $ref: "./identity-schemas.yaml#/components/schemas/UserIdMasked"
+        subscriptions:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+        packGrants:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+        recentExecutionAnchorsSample:
+          type: array
+          items:
+            $ref: "#/components/schemas/ExecutionId"
+          maxItems: 20
+          description: 仅存公开 execution 锚示意；大批量走 traces 专查。
+      additionalProperties: true
+    AdminCommerceQuotaBlockedSummary:
+      type: object
+      description: FR-MC512 · 配额用尽/阻断类聚合健康看板子集。
+      properties:
+        window:
+          type: string
+          description: 统计窗口示意（如 ISO-8601 区间）。
+        blockedEventCountByCapability:
+          type: object
+          additionalProperties:
+            type: integer
+            minimum: 0
+        topUsersSample:
+          type: array
+          items:
+            type: object
+            properties:
+              userId:
+                $ref: "./identity-schemas.yaml#/components/schemas/UserIdMasked"
+              blockCount:
+                type: integer
+            additionalProperties: true
+          maxItems: 50
+      additionalProperties: true
+    AdminCommerceRevenueExportTemplate:
+      type: object
+      description: FR-MC511 · 加购包/订阅收入导出列模板（可与 FR-MC508 扩展合并）。
+      properties:
+        columns:
+          type: array
+          items:
+            type: string
+        schemaVersion:
+          type: string
+      additionalProperties: true
+    AdminBillingSummaryResponse:
+      type: object
+      description: FR-MC501 健康摘要子集；密钥与完整枚举终裁见实现。
+      properties:
+        billingMode:
+          type: string
+        effectiveMinChargeUsdt:
+          $ref: "#/components/schemas/UsdtDecimal"
+        billingTokenRateReaderSafeSummary:
+          type: string
+          description: 读者安全子集展示口径（FR-B02）；非密钥真源。
+      additionalProperties: true
+    AdminRefundCreateRequest:
+      type: object
+      required: [billingTraceId, refundIdempotencyKey]
+      properties:
+        billingTraceId:
+          $ref: "#/components/schemas/BillingTraceId"
+        refundIdempotencyKey:
+          $ref: "#/components/schemas/RefundIdempotencyKey"
+      additionalProperties: false
+    BillingChargeRow:
+      type: object
+      description: 用户可见流水行子集（FR-B12）；不含 Secret。
+      properties:
+        billingTraceId:
+          $ref: "#/components/schemas/BillingTraceId"
+        traceKey:
+          type: string
+          format: uuid
+          description: 与 billingTraceId 同值（D-5）；可省略若客户端只保留 billingTraceId。
+        executionId:
+          $ref: "#/components/schemas/ExecutionId"
+        createdAt:
+          type: string
+          format: date-time
+        amountUsdt:
+          $ref: "#/components/schemas/UsdtDecimal"
+        status:
+          type: string
+        ledgerEntryType:
+          $ref: "#/components/schemas/LedgerEntryType"
+      additionalProperties: true
+    BillingChargesPage:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/BillingChargeRow"
+        nextCursor:
+          type: string
+          nullable: true
+        pageSize:
+          type: integer
+          minimum: 1
+          maximum: 200
+          description: SC-B13 上界 ≤200；越界请求 400。
+    BillingStatementSummaryRow:
+      type: object
+      description: FR-B16 月度汇总行示意。
+      properties:
+        periodId:
+          type: string
+          description: year/month 或所内账期锚。
+        tokenTotal:
+          type: string
+        usdtEquivalent:
+          $ref: "#/components/schemas/UsdtDecimal"
+        chargeCount:
+          type: integer
+      additionalProperties: true
+    AsyncTaskAccepted:
+      type: object
+      description: 大结果异步 202 + D-18 同窗（导出类）。
+      properties:
+        taskId:
+          type: string
+        status:
+          type: string
+          example: ACCEPTED
+      additionalProperties: true
+    Problem:
+      type: object
+      description: 业务/校验错误信封示意；与所内 `code`/`message` 终裁同窗。
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        details:
+          type: object
+          additionalProperties: true
+      additionalProperties: true

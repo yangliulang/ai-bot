@@ -1,0 +1,87 @@
+openapi: 3.0.3
+info:
+  title: "内部 — Token 账务扣减 / 幂等查询 / 服务侧退款"
+  version: "2026-05-09"
+  description: |
+    与 design/api「内部 · Token 账务扣减 API」一致；须 mTLS/内网。
+    Schemas 同窗：`../components/billing-schemas.yaml`（含 **D-12** `revenueAccountRef`、**D-5** `traceKey` 同窗字段）。
+  contact:
+    name: "Jesson"
+    email: Jesson@chainup.com
+servers:
+  - url: https://api.example.invalid
+    description: 所内替换；与 paths 组成完整 URL
+tags:
+  - name: contract
+    description: B 阶设计冻结；CC-P0-03
+paths:
+  "/api/v1/internal/billing/charges":
+    post:
+      tags: [contract]
+      summary: "执行单笔扣费落账（FR-B11/B14 · SC-B08）"
+      operationId: postInternalBillingCharge
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "../components/billing-schemas.yaml#/components/schemas/InternalChargeRequest"
+      responses:
+        "200":
+          description: 落账结果；重复 idempotency 须返回同一 billingTraceId（SC-B08）。
+          content:
+            application/json:
+              schema:
+                $ref: "../components/billing-schemas.yaml#/components/schemas/InternalChargeResult"
+        "400":
+          description: 参数非法
+          content:
+            application/json:
+              schema:
+                $ref: "../components/billing-schemas.yaml#/components/schemas/Problem"
+  "/api/v1/internal/billing/charges/by-idempotency":
+    get:
+      tags: [contract]
+      summary: "幂等查询（executionId 或 idempotencyKey）"
+      operationId: getInternalBillingChargeByIdempotency
+      parameters:
+        - name: idempotencyKey
+          in: query
+          schema:
+            type: string
+        - name: executionId
+          in: query
+          schema:
+            $ref: "../components/identity-schemas.yaml#/components/schemas/ExecutionId"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "../components/billing-schemas.yaml#/components/schemas/InternalChargeResult"
+        "404":
+          description: 无记录
+  "/api/v1/internal/billing/refunds/apply":
+    post:
+      tags: [contract]
+      summary: "服务侧退款账务（FR 批准后作业 · SC-B15）"
+      operationId: postInternalBillingRefundApply
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "../components/billing-schemas.yaml#/components/schemas/InternalRefundApplyRequest"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "../components/billing-schemas.yaml#/components/schemas/InternalChargeResult"
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/billing-schemas.yaml#/components/schemas/Problem"

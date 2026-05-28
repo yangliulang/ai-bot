@@ -1,0 +1,126 @@
+openapi: 3.0.3
+info:
+  title: "ChainUp AI Agent — 运营侧 Telegram 渠道 (admin/channels/telegram)"
+  version: "2026-05-09"
+  description: |
+    PATH 与设计冻结同窗 [`design/api.md`](../../design/api.md) **「运营侧 Telegram 渠道运维 API」**。
+    Schema 同窗 [`telegram-channels-schemas.yaml`](../components/telegram-channels-schemas.yaml) 与 [`admin-bot-config.md`](../../requirements/domains/agent/telegram/admin-bot-config.md)。
+    **CC-P1-06** B 骨架；字段级终裁随实现 MR。
+  contact:
+    name: "Jesson"
+    email: Jesson@chainup.com
+servers:
+  - url: https://api.example.invalid
+    description: 所内替换；与 paths 组成完整 URL
+tags:
+  - name: telegram
+    description: 运营侧 Bot / Webhook 运维
+paths:
+  "/api/v1/admin/channels/telegram/bot":
+    get:
+      tags: [telegram]
+      summary: "Bot 身份与健康 FR-TG-ADMIN-01 · FR-MC709"
+      operationId: getAdminTelegramBot
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "../components/telegram-channels-schemas.yaml#/components/schemas/TelegramBotStatusResponse"
+    patch:
+      tags: [telegram]
+      summary: "非密钥运行参数 + secretRef 轮换 FR-TG-ADMIN-02/03/06 · FR-MC710～711"
+      operationId: patchAdminTelegramBot
+      parameters:
+        - $ref: "#/components/parameters/IfMatchConfig"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "../components/telegram-channels-schemas.yaml#/components/schemas/TelegramBotPatchRequest"
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/telegram-channels-schemas.yaml#/components/schemas/TelegramBotStatusResponse"
+        "409":
+          description: 乐观锁冲突 · ADMIN_OPS_CONCURRENT 同窗
+          content:
+            application/json:
+              schema:
+                $ref: "../components/billing-schemas.yaml#/components/schemas/Problem"
+  "/api/v1/admin/channels/telegram/webhook":
+    post:
+      tags: [telegram]
+      summary: "setWebhook FR-TG-ADMIN-04"
+      operationId: postAdminTelegramWebhook
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "../components/telegram-channels-schemas.yaml#/components/schemas/TelegramWebhookSetRequest"
+      responses:
+        "200":
+          description: 回显 webhook 摘要
+          content:
+            application/json:
+              schema:
+                $ref: "../components/telegram-channels-schemas.yaml#/components/schemas/TelegramWebhookInfo"
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/billing-schemas.yaml#/components/schemas/Problem"
+    get:
+      tags: [telegram]
+      summary: "getWebhookInfo FR-TG-ADMIN-04"
+      operationId: getAdminTelegramWebhook
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/telegram-channels-schemas.yaml#/components/schemas/TelegramWebhookInfo"
+    delete:
+      tags: [telegram]
+      summary: "deleteWebhook（与 POST 二选所内终裁；实现可改为 POST …/webhook/delete）"
+      operationId: deleteAdminTelegramWebhook
+      responses:
+        "204":
+          description: Webhook 已删除
+        "200":
+          description: 可选：带末态 webhook 摘要
+          content:
+            application/json:
+              schema:
+                $ref: "../components/telegram-channels-schemas.yaml#/components/schemas/TelegramWebhookInfo"
+  "/api/v1/admin/channels/telegram/self-test":
+    post:
+      tags: [telegram]
+      summary: "连通性自检 FR-TG-ADMIN-05 · getMe + getWebhookInfo"
+      operationId: postAdminTelegramSelfTest
+      responses:
+        "200":
+          description: 同步结果
+          content:
+            application/json:
+              schema:
+                $ref: "../components/telegram-channels-schemas.yaml#/components/schemas/TelegramSelfTestResult"
+        "202":
+          description: 异步作业（D-18 精神同窗）
+          content:
+            application/json:
+              schema:
+                $ref: "../components/billing-schemas.yaml#/components/schemas/AsyncTaskAccepted"
+components:
+  parameters:
+    IfMatchConfig:
+      name: If-Match
+      in: header
+      required: false
+      schema:
+        type: string
+      description: 全局 bundle / Bot 配置 resource 乐观锁；与 `trading-agent-config/flow` 同窗。

@@ -1,0 +1,199 @@
+openapi: 3.0.3
+info:
+  title: "2026-05-28--registry-tool-idempotency — Registry SSOT mirror idempotency"
+  description: |
+    CC-P1-03 · **MR-E** · **`SC-MCV1-05` / `SC-OBS01`**。
+    - **200** 为 FastAPI **直出** camelCase；**4xx** 为 **`AppError`**。
+    - 同窗 **`product-doc/specs/openapi/admin/tool-management.yaml`** **Registry 列表** 子集（只读）。
+  version: "0.1.0"
+
+servers:
+  - url: http://127.0.0.1:8080
+    description: 本地 Agent API
+
+paths:
+  /api/v1/admin/tools/registry:
+    get:
+      summary: Registry 镜像列表（AC-6 · FR-TM01 子集）
+      operationId: listAdminToolRegistryMirror
+      tags: [Admin — Tool registry]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: entryClass
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [A, B, C]
+        - name: matrixStatus
+          in: query
+          required: false
+          schema:
+            $ref: "#/components/schemas/MatrixPathStatus"
+      responses:
+        "200":
+          description: skillId/toolId 镜像行
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ToolRegistryMirrorList"
+        "401":
+          description: 未授权
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AppError"
+
+  /api/v1/admin/tools/registry/idempotency-audit:
+    get:
+      summary: SSOT 幂等审计（AC-7 · MR-E）
+      operationId: getAdminToolRegistryIdempotencyAudit
+      tags: [Admin — Tool registry]
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: skill/tool 差集审计结果
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RegistryIdempotencyAudit"
+        "401":
+          description: 未授权
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AppError"
+
+  /api/v1/admin/observability/executions/{executionId}/timeline:
+    get:
+      summary: 执行时间线（SC-OBS01 join 验收 · AC-5）
+      operationId: getAdminObservabilityTimelineRegistryAudit
+      tags: [Admin — Observability]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: executionId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: timeline items 供 join 断言
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ObservabilityTimelineList"
+        "404":
+          description: execution 不存在
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AppError"
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+
+  schemas:
+    AppError:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        details:
+          type: object
+          additionalProperties: true
+
+    MatrixPathStatus:
+      type: string
+      enum: [TBD, draft, frozen, ready]
+
+    ToolRegistryMirrorEntry:
+      type: object
+      required: [stableId, entryClass, matrixStatus]
+      properties:
+        stableId:
+          type: string
+          description: skillId 或 toolId（ADR-002 稳定键）
+        entryClass:
+          type: string
+          enum: [A, B, C]
+        matrixStatus:
+          $ref: "#/components/schemas/MatrixPathStatus"
+        scenarioId:
+          type: string
+          nullable: true
+        summary:
+          type: string
+
+    ToolRegistryMirrorList:
+      type: object
+      required: [items, registryVersion]
+      properties:
+        registryVersion:
+          type: string
+          example: "0.1.0"
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/ToolRegistryMirrorEntry"
+
+    RegistryIdempotencyAudit:
+      type: object
+      required: [ok, auditVersion, skillMismatches, toolMismatches]
+      properties:
+        ok:
+          type: boolean
+        auditVersion:
+          type: string
+          example: "0.1.0"
+        skillMismatches:
+          type: object
+          properties:
+            missingInMirror:
+              type: array
+              items:
+                type: string
+            extraInMirror:
+              type: array
+              items:
+                type: string
+        toolMismatches:
+          type: object
+          properties:
+            missingInMirror:
+              type: array
+              items:
+                type: string
+            extraInMirror:
+              type: array
+              items:
+                type: string
+
+    ObservabilityTimelineItem:
+      type: object
+      properties:
+        eventName:
+          type: string
+        summary:
+          type: object
+          additionalProperties: true
+        createdAt:
+          type: string
+          format: date-time
+
+    ObservabilityTimelineList:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/ObservabilityTimelineItem"

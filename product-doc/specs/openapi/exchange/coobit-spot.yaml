@@ -1,0 +1,142 @@
+openapi: 3.0.3
+info:
+  title: "Coobit — 子账户现货（币币）私有 API"
+  version: "2026-05-09"
+  description: |
+    requestPath 与 [`design/api.md`](../../design/api.md) **子账户 scope · endpoint 矩阵**「币币」**账户/下单/撤单**行及 **REST↔WS 对账**表同窗。
+    **公开行情**（ping/time/symbols/…）见 [`coobit-public.yaml`](coobit-public.yaml)；**双网关** baseurl **所内冻结**。
+    **CC-P0-02 · B**：本包 **`paths`** **键** **与** **矩阵** **非延期** **现货私有** **行** **同窗**（**2026-05-12**）。
+    响应占位同窗 [`exchange-schemas.yaml`](../components/exchange-schemas.yaml)。
+  contact:
+    name: "Jesson"
+    email: Jesson@chainup.com
+servers:
+  - url: https://api.example.invalid
+    description: 现货网关；与 paths 组成完整 URL
+externalDocs:
+  description: 产业锚/扩展阅读
+  url: "https://exchangedocsv2.gitbook.io/open-api-doc-v2/spot.md"
+tags:
+  - name: spot-account
+  - name: spot-order
+paths:
+  "/sapi/v1/account":
+    get:
+      tags: [spot-account]
+      summary: "账户余额 · 矩阵币币只读"
+      operationId: coobitSpotGetAccount
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/exchange-schemas.yaml#/components/schemas/CoobitJsonValue"
+  "/sapi/v2/order":
+    get:
+      tags: [spot-order]
+      summary: "单笔委托查询"
+      operationId: coobitSpotGetOrder
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/exchange-schemas.yaml#/components/schemas/CoobitJsonValue"
+    post:
+      tags: [spot-order]
+      summary: "现货下单 · P0"
+      operationId: coobitSpotPostOrder
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/exchange-schemas.yaml#/components/schemas/CoobitJsonValue"
+  "/sapi/v2/openOrders":
+    get:
+      tags: [spot-order]
+      summary: "开放委托"
+      operationId: coobitSpotGetOpenOrders
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/exchange-schemas.yaml#/components/schemas/CoobitJsonValue"
+  "/sapi/v2/myTrades":
+    get:
+      tags: [spot-order]
+      summary: "成交明细 v2"
+      operationId: coobitSpotGetMyTradesV2
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/exchange-schemas.yaml#/components/schemas/CoobitJsonValue"
+  "/sapi/v3/historyOrders":
+    get:
+      tags: [spot-order]
+      summary: "历史委托 v3"
+      operationId: coobitSpotGetHistoryOrders
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/exchange-schemas.yaml#/components/schemas/CoobitJsonValue"
+  "/sapi/v3/myTrades":
+    get:
+      tags: [spot-order]
+      summary: "成交明细 v3"
+      operationId: coobitSpotGetMyTradesV3
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/exchange-schemas.yaml#/components/schemas/CoobitJsonValue"
+  "/sapi/v2/order/test":
+    post:
+      tags: [spot-order]
+      summary: "下单测试"
+      operationId: coobitSpotPostOrderTest
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/exchange-schemas.yaml#/components/schemas/CoobitJsonValue"
+  "/sapi/v2/batchOrders":
+    post:
+      tags: [spot-order]
+      summary: "批量下单"
+      operationId: coobitSpotPostBatchOrders
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/exchange-schemas.yaml#/components/schemas/CoobitJsonValue"
+  "/sapi/v2/cancel":
+    post:
+      tags: [spot-order]
+      summary: "撤单"
+      operationId: coobitSpotPostCancel
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/exchange-schemas.yaml#/components/schemas/CoobitJsonValue"
+  "/sapi/v2/batchCancel":
+    post:
+      tags: [spot-order]
+      summary: "批量撤单"
+      operationId: coobitSpotPostBatchCancel
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/exchange-schemas.yaml#/components/schemas/CoobitJsonValue"

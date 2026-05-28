@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "hooks": {
+    "postToolUse": [
+      {
+        "command": ".cursor/hooks/pipeline-status-reminder.sh",
+        "timeout": 8,
+        "matcher": "Write|StrReplace"
+      }
+    ],
+    "stop": [
+      {
+        "command": ".cursor/hooks/pipeline-status-reminder.sh",
+        "timeout": 8,
+        "loop_limit": null
+      }
+    ]
+  }
+}

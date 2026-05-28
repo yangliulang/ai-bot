@@ -1,0 +1,103 @@
+openapi: 3.0.3
+info:
+  title: "Agent 产品线 — Agent 开通 / 绑定 / 状态（me/agent）"
+  version: "2026-05-13"
+  description: |
+    与用户侧 **FR-ON01～05**、[`onboarding/overview.md`](../../requirements/domains/agent/onboarding/overview.md)、[`activate-trading-agent.md`](../../requirements/flows/activate-trading-agent.md) **S2～S5** 同窗。
+    Schema 同窗 [`onboarding-schemas.yaml`](../components/onboarding-schemas.yaml)；**404/409** **可** **`$ref`** [`billing-schemas`](../components/billing-schemas.yaml) **`Problem`**（所内统一错误信封）。
+    **绑定触点**：**Agent 产品线绑定页**（**不须**用户登录交易所主站；**标准路径** **`POST .../bindings/trading-api`** **须成对提交 **`apiKey`/`apiSecret`**）；PATH 所内 **可**与其它用户 BFF **合并 host** — **不得弱化** **§1.2 Key/Secret 成对校验链路、绑定审计默认面无 Secret、摘要同源**。
+  contact:
+    name: "Jesson"
+    email: Jesson@chainup.com
+servers:
+  - url: https://api.example.invalid
+    description: Agent BFF / 用户网关；所内替换
+tags:
+  - name: me-agent
+paths:
+  "/api/v1/me/agent/status":
+    get:
+      tags: [me-agent]
+      summary: "开通与运行时摘要 FR-ON03 · FR-T02 因子可读"
+      operationId: getMeAgentStatus
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/onboarding-schemas.yaml#/components/schemas/MeAgentStatus"
+        "401":
+          description: 未登录
+  "/api/v1/me/agent/bindings/trading-api":
+    post:
+      tags: [me-agent]
+      summary: "提交 API Key/Secret：服务端校验（FR-WEB06）后绑定（FR-WEB01/FR-ON01）；Legacy confirmToken 路径同窗 FR-ON04"
+      operationId: postMeAgentTradingApiBinding
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "../components/onboarding-schemas.yaml#/components/schemas/TradingApiBindRequest"
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/onboarding-schemas.yaml#/components/schemas/TradingApiBindResult"
+        "409":
+          description: |
+            **保存时校验未通过**（**initialization-flow §1.2 项 2** / **FR-WEB06**）：如 **主账户 Key**、**子账户禁用**、**API 交易或币币/杠杆/合约权限未全开**。
+            **`Problem.code`** **同窗** `TradingApiBindRejectCode`（见 `../components/onboarding-schemas.yaml`）；**禁止**在校验失败时返回 **200**。
+          content:
+            application/json:
+              schema:
+                $ref: "../components/billing-schemas.yaml#/components/schemas/Problem"
+    delete:
+      tags: [me-agent]
+      summary: "吊销绑定（用户侧入口；审计无 Secret）"
+      operationId: deleteMeAgentTradingApiBinding
+      responses:
+        "204":
+          description: 已接受吊销
+        "409":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/billing-schemas.yaml#/components/schemas/Problem"
+  "/api/v1/me/agent/provisioning/confirm":
+    post:
+      tags: [me-agent]
+      summary: "Legacy · S2 一键确认收口（幂等）；**首选**配置页走 POST bindings/trading-api + TradingApiBindRequest.apiKey/apiSecret"
+      operationId: postMeAgentProvisioningConfirm
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "../components/onboarding-schemas.yaml#/components/schemas/ProvisioningConfirmRequest"
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/onboarding-schemas.yaml#/components/schemas/MeAgentStatus"
+        "409":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/billing-schemas.yaml#/components/schemas/Problem"
+  "/api/v1/me/agent/recovery/deeplink":
+    get:
+      tags: [me-agent]
+      summary: "FR-T05 阻断恢复 Deeplink 提示（reason 所内 query）"
+      operationId: getMeAgentRecoveryDeeplink
+      parameters:
+        - name: reason
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/onboarding-schemas.yaml#/components/schemas/DeeplinkHint"

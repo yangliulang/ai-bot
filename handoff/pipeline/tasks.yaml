@@ -1,0 +1,262 @@
+# Pipeline 任务定义（唯一 Prompt 正文源）
+# 指挥官调用见 handoff/pipeline/COMMANDER.md
+#
+# 功能占位符：{{feat}} → 2026-05-25--greeting；{{feature_dir}} → {{features_root}}/{{feat}}/
+#
+# 项目占位符（执行前读 pipeline.project.yaml，或 ./scripts/lib/read-pipeline-project.sh pp_print_context）：
+#   {{features_root}} {{backend_path}} {{frontend_path}}
+#   {{api_base_url}} {{web_dev_url}} {{prd_path}} {{default_roadmap}}
+#   {{onboarding_mode}} {{inventory_path}} {{backlog_path}} {{active_phase}}
+#
+# 本仓库默认值（与 pipeline.project.yaml 一致）：
+#   features_root=handoff/features  backend_path=server  frontend_path=admin
+#   api_base_url=http://127.0.0.1:8080  web_dev_url=http://127.0.0.1:5173
+#   prd_path=product-doc/product/roadmap.md  default_roadmap=handoff/roadmap/phase-2.md
+
+tasks:
+  product.plan:
+    agent: product-agent
+    title: 阶段规划（roadmap）
+    requires_next: null
+    target_phase: null
+    steps: |
+      你是 product-agent。遵守 .cursor/rules/product-agent.mdc 与 handoff/conventions/product.md。
+      读取 pipeline.project.yaml（`project.onboarding.mode`、`product.*`、`roadmap.*`）。
+      模式分支（详见 handoff/conventions/onboarding-modes.md）：
+      - **greenfield**：根据 PRD（{{prd_path}} 或用户附件）创建/更新 phase-N；若 {{inventory_path}} §2「已实现」已有条目，视为存量能力，**不得**再写入 backlog 为 planned。
+      - **brownfield**：读 {{inventory_path}}（§2、§4、§6）与 PRD 指定章节；不把 §2 已实现写成 planned。
+      - **continuing**：读 {{backlog_path}} 中 status=queued/in_phase 与 {{inventory_path}} §4；与当前 {{default_roadmap}} 对齐，不重复 §2 已实现。
+      产出：阶段目标、backlog 表（功能 ID、优先级、依赖）、本阶段不做；不写 brief/OpenAPI。
+      完成后运行 `./scripts/sync-backlog-from-phase.sh`（可加 `--dry-run`），将当前 `roadmap.active_phase` 对应 phase 文件 backlog 表 merge 进 {{backlog_path}}（planned/进行中 → in_phase；done → done；不降级已有 done）。
+      对照 handoff/pipeline/checklists/product-plan.md 自检；提示指挥官确认后再 product.contract。
+
+  product.plan-reset:
+    agent: product-agent
+    title: 清除规划 / 准备重新 plan
+    requires_next: null
+    target_phase: null
+    steps: |
+      你是 product-agent。遵守 handoff/conventions/onboarding-modes.md。
+      当 PRD/roadmap 变更需**废弃当前阶段未交付规划**或**整阶段重规划**时执行（勿与 phase-close 混淆：phase-close 是阶段全部 done 后收束）。
+      1. 确认指挥官意图：
+         - **soft**（默认）：只删 `planned` 等待办，保留 phase 表中的 `done` 行
+         - **full**：done 写入 inventory §2，phase 清空为模板（整阶段重规划）
+      2. 运行 `./scripts/plan-reset.sh`（先 `--dry-run` 展示；有 `contract_ready`/`in_dev` 或功能包 phase 非 planned 时会拒绝，除非用户明确要求加 `--force`）：
+         - 可选：`--mode soft|full`、`--phase N`
+      3. 摘要：归档路径、移除的功能 ID、保留的 done 行
+      4. 提示下一步：
+         - `/pipeline-product-plan` + `@product-doc/product/roadmap.md` 或 PRD 变更说明
+         - plan 完成后 `./scripts/sync-backlog-from-phase.sh`
+      **不**在此步写新 backlog 正文（除非用户同条消息明确要求「reset 后立即 replan」，则 reset 成功后继续执行 `product.plan` 步骤）。
+
+  product.phase-realign:
+    agent: product-agent
+    title: 指定 phase 对齐 roadmap / 产品文档（含返工规划）
+    requires_next: null
+    target_phase: null
+    steps: |
+      你是 product-agent。当**产品文档或 roadmap 变更**影响某一阶段（含已交付需返工）时执行。
+      **与 plan-reset 区别**：本任务指定 **phase-N**，对照 PRD 重写 backlog；**与 phase-close 区别**：不要求阶段全部 done。
+      1. 从用户消息解析目标阶段 N（`phase-N` / `--phase N`）；缺则停止询问。
+      2. 运行 `./scripts/phase-realign-prepare.sh --phase N --note "<用户变更摘要>"`（先可加 `--dry-run`）：
+         - 生成 `handoff/roadmap/.realign/phase-N-latest.md` 快照
+         - 切换 `pipeline.project.yaml` → `roadmap.active_phase: N`
+         - 清除该阶段 **planned** 未交付项（in_progress 存在时默认跳过 reset，除非 `--force`）
+      3. 阅读：快照、`product-doc/product/roadmap.md`、{{inventory_path}} §2/§6、原 `handoff/roadmap/phase-N.md` 归档（`.archive/` 若有）；用户附件优先。
+      4. **重写** `handoff/roadmap/phase-N.md`：
+         - 更新阶段目标、backlog 表、依赖、本阶段不做
+         - 新增 **`## 对齐说明`**：变更摘要；表格列「原项 / 处置(保留|返工新ID|推迟|移除) / 新功能 ID / 理由」
+         - **返工默认**：文档影响已 done 能力 → **新建**功能 ID（备注 `返工←原ID`），原 done 行不动
+         - **reopen 原 ID**（仅当用户明确要求）：对该 ID 运行 `./scripts/feature-reopen.sh --feature <ID> --phase N`，roadmap 行改 `planned`
+      5. 运行 `./scripts/sync-backlog-from-phase.sh --phase N`（可先 `--dry-run`）
+      6. 对照 `handoff/pipeline/checklists/phase-realign.md`；列出建议 `/pipeline-product-contract <首个 planned ID>`
+      **不写** brief/OpenAPI（交给 contract）；**不**改 `server/`/`admin/`/`deeplink/` 代码。
+
+  product.phase-close:
+    agent: product-agent
+    title: 阶段收束（phase → 下一迭代）
+    requires_next: null
+    target_phase: null
+    steps: |
+      你是 product-agent。遵守 handoff/conventions/onboarding-modes.md。
+      1. 读取 pipeline.project.yaml 的 project.onboarding.mode 与 roadmap.active_phase。
+      2. 打开 handoff/roadmap/phase-{active_phase}.md，确认 backlog 表**全部为 done**；否则停止并列出未完成项。
+      3. 运行 `./scripts/advance-phase.sh`（可加 --dry-run 先展示）；脚本会：
+         - 将 done 项追加到 inventory §2
+         - 从 backlog.yaml 按优先级切片下一批 → inventory §4 + phase-(N+1).md
+         - 将 mode 设为 continuing（若原为 greenfield/brownfield）
+      4. 在回复中摘要：新 phase 文件路径、§4 条目、建议 `/pipeline-product-contract <首个ID>`。
+      5. 提醒指挥官：可调 backlog.yaml 优先级后再次 advance-phase；§5/§6 仍需人工维护。
+
+  product.contract:
+    agent: product-agent
+    title: 建包定稿
+    requires_next: product-agent
+    allowed_phase: [planned]
+    steps: |
+      你是 product-agent。遵守 .cursor/rules/product-agent.mdc。
+      阅读 {{default_roadmap}}，处理优先级最高且状态为 planned 的功能；
+      若指挥官指定了 {{feat}}，则只处理该功能。
+      功能包：{{feature_dir}}（不存在则运行 ./scripts/new-feature.sh {{feat}} "标题"）。
+      完成 brief.md、api.openapi.yaml；
+      必填 test/coverage.md、test/cases.md、test/e2e-cases.md（有页面时 E2E 必填；无页面可标「含页面：否」并省略 E2E 列要求）。
+      可选 design/ui-review.md 骨架。
+      定稿前对照 handoff/pipeline/checklists/contract-test-coverage.md；
+      运行 ./scripts/check-test-coverage.sh {{feature_dir}}，退出码非 0 则禁止 contract_ready。
+      读 test/coverage.md「含页面」：若为**否**，在 status.yaml 设置
+      \`skips: [frontend.integrate, test.e2e, designer.review]\`（API-only，无需前端/E2E/设计走查）。
+      通过后再更新 status.yaml → contract_ready，next: backend-agent；同步 roadmap 状态。
+
+  product.accept:
+    agent: product-agent
+    title: 产品验收
+    requires_next: product-agent
+    allowed_phase: [ui_reviewed]
+    steps: |
+      你是 product-agent。处理 {{feature_dir}}，phase 为 ui_reviewed。
+      对照 brief.md 与 design/ui-review.md 逐项验收。
+      通过 → status.yaml phase: done，next: null；**先**同步 roadmap 对应行为 done。
+      运行 `./scripts/check-phase-close-ready.sh`：
+      - 退出码 **0**（当前 phase 全部 done）→ 在回复中**醒目**提示指挥官**新开 Chat** 执行 `/pipeline-product-phase-close`（勿直接 plan；收束会把 done 项追加 inventory §2）。
+      - 退出码 **1** → 若 roadmap 仍有 planned/进行中项，提示 `/pipeline-product-contract <下一功能ID>`。
+
+  backend.implement:
+    agent: backend-agent
+    title: 实现 API
+    requires_next: backend-agent
+    allowed_phase: [contract_ready, backend_in_progress]
+    steps: |
+      你是 backend-agent。遵守 .cursor/rules/backend-agent.mdc 与 api-dev 规范。
+      处理 {{feature_dir}}，实现 api.openapi.yaml，代码在 {{backend_path}}/。
+      填写 backend/notes.md，自测通过后 status.yaml → backend_done，next: test-agent。
+
+  test.prepare:
+    agent: test-agent
+    title: 用例复审（contract_ready 后推荐）
+    requires_next: null
+    allowed_phase: [contract_ready]
+    steps: |
+      你是 test-agent。处理 {{feature_dir}}，phase 为 contract_ready（或指挥官显式指定）。
+      复审并完善 test/coverage.md、test/cases.md、test/e2e-cases.md（P0 步骤/预期、AC 追溯）。
+      运行 ./scripts/check-test-coverage.sh {{feature_dir}}，须退出码 0。
+      不改 status.yaml；若发现 AC/契约缺陷，在回复中说明并建议退回 product-agent。
+
+  test.api:
+    agent: test-agent
+    title: API 测试
+    requires_next: test-agent
+    allowed_phase: [backend_done]
+    steps: |
+      你是 test-agent。遵守 .cursor/rules/test-agent.mdc。
+      处理 {{feature_dir}}，phase 为 backend_done，next 为 test-agent。
+      启动后端，执行 test/cases.md 全部 P0，填写 test/report.md。
+      P0 全通过 → tested，next: frontend-agent。
+      若 status.yaml 的 skips 含 frontend.integrate，在回复中提醒指挥官 `/pipeline-skip {{feat}}`，勿进入前端 Chat。
+      P0 失败 → phase 保持 backend_done，blockers + report，next: backend-agent。
+
+  test.e2e:
+    agent: test-agent
+    title: E2E 验证
+    requires_next: test-agent
+    allowed_phase: [frontend_done]
+    steps: |
+      你是 test-agent。处理 {{feature_dir}}，phase 为 frontend_done，next 为 test-agent。
+      启动前后端，执行 test/e2e-cases.md 全部 P0，填写 test/e2e-report.md。
+      P0 全通过 → e2e_verified，next: designer-agent。
+      P0 失败 → phase 保持 frontend_done，blockers + e2e-report，next: frontend-agent（或 backend-agent）。
+
+  test.e2e-retest:
+    agent: test-agent
+    title: E2E 复测
+    requires_next: test-agent
+    allowed_phase: [frontend_done]
+    steps: |
+      你是 test-agent。处理 {{feature_dir}}，phase 为 frontend_done，next 为 test-agent，blockers 为空。
+      复测此前失败的 E2E P0，更新 test/e2e-report.md，通过 → e2e_verified，next: designer-agent。
+
+  frontend.mock:
+    agent: frontend-agent
+    title: Mock 页面（可选）
+    requires_next: null
+    steps: |
+      你是 frontend-agent。处理 {{feature_dir}}，按 brief 与 OpenAPI Mock 实现 {{frontend_path}}/ 页面。
+      不改 status.yaml。
+
+  frontend.integrate:
+    agent: frontend-agent
+    title: 联调页面
+    requires_next: frontend-agent
+    allowed_phase: [tested]
+    steps: |
+      你是 frontend-agent。处理 {{feature_dir}}，phase 为 tested，next 为 frontend-agent。
+      对接真实 API，更新 frontend/integration.md。
+      status.yaml → frontend_done，next: test-agent。
+
+  frontend.fix-e2e:
+    agent: frontend-agent
+    title: E2E 返工
+    requires_next: frontend-agent
+    allowed_phase: [frontend_done]
+    steps: |
+      你是 frontend-agent。处理 {{feature_dir}}，phase 为 frontend_done，next 为 frontend-agent。
+      读 blockers 与 test/e2e-report.md，修复后自测，清空 blockers。
+      保持 frontend_done，next: test-agent，更新 frontend/integration.md。
+
+  frontend.fix-ui:
+    agent: frontend-agent
+    title: UI 返工
+    requires_next: frontend-agent
+    allowed_phase: [e2e_verified]
+    steps: |
+      你是 frontend-agent。处理 {{feature_dir}}，phase 为 e2e_verified，next 为 frontend-agent。
+      读 design/ui-review.md 与 blockers，修复 P0，清空 blockers。
+      保持 e2e_verified，next: designer-agent，更新 frontend/integration.md。
+      若影响 AC，在 integration.md 备注需 test.e2e 复测。
+
+  designer.review:
+    agent: designer-agent
+    title: UI 走查
+    requires_next: designer-agent
+    allowed_phase: [e2e_verified]
+    steps: |
+      你是 designer-agent。处理 {{feature_dir}}，phase 为 e2e_verified，next 为 designer-agent。
+      走查页面，填写 design/ui-review.md。
+      无 P0 → ui_reviewed，next: product-agent。
+      有 P0 → 保持 e2e_verified，blockers，next: frontend-agent。
+
+  designer.rereview:
+    agent: designer-agent
+    title: UI 复走查
+    requires_next: designer-agent
+    allowed_phase: [e2e_verified]
+    steps: |
+      你是 designer-agent。处理 {{feature_dir}}，phase 为 e2e_verified，next 为 designer-agent，blockers 为空。
+      复走查 P0 项，更新 design/ui-review.md，通过 → ui_reviewed，next: product-agent。
+
+  pipeline.skip:
+    agent: product-agent
+    title: 跳过不适用角色步骤
+    requires_next: null
+    steps: |
+      读取 {{feature_dir}}/status.yaml 的 skips 与当前 phase/next。
+      运行 `./scripts/pipeline-skip-check.sh {{feature_dir}}`；退出码 0 表示当前门禁应跳过。
+      确认后运行 `./scripts/pipeline-skip.sh {{feature_dir}}`（可先 --dry-run）。
+      脚本仅更新 status.yaml 至下一适用门禁（如 API-only → ui_reviewed）；**不**代替各角色交付物。
+
+# status.yaml 的 next → 默认任务（供 pipeline-next 使用）
+next_task_map:
+  backend-agent:
+    contract_ready: backend.implement
+    backend_in_progress: backend.implement
+  test-agent:
+    backend_done: test.api
+    frontend_done: test.e2e
+  frontend-agent:
+    tested: frontend.integrate
+    frontend_done: frontend.fix-e2e
+    e2e_verified: frontend.fix-ui
+  designer-agent:
+    e2e_verified: designer.review
+  product-agent:
+    planned: product.contract
+    ui_reviewed: product.accept

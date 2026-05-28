@@ -1,0 +1,32 @@
+{
+  "version": "0.1.0",
+  "description": "B-class read tool SSOT slice — aligned with exchange_tool_schema_registry (ADR-002 · CC-P1-03)",
+  "tools": [
+    {
+      "toolId": "read.market.ticker",
+      "entryClass": "B",
+      "matrixStatus": "frozen",
+      "summary": "Fetch latest public ticker / last price for a spot symbol"
+    },
+    {
+      "toolId": "read.market.depth",
+      "entryClass": "B",
+      "matrixStatus": "frozen",
+      "summary": "Fetch order-book depth snapshot for a spot symbol"
+    },
+    {
+      "toolId": "read.account.balance",
+      "entryClass": "B",
+      "matrixStatus": "frozen",
+      "summary": "Summarize spot balances for the bound trading sub-account"
+    }
+  ],
+  "optionalTools": [
+    {
+      "toolId": "tool.web.search",
+      "entryClass": "C",
+      "matrixStatus": "draft",
+      "summary": "External web search (default disabled · not in runtime mirror)"
+    }
+  ]
+}

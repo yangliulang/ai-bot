@@ -1,0 +1,157 @@
+openapi: 3.0.3
+info:
+  title: "2026-05-28--skill-contract-eval-staging — Skill contract eval P0 staging"
+  description: |
+    OP-SKILL B · **`eval.skill.*` P0 真跑**（SK-B03 · W3）。
+    - **不新增** 写接口；Eval 为 **槽位门禁模块 + pytest**。
+    - **200** 响应为 FastAPI **直出** camelCase；**4xx** 为 **`AppError`**。
+    - Effective 读路径同窗 **`skill-publish-effective`** · **`runtime-write-path-pipeline`**。
+  version: "0.1.0"
+
+servers:
+  - url: http://127.0.0.1:8080
+    description: 本地 Agent API
+
+paths:
+  /api/v1/runtime/skill-operation-spec/effective:
+    get:
+      summary: Runtime 生效技能规范全文（Eval Given §2.1 · AC-8）
+      operationId: getRuntimeSkillOperationSpecEffectiveEval
+      tags: [Runtime — Skill spec]
+      parameters:
+        - name: skillId
+          in: query
+          required: true
+          schema:
+            type: string
+          examples:
+            limitOrder:
+              value: skill.spot.limit_order
+            flashConvert:
+              value: skill.spot.flash_convert
+            amendLimit:
+              value: skill.spot.amend_limit_order
+            marginCross:
+              value: skill.margin.cross_market_order
+      responses:
+        "200":
+          description: 已 Publish 的 contract-complete 全文
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RuntimeSkillOperationSpecEffective"
+        "403":
+          description: 未发布 · PROMPT_SKILL_REF_INVALID
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AppError"
+              examples:
+                notPublished:
+                  value:
+                    code: PROMPT_SKILL_REF_INVALID
+                    message: Skill spec not published
+        "404":
+          description: 未知 skillId
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AppError"
+
+  /api/v1/agent/scenarios/{scenarioId}:
+    get:
+      summary: 单场景编排详情（P0 fixture scenarioId 对照 · AC-6 可选）
+      operationId: getAgentScenarioDetailSkillEval
+      tags: [Agent — Scenarios]
+      parameters:
+        - name: scenarioId
+          in: path
+          required: true
+          schema:
+            type: string
+          examples:
+            limitOrder:
+              value: trade.spot.limit_order
+            flashConvert:
+              value: trade.spot.flash_convert
+            marginCross:
+              value: margin.cross.market_order
+            amendLimit:
+              value: trade.spot.amend_limit_order
+      responses:
+        "200":
+          description: 含 scenarioId、flowSummary、executionSteps
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ScenarioOrchestrationDetail"
+        "404":
+          description: 未知 scenarioId
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AppError"
+
+components:
+  schemas:
+    AppError:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        details:
+          type: object
+          additionalProperties: true
+
+    RuntimeSkillOperationSpecEffective:
+      type: object
+      required: [skillId, skillSpecVersion, bodyMarkdown, specDigest]
+      properties:
+        skillId:
+          type: string
+          example: skill.spot.limit_order
+        skillSpecVersion:
+          type: string
+          example: 0.2.0-contract
+        lifecycle:
+          type: string
+          example: PUBLISHED
+        bodyMarkdown:
+          type: string
+          description: contract-complete §1～§6 全文
+        specDigest:
+          type: string
+        etag:
+          type: string
+
+    OrchestrationFlowStep:
+      type: object
+      properties:
+        stepKey:
+          type: string
+          example: read.skill
+        labelZh:
+          type: string
+        order:
+          type: integer
+
+    ScenarioOrchestrationDetail:
+      type: object
+      properties:
+        scenarioId:
+          type: string
+        flowSummary:
+          type: string
+        orchestrationRegistryVersion:
+          type: string
+        executionSteps:
+          type: array
+          items:
+            $ref: "#/components/schemas/OrchestrationFlowStep"
+        specRefs:
+          type: array
+          items:
+            type: string

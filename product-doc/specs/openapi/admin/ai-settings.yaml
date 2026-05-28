@@ -1,0 +1,243 @@
+openapi: 3.0.3
+info:
+  title: "ChainUp AI Agent — 运营侧 AI Settings (admin/ai)"
+  version: "2026-05-09"
+  description: |
+    与设计冻结同窗 [`design/api.md`](../../design/api.md) **「运营侧 AI Settings API」**。
+    Schema 同窗 [`ai-settings-schemas.yaml`](../components/ai-settings-schemas.yaml)；**密钥仅 `secretRef`**。**`AiGatewayDefaults.orchestrationExecutionBudget`**：**`FR-AO06`/`FR-MC408`**（见 [`design/api.md`](../../design/api.md) **编排执行预算**）。
+    **CC-P0-01（模块四）** B 骨架。
+  contact:
+    name: "Jesson"
+    email: Jesson@chainup.com
+servers:
+  - url: https://api.example.invalid
+    description: 所内替换
+tags:
+  - name: providers
+  - name: models
+  - name: gateway
+  - name: health
+paths:
+  "/api/v1/admin/ai/providers":
+    get:
+      tags: [providers]
+      summary: "Provider 列表 FR-MC401"
+      operationId: listAiProviders
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/ai-settings-schemas.yaml#/components/schemas/LlmProviderList"
+    post:
+      tags: [providers]
+      summary: "创建 Provider FR-MC401"
+      operationId: createAiProvider
+      parameters:
+        - $ref: "#/components/parameters/IfMatchOptional"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "../components/ai-settings-schemas.yaml#/components/schemas/LlmProviderUpsert"
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/ai-settings-schemas.yaml#/components/schemas/LlmProviderDetail"
+        "409":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/billing-schemas.yaml#/components/schemas/Problem"
+  "/api/v1/admin/ai/providers/{providerId}":
+    get:
+      tags: [providers]
+      summary: "Provider 详情 FR-MC401"
+      operationId: getAiProvider
+      parameters:
+        - $ref: "#/components/parameters/ProviderIdPath"
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/ai-settings-schemas.yaml#/components/schemas/LlmProviderDetail"
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/billing-schemas.yaml#/components/schemas/Problem"
+    patch:
+      tags: [providers]
+      summary: "更新 Provider（含 secretRef）FR-MC401"
+      operationId: patchAiProvider
+      parameters:
+        - $ref: "#/components/parameters/ProviderIdPath"
+        - $ref: "#/components/parameters/IfMatchOptional"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "../components/ai-settings-schemas.yaml#/components/schemas/LlmProviderUpsert"
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/ai-settings-schemas.yaml#/components/schemas/LlmProviderDetail"
+        "409":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/billing-schemas.yaml#/components/schemas/Problem"
+  "/api/v1/admin/ai/models":
+    get:
+      tags: [models]
+      summary: "模型目录 FR-MC402"
+      operationId: listAiModels
+      parameters:
+        - name: providerId
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/ai-settings-schemas.yaml#/components/schemas/LlmModelList"
+  "/api/v1/admin/ai/models/{modelId}":
+    patch:
+      tags: [models]
+      summary: "模型元数据 PATCH FR-MC402"
+      operationId: patchAiModel
+      parameters:
+        - $ref: "#/components/parameters/ModelIdPath"
+        - $ref: "#/components/parameters/IfMatchOptional"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "../components/ai-settings-schemas.yaml#/components/schemas/LlmModelPatch"
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/ai-settings-schemas.yaml#/components/schemas/LlmModelSummary"
+        "409":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/billing-schemas.yaml#/components/schemas/Problem"
+  "/api/v1/admin/ai/defaults":
+    get:
+      tags: [gateway]
+      summary: "网关默认 profile FR-MC403～406"
+      operationId: getAiGatewayDefaults
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/ai-settings-schemas.yaml#/components/schemas/AiGatewayDefaults"
+    patch:
+      tags: [gateway]
+      summary: "更新网关默认 profile FR-MC403～406"
+      operationId: patchAiGatewayDefaults
+      parameters:
+        - $ref: "#/components/parameters/IfMatchOptional"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "../components/ai-settings-schemas.yaml#/components/schemas/AiGatewayDefaults"
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/ai-settings-schemas.yaml#/components/schemas/AiGatewayDefaults"
+        "409":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/billing-schemas.yaml#/components/schemas/Problem"
+  "/api/v1/admin/ai/health-policy":
+    get:
+      tags: [health]
+      summary: "Health 策略 FR-MC407"
+      operationId: getAiHealthPolicy
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/ai-settings-schemas.yaml#/components/schemas/AiHealthPolicy"
+    patch:
+      tags: [health]
+      summary: "更新 Health 策略 FR-MC407"
+      operationId: patchAiHealthPolicy
+      parameters:
+        - $ref: "#/components/parameters/IfMatchOptional"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "../components/ai-settings-schemas.yaml#/components/schemas/AiHealthPolicy"
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/ai-settings-schemas.yaml#/components/schemas/AiHealthPolicy"
+        "409":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/billing-schemas.yaml#/components/schemas/Problem"
+  "/api/v1/admin/ai/providers/{providerId}/health":
+    post:
+      tags: [health]
+      summary: "手动 Health 探针 FR-MC407（200 同步或 202 异步）"
+      operationId: postAiProviderHealthProbe
+      parameters:
+        - $ref: "#/components/parameters/ProviderIdPath"
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/ai-settings-schemas.yaml#/components/schemas/AiHealthProbeResult"
+        "202":
+          content:
+            application/json:
+              schema:
+                $ref: "../components/billing-schemas.yaml#/components/schemas/AsyncTaskAccepted"
+components:
+  parameters:
+    ProviderIdPath:
+      name: providerId
+      in: path
+      required: true
+      schema:
+        type: string
+    ModelIdPath:
+      name: modelId
+      in: path
+      required: true
+      schema:
+        type: string
+    IfMatchOptional:
+      name: If-Match
+      in: header
+      required: false
+      schema:
+        type: string

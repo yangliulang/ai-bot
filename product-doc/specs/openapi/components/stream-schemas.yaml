@@ -1,0 +1,21 @@
+openapi: 3.0.3
+info:
+  title: "ChainUp AI Agent — 用户私有流 / listenKey 同窗 Schemas（fragment）"
+  version: "2026-05-09"
+  description: |
+    供 `stream/user-private-ws.yaml` 中 **listenKey 生命周期** HTTP 路径以 `$ref` 引用。
+    **WebSocket 帧格式与 URL** 以 [GitBook WebSocket](https://exchangedocsv2.gitbook.io/open-api-doc-v2/websocket.md) 与所内冻结为准。
+paths: {}
+components:
+  schemas:
+    ListenKeyCreated:
+      type: object
+      required: [listenKey]
+      properties:
+        listenKey:
+          type: string
+      additionalProperties: true
+    ListenKeyOk:
+      type: object
+      description: keepalive/close 等 ACK 占位。
+      additionalProperties: true

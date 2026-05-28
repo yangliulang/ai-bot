@@ -1,0 +1,25 @@
+# 评审范例 — 非契约。键名与 scenarioId 须 MR 会签 routing-engine 后升格。
+# goal_id 逻辑命名建议：{domain}.{intent_variant} 小写 snake/dot
+
+goal_id: trade.low_risk_spot_buy.review_example
+
+goal:
+  summary: 自动完成用户确认范围内的低风险 BTC 现货建仓（范例）
+
+primary_scenario_id: trade.spot.limit_order   # 须与 routing-engine 表一致；范例占位
+
+constraints:
+  - 禁止杠杆与 margin.cross 路由
+  - 单次名义不超过账户可交易余额的 20%（产品/config 冻结具体键）
+  - 写路径须类型 A 确认；不得绕过 FR-T02 门禁顺序
+
+success_metrics:
+  - 订单指令已接受且与用户确认参数一致
+  - 风险与限额校验无拒答；或拒答已用 FR-T05 族可解释
+
+termination:
+  - 本 execution 达成交/撤单/拒答等终局且计费叙事闭合
+  - 用户取消或 UNKNOWN 已按 unknown-state / reconciliation 处置
+
+notes: |
+  本文件仅用于评审 Goal 字段是否可支撑 Planner/验收；不得单独作为「已支持」承诺。

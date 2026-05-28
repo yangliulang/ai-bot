@@ -1,0 +1,41 @@
+openapi: 3.0.3
+info:
+  title: 2026-05-25--slug API
+  description: |
+    本功能的 API 契约。
+    - 产品 Agent：填写路径与字段草案
+    - 后端 Agent：实现并定稿，变更需同步 frontend/test
+  version: 0.1.0
+
+servers:
+  - url: @API_BASE_URL@
+    description: 本地开发（new-feature.sh 从 pipeline.project.yaml 注入）
+
+paths:
+  /example:
+  # 示例路径，产品 Agent 替换为实际接口
+  #   post:
+  #     summary: 示例接口
+  #     requestBody:
+  #       required: true
+  #       content:
+  #         application/json:
+  #           schema:
+  #             type: object
+  #             properties:
+  #               field:
+  #                 type: string
+  #     responses:
+  #       '200':
+  #         description: 成功
+  #         content:
+  #           application/json:
+  #             schema:
+  #               type: object
+  #               properties:
+  #                 data:
+  #                   type: object
+
+components:
+  schemas: {}
+  securitySchemes: {}

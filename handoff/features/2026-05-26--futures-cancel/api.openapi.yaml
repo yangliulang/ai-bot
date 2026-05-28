@@ -1,0 +1,136 @@
+openapi: 3.0.3
+info:
+  title: "2026-05-26--futures-cancel — Futures order cancel"
+  description: |
+    Phase 2.3 · 合约 **普通撤单** HTTP 契约（路线图 Step 2.3 存量实现收口）。
+    - **200** 为 FastAPI **`response_model` 直出**（camelCase），**非** `{ code: 0, data }` 信封。
+    - **4xx/5xx** 为 **`AppError`**：`code` + `message` + 可选 `details`。
+    - 实现 SSOT：`server/docs/BACKEND_SPEC.md` Phase2.5、`server/tests/test_futures_cancel_condition_trade.py`。
+    - **不含** `GET …/condition-orders`、`POST …/cancel-condition`（条件单包）。
+  version: "0.1.0"
+
+servers:
+  - url: http://127.0.0.1:8080
+    description: 本地 Agent API
+
+paths:
+  /api/v1/agent/trade/futures/cancel:
+    post:
+      summary: 合约撤单（POST 交易所 /fapi/v1/cancel）
+      operationId: futuresCancelOrder
+      tags: [Agent — Futures cancel]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FuturesCancelOrderRequest"
+            example:
+              userId: "79"
+              symbol: BTC-USDT
+              orderId: "259396989397942275"
+      responses:
+        "200":
+          description: 撤单成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FuturesCancelOrderResponse"
+              example:
+                scenarioId: trade.futures.cancel_order
+                orderId: "259396989397942275"
+                orderIdString: "259396989397942275"
+                contractName: E-BTC-USDT
+                symbol: BTC_USDT
+                status: CANCELLED
+                exchangeOrderPreview:
+                  orderId: "259396989397942275"
+        "400":
+          description: 交易所拒单
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AppError"
+              example:
+                code: AGENT_FUTURES_CANCEL_REJECTED
+                message: 交易所拒绝撤单
+        "403":
+          description: 未绑定或功能关闭
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AppError"
+              examples:
+                subaccount:
+                  value:
+                    code: AGENT_SUBACCOUNT_REQUIRED
+                    message: 未发现该用户的托管 API 绑定
+                featureOff:
+                  value:
+                    code: FEATURE_AGENT_FUTURES_OFF
+                    message: 合约 Agent 写能力未开启
+        "422":
+          description: 参数校验失败
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AppError"
+              example:
+                code: VALIDATION_ERROR
+                message: symbol 不可为空
+                details:
+                  field: symbol
+
+components:
+  schemas:
+    AppError:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        details:
+          type: object
+          additionalProperties: true
+
+    FuturesCancelOrderRequest:
+      type: object
+      required: [userId, symbol, orderId]
+      properties:
+        userId:
+          type: string
+          description: Telegram tg_id 十进制字符串
+        symbol:
+          type: string
+          description: 合约标的（如 BTC-USDT）
+        orderId:
+          type: string
+          description: 交易所订单号
+
+    FuturesCancelOrderResponse:
+      type: object
+      required: [scenarioId]
+      properties:
+        scenarioId:
+          type: string
+          example: trade.futures.cancel_order
+        orderId:
+          type: string
+          nullable: true
+        orderIdString:
+          type: string
+          nullable: true
+        contractName:
+          type: string
+          nullable: true
+        symbol:
+          type: string
+          nullable: true
+        status:
+          type: string
+          nullable: true
+        exchangeOrderPreview:
+          type: object
+          additionalProperties: true

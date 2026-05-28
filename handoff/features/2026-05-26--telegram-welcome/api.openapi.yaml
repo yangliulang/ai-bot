@@ -1,0 +1,251 @@
+openapi: 3.0.3
+info:
+  title: "2026-05-26--telegram-welcome — Activation welcome message"
+  description: |
+    增量契约：Telegram 开通欢迎语（§2.1.1）— Admin 三语配置、绑定 confirm 后幂等 `sendMessage`。
+    Admin 路由鉴权与存量 `product-doc/specs/openapi/admin` 一致（Bearer）。
+    错误体为 FastAPI `AppError`（`code` + `message` + 可选 `details`）。
+  version: "0.1.0"
+
+servers:
+  - url: http://127.0.0.1:8080
+    description: 本地 Agent API
+
+paths:
+  /api/v1/admin/channels/telegram/bot:
+    get:
+      summary: 读取 Telegram Bot 配置（含欢迎语 runtimeParams）（AC-1）
+      operationId: getAdminTelegramBotWelcome
+      tags: [admin-telegram]
+      responses:
+        "200":
+          description: Bot 详情 + runtimeParams
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TelegramBotChannelDetail"
+    patch:
+      summary: 更新欢迎语等 runtimeParams（AC-1 / AC-8 数据面）
+      operationId: patchAdminTelegramBotWelcome
+      tags: [admin-telegram]
+      parameters:
+        - name: If-Match
+          in: header
+          required: false
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TelegramBotPatchRequest"
+            example:
+              runtimeParams:
+                TELEGRAM_AGENT_ACTIVATION_WELCOME_TEXT_ZH_CN: "你好，{displayName}，欢迎使用 ChainUp Agent。"
+                TELEGRAM_AGENT_ACTIVATION_WELCOME_TEXT_ZH_TW: "你好，{displayName}。"
+                TELEGRAM_AGENT_ACTIVATION_WELCOME_TEXT_EN: "Hi {displayName}, welcome."
+                TELEGRAM_DEFAULT_LOCALE: zh-Hans
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TelegramBotChannelDetail"
+        "400":
+          description: 欢迎语超长等
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AppError"
+              example:
+                code: ADMIN_TELEGRAM_WELCOME_TEXT_TOO_LONG
+                message: TELEGRAM_AGENT_ACTIVATION_WELCOME_TEXT_ZH_CN 超过 Telegram 单条消息上限（4096 字符）
+        "409":
+          description: If-Match 版本冲突
+
+  /api/v1/agent/api-binding/confirm:
+    post:
+      summary: 确认 API 绑定 — 可选发送开通欢迎语（AC-3～AC-7）
+      operationId: confirmAgentApiBindingWithWelcome
+      tags: [agent-binding]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ConfirmAgentApiBindingRequest"
+      responses:
+        "200":
+          description: 绑定成功；欢迎语 best-effort
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConfirmAgentApiBindingResponseWelcome"
+              examples:
+                sent:
+                  value:
+                    saved: true
+                    instanceId: inst_abc
+                    agentSubAccountId: "900001"
+                    telegramUserId: 123456789
+                    bindingRowCreated: true
+                    activationWelcomeSent: true
+                skipped:
+                  value:
+                    saved: true
+                    instanceId: inst_abc
+                    agentSubAccountId: "900001"
+                    telegramUserId: 123456789
+                    bindingRowCreated: false
+                    activationWelcomeSent: false
+                    activationWelcomeSkipReason: already_sent
+
+  /api/v1/me/agent/bindings/trading-api:
+    post:
+      summary: Deeplink 绑定别名路径 — 欢迎语语义同 confirm（AC-3～AC-7）
+      operationId: meAgentTradingApiBindingWithWelcome
+      tags: [me-binding]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MeAgentTradingApiBindingRequest"
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MeAgentTradingApiBindingResponseWelcome"
+
+components:
+  schemas:
+    AppError:
+      type: object
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        details:
+          type: object
+
+    TelegramBotPatchRequest:
+      type: object
+      properties:
+        runtimeParams:
+          type: object
+          additionalProperties: true
+
+    TelegramBotChannelDetail:
+      type: object
+      properties:
+        tokenConfigured:
+          type: boolean
+        configVersion:
+          type: integer
+        runtimeParams:
+          type: object
+          properties:
+            TELEGRAM_AGENT_ACTIVATION_WELCOME_TEXT_ZH_CN:
+              type: string
+            TELEGRAM_AGENT_ACTIVATION_WELCOME_TEXT_ZH_TW:
+              type: string
+            TELEGRAM_AGENT_ACTIVATION_WELCOME_TEXT_EN:
+              type: string
+            TELEGRAM_AGENT_ACTIVATION_WELCOME_TEXT:
+              type: string
+              description: 遗留兼容键
+            TELEGRAM_DEFAULT_LOCALE:
+              type: string
+          additionalProperties: true
+
+    TelegramInboundPayload:
+      type: object
+      properties:
+        tg_id:
+          type: string
+        tg_lang:
+          type: string
+        tg_first_name:
+          type: string
+        tg_username:
+          type: string
+
+    ConfirmAgentApiBindingRequest:
+      type: object
+      required: [openapi_base_url, api_key, secret_key, sub_account_id, telegram]
+      properties:
+        openapi_base_url:
+          type: string
+        api_key:
+          type: string
+        secret_key:
+          type: string
+        sub_account_id:
+          type: string
+        telegram:
+          $ref: "#/components/schemas/TelegramInboundPayload"
+
+    ActivationWelcomeFields:
+      type: object
+      properties:
+        activationWelcomeSent:
+          type: boolean
+          description: 本请求是否已向 Telegram 投递欢迎语
+        activationWelcomeSkipReason:
+          type: string
+          nullable: true
+          enum:
+            - already_sent
+            - no_template
+            - send_failed
+            - no_bot_token
+          description: 未发送时的可检索原因（可选）
+
+    ConfirmAgentApiBindingResponseWelcome:
+      allOf:
+        - type: object
+          properties:
+            saved:
+              type: boolean
+            instanceId:
+              type: string
+            agentSubAccountId:
+              type: string
+            telegramUserId:
+              type: integer
+            bindingRowCreated:
+              type: boolean
+        - $ref: "#/components/schemas/ActivationWelcomeFields"
+
+    MeAgentTradingApiBindingRequest:
+      type: object
+      properties:
+        openapiBaseUrl:
+          type: string
+        apiKey:
+          type: string
+        apiSecret:
+          type: string
+        subAccountId:
+          type: string
+        telegram:
+          $ref: "#/components/schemas/TelegramInboundPayload"
+
+    MeAgentTradingApiBindingResponseWelcome:
+      allOf:
+        - type: object
+          properties:
+            saved:
+              type: boolean
+            agentTradingApiBindingStatus:
+              type: string
+            bindingRowCreated:
+              type: boolean
+            instanceId:
+              type: string
+            agentSubAccountId:
+              type: string
+        - $ref: "#/components/schemas/ActivationWelcomeFields"

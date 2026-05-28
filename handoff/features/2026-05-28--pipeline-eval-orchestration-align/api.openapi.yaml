@@ -1,0 +1,173 @@
+openapi: 3.0.3
+info:
+  title: "2026-05-28--pipeline-eval-orchestration-align — Eval + orchestration freeze alignment"
+  description: |
+    OP-AO3 · **`eval.runtime.pipeline_write_order`** 自动化 + **`runtime-freeze` §3** 对拍。
+    - **不新增** 写接口；Eval 为 **timeline 断言模块 + pytest**。
+    - **200** 响应为 FastAPI **直出** camelCase；**4xx** 为 **`AppError`**。
+  version: "0.1.0"
+
+servers:
+  - url: http://127.0.0.1:8080
+    description: 本地 Agent API
+
+paths:
+  /api/v1/agent/scenarios/{scenarioId}:
+    get:
+      summary: 单场景编排详情（freeze §3 对拍 · AC-1）
+      operationId: getAgentScenarioDetailFreezeAlign
+      tags: [Agent — Scenarios]
+      parameters:
+        - name: scenarioId
+          in: path
+          required: true
+          schema:
+            type: string
+          examples:
+            limitOrder:
+              value: trade.spot.limit_order
+            flashConvert:
+              value: trade.spot.flash_convert
+            amendLimit:
+              value: trade.spot.amend_limit_order
+      responses:
+        "200":
+          description: 含 flowSummary、executionSteps、specRefs、orchestrationRegistryVersion
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ScenarioOrchestrationDetail"
+        "404":
+          description: 未知 scenarioId
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AppError"
+
+  /api/v1/admin/orchestration/policy:
+    get:
+      summary: 编排执行策略（engineeringSpecRefs · AC-8）
+      operationId: getAdminOrchestrationPolicyFreezeAlign
+      tags: [Admin — Orchestration]
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: 含 orchestrationRegistryVersion、engineeringSpecRefs
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrchestrationPolicy"
+        "401":
+          description: 未授权
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AppError"
+
+  /api/v1/admin/observability/executions/{executionId}/timeline:
+    get:
+      summary: 执行时间线（Eval 正例输入 · 可选集成测）
+      operationId: getAdminObservabilityExecutionTimelineEval
+      tags: [Admin — Observability]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: executionId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: 时间线 items；供 eval runner 或 pytest 代理
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ObservabilityTimelineList"
+        "404":
+          description: execution 不存在
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AppError"
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+
+  schemas:
+    AppError:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        details:
+          type: object
+          additionalProperties: true
+
+    OrchestrationFlowStep:
+      type: object
+      properties:
+        stepKey:
+          type: string
+          example: read.skill
+        labelZh:
+          type: string
+        order:
+          type: integer
+
+    ScenarioOrchestrationDetail:
+      type: object
+      properties:
+        scenarioId:
+          type: string
+        flowSummary:
+          type: string
+        orchestrationRegistryVersion:
+          type: string
+        executionSteps:
+          type: array
+          items:
+            $ref: "#/components/schemas/OrchestrationFlowStep"
+        specRefs:
+          type: array
+          items:
+            type: string
+
+    OrchestrationPolicy:
+      type: object
+      properties:
+        orchestrationRegistryVersion:
+          type: string
+        engineeringSpecRefs:
+          type: array
+          items:
+            type: string
+        budgetExceededStableCode:
+          type: string
+
+    ObservabilityTimelineItem:
+      type: object
+      properties:
+        eventName:
+          type: string
+        summary:
+          type: object
+          additionalProperties: true
+        createdAt:
+          type: string
+          format: date-time
+
+    ObservabilityTimelineList:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/ObservabilityTimelineItem"

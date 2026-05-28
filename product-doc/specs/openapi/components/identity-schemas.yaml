@@ -1,0 +1,43 @@
+openapi: 3.0.3
+info:
+  title: "ChainUp AI Agent — 执行 / 会话 / 场景 / 用户标识（ID primitives）"
+  version: "2026-05-09"
+  description: |
+    **字符与长度** 与 [`../../requirements/standards/naming-standard.md`](../../requirements/standards/naming-standard.md) **§1** 同窗；
+    若与实现冻结之 **`design/api.md` 全表** 冲突，**以登记 OpenAPI / MR** 为准并回写本片段。
+paths: {}
+components:
+  schemas:
+    ExecutionId:
+      type: string
+      minLength: 10
+      maxLength: 19
+      pattern: "^[0-9]{10,19}$"
+      description: |
+        单次可计费 / 可观测执行主锚（FR-T01、FR-MC801）；创建后不可变、不可复用。
+        **仅 ASCII 数字**；演示可用 `YYYYMMDDHHmmss` + 3 位序列（17 位）；生产由 Runtime 雪花/bigint 字符串发号 — 见 `standards/naming-standard.md` §1。
+      example: "20260511143208001"
+    SessionId:
+      type: string
+      minLength: 8
+      maxLength: 64
+      pattern: "^(?:[a-z0-9-]{8,64}|[0-9A-HJKMNP-TV-Z]{26}|[a-f0-9]{32})$"
+      description: |
+        渠道会话上下文锚；同一会话可对应多条 `ExecutionId`。形态与 **`ExecutionId`** 同窗（slug / ULID / UUIDv7 hex）。
+      example: "sess-aa11"
+    ScenarioId:
+      type: string
+      minLength: 3
+      maxLength: 128
+      pattern: "^([a-z][a-z0-9_]*)(\\.[a-z][a-z0-9_]*)+$"
+      description: |
+        编排寄存器路由键（`routing-engine`）；至少两段点分命名空间。
+      example: "trade.spot.limit_order"
+    UserIdMasked:
+      type: string
+      minLength: 4
+      maxLength: 64
+      pattern: "^[a-z0-9_-]{4,64}$"
+      description: |
+        运营 / 日志默认列可用的用户 **脱敏标识**；与内部真源 `userId` 语义区分，禁止文档层互换。
+      example: "u-10482"
